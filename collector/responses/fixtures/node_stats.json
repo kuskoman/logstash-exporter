@@ -1,0 +1,345 @@
+{
+  "host": "9e6e14cf5532",
+  "version": "8.6.1",
+  "http_address": "0.0.0.0:9600",
+  "id": "a2c7110e-5ccf-4226-bc9b-e773710e66a0",
+  "name": "9e6e14cf5532",
+  "ephemeral_id": "f29b3dff-a2f5-4fb3-baff-6fca85d32294",
+  "status": "green",
+  "snapshot": false,
+  "pipeline": {
+    "workers": 16,
+    "batch_size": 125,
+    "batch_delay": 50
+  },
+  "jvm": {
+    "threads": {
+      "count": 65,
+      "peak_count": 67
+    },
+    "mem": {
+      "heap_used_percent": 36,
+      "heap_committed_in_bytes": 1073741824,
+      "heap_max_in_bytes": 1073741822,
+      "heap_used_in_bytes": 389619648,
+      "non_heap_used_in_bytes": 168822080,
+      "non_heap_committed_in_bytes": 179437568,
+      "pools": {
+        "survivor": {
+          "peak_max_in_bytes": -1,
+          "max_in_bytes": -1,
+          "peak_used_in_bytes": 34603008,
+          "used_in_bytes": 10111424,
+          "committed_in_bytes": 10485760
+        },
+        "young": {
+          "peak_max_in_bytes": -1,
+          "max_in_bytes": -1,
+          "peak_used_in_bytes": 640679936,
+          "used_in_bytes": 242221056,
+          "committed_in_bytes": 665845760
+        },
+        "old": {
+          "peak_max_in_bytes": 1073741824,
+          "max_in_bytes": 1073741824,
+          "peak_used_in_bytes": 137287168,
+          "used_in_bytes": 137287168,
+          "committed_in_bytes": 397410304
+        }
+      }
+    },
+    "gc": {
+      "collectors": {
+        "young": {
+          "collection_time_in_millis": 17136,
+          "collection_count": 3387
+        },
+        "old": {
+          "collection_time_in_millis": 0,
+          "collection_count": 0
+        }
+      }
+    },
+    "uptime_in_millis": 1299703
+  },
+  "process": {
+    "open_file_descriptors": 102,
+    "peak_open_file_descriptors": 102,
+    "max_file_descriptors": 1048576,
+    "mem": {
+      "total_virtual_in_bytes": 9918730240
+    },
+    "cpu": {
+      "total_in_millis": 4083940,
+      "percent": 18,
+      "load_average": {
+        "1m": 8.53,
+        "5m": 9.5,
+        "15m": 8.58
+      }
+    }
+  },
+  "events": {
+    "in": 80545394,
+    "filtered": 80541625,
+    "out": 80541625,
+    "duration_in_millis": 20015495,
+    "queue_push_duration_in_millis": 263462
+  },
+  "flow": {
+    "input_throughput": {
+      "current": 67960.0,
+      "last_1_minute": 64770.0,
+      "last_5_minutes": 62640.0,
+      "last_15_minutes": 63430.0,
+      "lifetime": 62520.0
+    },
+    "filter_throughput": {
+      "current": 67850.0,
+      "last_1_minute": 64770.0,
+      "last_5_minutes": 62640.0,
+      "last_15_minutes": 63430.0,
+      "lifetime": 62520.0
+    },
+    "output_throughput": {
+      "current": 67850.0,
+      "last_1_minute": 64770.0,
+      "last_5_minutes": 62640.0,
+      "last_15_minutes": 63430.0,
+      "lifetime": 62520.0
+    },
+    "queue_backpressure": {
+      "current": 0.2296,
+      "last_1_minute": 0.2217,
+      "last_5_minutes": 0.2104,
+      "last_15_minutes": 0.2124,
+      "lifetime": 0.2045
+    },
+    "worker_concurrency": {
+      "current": 15.71,
+      "last_1_minute": 15.68,
+      "last_5_minutes": 15.68,
+      "last_15_minutes": 15.69,
+      "lifetime": 15.54
+    }
+  },
+  "pipelines": {
+    ".monitoring-logstash": {
+      "events": {
+        "out": 0,
+        "queue_push_duration_in_millis": 0,
+        "duration_in_millis": 0,
+        "in": 0,
+        "filtered": 0
+      },
+      "flow": {
+        "queue_backpressure": {
+          "current": 0.0,
+          "last_1_minute": 0.0,
+          "last_5_minutes": 0.0,
+          "last_15_minutes": 0.0,
+          "lifetime": 0.0
+        },
+        "output_throughput": {
+          "current": 0.0,
+          "last_1_minute": 0.0,
+          "last_5_minutes": 0.0,
+          "last_15_minutes": 0.0,
+          "lifetime": 0.0
+        },
+        "filter_throughput": {
+          "current": 0.0,
+          "last_1_minute": 0.0,
+          "last_5_minutes": 0.0,
+          "last_15_minutes": 0.0,
+          "lifetime": 0.0
+        },
+        "worker_concurrency": {
+          "current": 0.0,
+          "last_1_minute": 0.0,
+          "last_5_minutes": 0.0,
+          "last_15_minutes": 0.0,
+          "lifetime": 0.0
+        },
+        "input_throughput": {
+          "current": 0.0,
+          "last_1_minute": 0.0,
+          "last_5_minutes": 0.0,
+          "last_15_minutes": 0.0,
+          "lifetime": 0.0
+        }
+      },
+      "plugins": {
+        "inputs": [],
+        "codecs": [],
+        "filters": [],
+        "outputs": []
+      },
+      "reloads": {
+        "failures": 0,
+        "last_error": null,
+        "last_success_timestamp": null,
+        "last_failure_timestamp": null,
+        "successes": 0
+      },
+      "queue": null
+    },
+    "main": {
+      "events": {
+        "out": 80550375,
+        "queue_push_duration_in_millis": 263483,
+        "duration_in_millis": 20017491,
+        "in": 80553491,
+        "filtered": 80550375
+      },
+      "flow": {
+        "queue_backpressure": {
+          "current": 0.2288,
+          "last_1_minute": 0.2216,
+          "last_5_minutes": 0.2104,
+          "last_15_minutes": 0.2127,
+          "lifetime": 0.2047
+        },
+        "output_throughput": {
+          "current": 67940.0,
+          "last_1_minute": 64790.0,
+          "last_5_minutes": 62650.0,
+          "last_15_minutes": 63400.0,
+          "lifetime": 62580.0
+        },
+        "filter_throughput": {
+          "current": 67940.0,
+          "last_1_minute": 64790.0,
+          "last_5_minutes": 62650.0,
+          "last_15_minutes": 63400.0,
+          "lifetime": 62580.0
+        },
+        "worker_concurrency": {
+          "current": 15.73,
+          "last_1_minute": 15.69,
+          "last_5_minutes": 15.68,
+          "last_15_minutes": 15.69,
+          "lifetime": 15.55
+        },
+        "input_throughput": {
+          "current": 67970.0,
+          "last_1_minute": 64780.0,
+          "last_5_minutes": 62640.0,
+          "last_15_minutes": 63400.0,
+          "lifetime": 62580.0
+        }
+      },
+      "plugins": {
+        "inputs": [
+          {
+            "id": "c75c0c6f97fd2c8605b95a5b2694fdae97189fe49553787a923faeaa3342c54a",
+            "events": {
+              "out": 80553557,
+              "queue_push_duration_in_millis": 263483
+            },
+            "name": "generator"
+          }
+        ],
+        "codecs": [
+          {
+            "id": "plain_5693d7c2-0be5-4684-9a54-2ba03778b9d5",
+            "decode": {
+              "writes_in": 0,
+              "out": 0,
+              "duration_in_millis": 0
+            },
+            "encode": {
+              "writes_in": 0,
+              "duration_in_millis": 0
+            },
+            "name": "plain"
+          },
+          {
+            "id": "plain_0d9d1950-1393-42be-8edb-57d095ed9115",
+            "decode": {
+              "writes_in": 80553645,
+              "out": 80553645,
+              "duration_in_millis": 280385
+            },
+            "encode": {
+              "writes_in": 0,
+              "duration_in_millis": 0
+            },
+            "name": "plain"
+          }
+        ],
+        "filters": [
+          {
+            "id": "1721e7c39758977b227be1d9334f0752555f39c873b8b86a3df8546f64059112",
+            "events": {
+              "out": 80552375,
+              "duration_in_millis": 39809,
+              "in": 80552375
+            },
+            "name": "json"
+          }
+        ],
+        "outputs": [
+          {
+            "id": "45554a51a53a57f5dbba7d26b65aad526147453a895529f3d4698c8fd88692ef",
+            "documents": {
+              "successes": 80550375
+            },
+            "bulk_requests": {
+              "responses": {
+                "200": 644403
+              },
+              "successes": 644403
+            },
+            "events": {
+              "out": 80550375,
+              "duration_in_millis": 19632044,
+              "in": 80552375
+            },
+            "name": "elasticsearch"
+          }
+        ]
+      },
+      "reloads": {
+        "failures": 0,
+        "last_error": null,
+        "last_success_timestamp": null,
+        "last_failure_timestamp": null,
+        "successes": 0
+      },
+      "queue": {
+        "type": "memory",
+        "events_count": 0,
+        "queue_size_in_bytes": 0,
+        "max_queue_size_in_bytes": 0
+      },
+      "hash": "a73729cc9c29203931db21553c5edba063820a7e40d16cb5053be75cc3811a17",
+      "ephemeral_id": "351e9d03-81f7-4e2f-9240-5515b498f688"
+    }
+  },
+  "reloads": {
+    "failures": 0,
+    "successes": 0
+  },
+  "os": {
+    "cgroup": {
+      "cpuacct": {
+        "control_group": "/",
+        "usage_nanos": 5154533381900
+      },
+      "cpu": {
+        "control_group": "/",
+        "cfs_quota_micros": -1,
+        "cfs_period_micros": 100000,
+        "stat": {
+          "number_of_elapsed_periods": 0,
+          "number_of_times_throttled": 0,
+          "time_throttled_nanos": 0
+        }
+      }
+    }
+  },
+  "queue": {
+    "events_count": 0
+  }
+}

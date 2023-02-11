@@ -1,6 +1,6 @@
-package nodeinfo
+package responses
 
-type Pipeline struct {
+type PipelineResponse struct {
 	Workers               int  `json:"workers"`
 	BatchSize             int  `json:"batch_size"`
 	BatchDelay            int  `json:"batch_delay"`
@@ -8,14 +8,14 @@ type Pipeline struct {
 	ConfigReloadInterval  int  `json:"config_reload_interval"`
 }
 
-type OS struct {
+type OsResponse struct {
 	Name                string `json:"name"`
 	Arch                string `json:"arch"`
 	Version             string `json:"version"`
 	AvailableProcessors int    `json:"available_processors"`
 }
 
-type JVM struct {
+type JvmResponse struct {
 	Pid               int    `json:"pid"`
 	Version           string `json:"version"`
 	VMName            string `json:"vm_name"`
@@ -32,12 +32,12 @@ type JVM struct {
 }
 
 type NodeInfoResponse struct {
-	Host        string   `json:"host"`
-	Version     string   `json:"version"`
-	HTTPAddress string   `json:"http_address"`
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Pipeline    Pipeline `json:"pipeline"`
-	Os          OS       `json:"os"`
-	Jvm         JVM      `json:"jvm"`
+	Host        string           `json:"host"`
+	Version     string           `json:"version"`
+	HTTPAddress string           `json:"http_address"`
+	ID          string           `json:"id"`
+	Name        string           `json:"name"`
+	Pipeline    PipelineResponse `json:"pipeline"`
+	Os          OsResponse       `json:"os"`
+	Jvm         JvmResponse      `json:"jvm"`
 }
