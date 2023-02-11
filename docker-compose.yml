@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.12.0
+    volumes:
+      - logstash-data:/usr/share/logstash/data
+    healthcheck:
+      test:
+        - "CMD"
+        - "logstash"
+        - "agent"
+        - "--config.test_and_exit"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ports:
+      - ${5044:-LOGSTASH_PORT}:5044
+  prometheus:
+    image: prom/prometheus:v2.23.1
+    volumes:
+      - prometheus-data:/prometheus
+    healthcheck:
+      test:
+        - "CMD"
+        - "prometheus"
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--storage.tsdb.path=/prometheus"
+        - "--web.enable-lifecycle"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ports:
+      - ${9090:-PROMETHEUS_PORT}:9090
+volumes:
+  logstash-data:
+  prometheus-data:
