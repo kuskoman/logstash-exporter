@@ -9,8 +9,8 @@ import (
 	"github.com/kuskoman/logstash-exporter/collector/responses"
 )
 
-func TestNodeInfoResponseStructure(t *testing.T) {
-	fixtureContent, err := ioutil.ReadFile("../fixtures/node_info.json")
+func TestNodeStatsResponseStructure(t *testing.T) {
+	fixtureContent, err := ioutil.ReadFile("../fixtures/node_stats.json")
 	if err != nil {
 		t.Fatalf("Error reading fixture file: %v", err)
 	}

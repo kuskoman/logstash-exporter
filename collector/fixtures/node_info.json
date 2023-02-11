@@ -1,0 +1,18 @@
+{
+  "host": "9e6e14cf5532",
+  "version": "8.6.1",
+  "http_address": "0.0.0.0:9600",
+  "id": "a2c7110e-5ccf-4226-bc9b-e773710e66a0",
+  "name": "9e6e14cf5532",
+  "ephemeral_id": "4a2ee04f-2733-4eaa-887d-675bad27f07c",
+  "status": "green",
+  "snapshot": false,
+  "pipeline": {
+    "workers": 16,
+    "batch_size": 125,
+    "batch_delay": 50
+  },
+  "build_date": "2023-01-24T10:41:55+00:00",
+  "build_sha": "6a248b5091c490f09460db5651e5239d903b97cf",
+  "build_snapshot": false
+}
