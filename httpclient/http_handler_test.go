@@ -16,7 +16,7 @@ type mockHTTPHandler struct {
 	Error    error
 }
 
-func (m *mockHTTPHandler) Get() (*http.Response, error) {
+func (m *mockHTTPHandler) Get(path string) (*http.Response, error) {
 	return m.Response, m.Error
 }
 

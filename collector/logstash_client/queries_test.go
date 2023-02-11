@@ -41,7 +41,7 @@ type workingHandlerMock struct {
 	fixture string
 }
 
-func (h *workingHandlerMock) Get() (*http.Response, error) {
+func (h *workingHandlerMock) Get(path string) (*http.Response, error) {
 	reader := strings.NewReader(h.fixture)
 	closer := ioutil.NopCloser(reader)
 	response := &http.Response{Body: closer}
@@ -50,6 +50,6 @@ func (h *workingHandlerMock) Get() (*http.Response, error) {
 
 type failingHandlerMock struct{}
 
-func (h *failingHandlerMock) Get() (*http.Response, error) {
+func (h *failingHandlerMock) Get(path string) (*http.Response, error) {
 	return nil, errors.New("failed to get response")
 }

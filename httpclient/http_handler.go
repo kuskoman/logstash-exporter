@@ -15,8 +15,9 @@ func GetDefaultHTTPHandler(endpoint string) HTTPHandler {
 	return &DefaultHTTPHandler{Endpoint: endpoint}
 }
 
-func (h *DefaultHTTPHandler) Get() (*http.Response, error) {
-	response, err := http.Get(h.Endpoint)
+func (h *DefaultHTTPHandler) Get(path string) (*http.Response, error) {
+	url := h.Endpoint + path
+	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -25,11 +26,11 @@ func (h *DefaultHTTPHandler) Get() (*http.Response, error) {
 }
 
 type HTTPHandler interface {
-	Get() (*http.Response, error)
+	Get(string) (*http.Response, error)
 }
 
 func GetMetrics(h HTTPHandler, target interface{}) error {
-	response, err := h.Get()
+	response, err := h.Get("")
 	if err != nil {
 		return errors.New("Cannot get metrics from Logstash: " + err.Error())
 	}

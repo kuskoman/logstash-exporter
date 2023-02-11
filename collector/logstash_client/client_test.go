@@ -43,6 +43,6 @@ func TestNewClient(t *testing.T) {
 
 type mockHTTPHandler struct{}
 
-func (m *mockHTTPHandler) Get() (*http.Response, error) {
+func (m *mockHTTPHandler) Get(path string) (*http.Response, error) {
 	return nil, nil
 }
