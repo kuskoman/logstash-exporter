@@ -8,14 +8,14 @@ type Client struct {
 
 const defaultLogstashEndpoint = "http://localhost:9600"
 
-func NewClient(httpClient *httpclient.HTTPHandler) *Client {
+func NewClient(httpClient httpclient.HTTPHandler) *Client {
 	var clientHandler httpclient.HTTPHandler
 
 	if httpClient == nil {
 		defaultHandler := httpclient.GetDefaultHTTPHandler(defaultLogstashEndpoint)
 		clientHandler = defaultHandler
 	} else {
-		clientHandler = *httpClient
+		clientHandler = httpClient
 	}
 
 	return &Client{httpClient: clientHandler}
