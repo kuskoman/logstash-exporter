@@ -1,18 +1,18 @@
 package logstashclient
 
-import "github.com/kuskoman/logstash-exporter/httpclient"
+import "github.com/kuskoman/logstash-exporter/httphandler"
 
 type Client struct {
-	httpClient httpclient.HTTPHandler
+	httpClient httphandler.HTTPHandler
 }
 
 const defaultLogstashEndpoint = "http://localhost:9600"
 
-func NewClient(httpClient httpclient.HTTPHandler) *Client {
-	var clientHandler httpclient.HTTPHandler
+func NewClient(httpClient httphandler.HTTPHandler) *Client {
+	var clientHandler httphandler.HTTPHandler
 
 	if httpClient == nil {
-		defaultHandler := httpclient.GetDefaultHTTPHandler(defaultLogstashEndpoint)
+		defaultHandler := httphandler.GetDefaultHTTPHandler(defaultLogstashEndpoint)
 		clientHandler = defaultHandler
 	} else {
 		clientHandler = httpClient

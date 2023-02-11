@@ -1,4 +1,4 @@
-package httpclient_test
+package httphandler_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/kuskoman/logstash-exporter/collector/responses"
-	"github.com/kuskoman/logstash-exporter/httpclient"
+	"github.com/kuskoman/logstash-exporter/httphandler"
 )
 
 type mockHTTPHandler struct {
@@ -40,7 +40,7 @@ func TestGetMetrics(t *testing.T) {
 	var target responses.NodeInfoResponse
 
 	// Call the getMetrics function with the mockHTTPHandler
-	err := httpclient.GetMetrics(mock, &target)
+	err := httphandler.GetMetrics(mock, &target)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

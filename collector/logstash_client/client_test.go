@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kuskoman/logstash-exporter/httpclient"
+	"github.com/kuskoman/logstash-exporter/httphandler"
 )
 
 func TestNewClient(t *testing.T) {
@@ -15,7 +15,7 @@ func TestNewClient(t *testing.T) {
 			t.Error("Expected httpClient to be set")
 		}
 
-		_, isDefaultHandler := httpClient.(*httpclient.DefaultHTTPHandler)
+		_, isDefaultHandler := httpClient.(*httphandler.DefaultHTTPHandler)
 		if !isDefaultHandler {
 			t.Error("Expected httpClient to be of type HTTPHandler")
 		}
@@ -34,7 +34,7 @@ func TestNewClient(t *testing.T) {
 			t.Error("Expected httpClient to be of type *mockHTTPHandler")
 		}
 
-		_, isDefaultHandler := httpClient.(*httpclient.DefaultHTTPHandler)
+		_, isDefaultHandler := httpClient.(*httphandler.DefaultHTTPHandler)
 		if isDefaultHandler {
 			t.Error("Expected httpClient to not be of type *httpclient.DefaultHTTPHandler")
 		}

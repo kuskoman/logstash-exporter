@@ -1,4 +1,4 @@
-package httpclient
+package httphandler
 
 import (
 	"encoding/json"
