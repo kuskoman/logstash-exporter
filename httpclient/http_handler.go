@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 )
@@ -30,8 +31,7 @@ type HTTPHandler interface {
 func GetMetrics(h HTTPHandler, target interface{}) error {
 	response, err := h.Get()
 	if err != nil {
-		log.Printf("Cannot retrieve metrics: %s", err)
-		return nil
+		return errors.New("Cannot get metrics from Logstash: " + err.Error())
 	}
 
 	defer func() {
