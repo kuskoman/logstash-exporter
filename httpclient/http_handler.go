@@ -1,4 +1,4 @@
-package metrics
+package httpclient
 
 import (
 	"encoding/json"
@@ -8,6 +8,10 @@ import (
 
 type DefaultHTTPHandler struct {
 	Endpoint string
+}
+
+func GetDefaultHTTPHandler(endpoint string) HTTPHandler {
+	return &DefaultHTTPHandler{Endpoint: endpoint}
 }
 
 func (h *DefaultHTTPHandler) Get() (*http.Response, error) {
