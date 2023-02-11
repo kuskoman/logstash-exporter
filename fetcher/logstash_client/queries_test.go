@@ -10,7 +10,7 @@ import (
 
 func TestGetNodeInfo(t *testing.T) {
 	t.Run("with valid response", func(t *testing.T) {
-		fixtureContent, err := ioutil.ReadFile("../fixtures/node_stats.json")
+		fixtureContent, err := ioutil.ReadFile("../../fixtures/node_stats.json")
 		if err != nil {
 			t.Fatalf("Error reading fixture file: %v", err)
 		}

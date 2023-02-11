@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kuskoman/logstash-exporter/collector/responses"
+	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/httphandler"
 )
 
