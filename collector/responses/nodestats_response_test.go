@@ -15,11 +15,11 @@ func TestNodeStatsResponseStructure(t *testing.T) {
 		t.Fatalf("Error reading fixture file: %v", err)
 	}
 
-	var target responses.NodeInfoResponse
+	var target responses.NodestatsResponse
 	err = json.Unmarshal(fixtureContent, &target)
 	if err != nil {
 		t.Fatalf("Error unmarshalling fixture: %v", err)
 	}
 
-	snaps.MatchSnapshot(t, "Unmarshalled NodeInfoResponse", target)
+	snaps.MatchSnapshot(t, "Unmarshalled NodestatsResponse", target)
 }

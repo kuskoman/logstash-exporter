@@ -1,40 +1,20 @@
 package responses
 
-// source: https://github.com/BonnierNews/logstash_exporter/blob/master/collector/nodeinfo_api.go
-// todo: rewrite it to parameters used by current version of logstash
-
 type NodeInfoResponse struct {
 	Host        string `json:"host"`
 	Version     string `json:"version"`
 	HTTPAddress string `json:"http_address"`
 	ID          string `json:"id"`
 	Name        string `json:"name"`
+	EphemeralID string `json:"ephemeral_id"`
+	Status      string `json:"status"`
+	Snapshot    bool   `json:"snapshot"`
 	Pipeline    struct {
-		Workers               int  `json:"workers"`
-		BatchSize             int  `json:"batch_size"`
-		BatchDelay            int  `json:"batch_delay"`
-		ConfigReloadAutomatic bool `json:"config_reload_automatic"`
-		ConfigReloadInterval  int  `json:"config_reload_interval"`
+		Workers    int `json:"workers"`
+		BatchSize  int `json:"batch_size"`
+		BatchDelay int `json:"batch_delay"`
 	} `json:"pipeline"`
-	Os struct {
-		Name                string `json:"name"`
-		Arch                string `json:"arch"`
-		Version             string `json:"version"`
-		AvailableProcessors int    `json:"available_processors"`
-	} `json:"os"`
-	Jvm struct {
-		Pid               int    `json:"pid"`
-		Version           string `json:"version"`
-		VMName            string `json:"vm_name"`
-		VMVersion         string `json:"vm_version"`
-		VMVendor          string `json:"vm_vendor"`
-		StartTimeInMillis int64  `json:"start_time_in_millis"`
-		Mem               struct {
-			HeapInitInBytes    int `json:"heap_init_in_bytes"`
-			HeapMaxInBytes     int `json:"heap_max_in_bytes"`
-			NonHeapInitInBytes int `json:"non_heap_init_in_bytes"`
-			NonHeapMaxInBytes  int `json:"non_heap_max_in_bytes"`
-		} `json:"mem"`
-		GcCollectors []string `json:"gc_collectors"`
-	} `json:"jvm"`
+	BuildDate     string `json:"build_date"`
+	BuildSHA      string `json:"build_sha"`
+	BuildSnapshot bool   `json:"build_snapshot"`
 }
