@@ -8,11 +8,40 @@ type PipelineResponse struct {
 	ConfigReloadInterval  int  `json:"config_reload_interval"`
 }
 
+type ProcessResponse struct {
+	OpenFileDescriptors     int `json:"open_file_descriptors"`
+	PeakOpenFileDescriptors int `json:"peak_open_file_descriptors"`
+	MaxFileDescriptors      int `json:"max_file_descriptors"`
+	Mem                     struct {
+		TotalVirtualInBytes int `json:"total_virtual_in_bytes"`
+	} `json:"mem"`
+	Cpu struct {
+		Percent       int `json:"percent"`
+		TotalInMillis int `json:"total_in_millis"`
+		LoadAverage   struct {
+			OneMinute      float64 `json:"1m"`
+			FiveMinutes    float64 `json:"5m"`
+			FifteenMinutes float64 `json:"15m"`
+		} `json:"load_average"`
+	} `json:"cpu"`
+}
+
 type OsResponse struct {
-	Name                string `json:"name"`
-	Arch                string `json:"arch"`
-	Version             string `json:"version"`
-	AvailableProcessors int    `json:"available_processors"`
+	Cgroup struct {
+		CpuAcct CpuAcctResponse `json:"cpuacct"`
+		Cpu     CpuResponse     `json:"cpu"`
+	} `json:"cgroup"`
+}
+
+type CpuAcctResponse struct {
+	ControlGroup string `json:"control_group"`
+	UsageNanos   int    `json:"usage_nanos"`
+}
+
+type CpuResponse struct {
+	ControlGroup    string `json:"control_group"`
+	CfsQuotaMicros  int    `json:"cfs_quota_micros"`
+	CfsPeriodMicros int    `json:"cfs_period_micros"`
 }
 
 type JvmResponse struct {
@@ -31,13 +60,20 @@ type JvmResponse struct {
 	GcCollectors []string `json:"gc_collectors"`
 }
 
+type QueueResponse struct {
+	EventsCount int `json:"events_count"`
+}
+
 type NodeInfoResponse struct {
 	Host        string           `json:"host"`
 	Version     string           `json:"version"`
 	HTTPAddress string           `json:"http_address"`
 	ID          string           `json:"id"`
 	Name        string           `json:"name"`
+	Status      string           `json:"status"`
+	Snapshot    bool             `json:"snapshot"`
 	Pipeline    PipelineResponse `json:"pipeline"`
 	Os          OsResponse       `json:"os"`
 	Jvm         JvmResponse      `json:"jvm"`
+	Queue       QueueResponse    `json:"queue"`
 }
