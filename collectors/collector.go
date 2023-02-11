@@ -1,4 +1,4 @@
-package collector
+package collectors
 
 import "github.com/prometheus/client_golang/prometheus"
 
