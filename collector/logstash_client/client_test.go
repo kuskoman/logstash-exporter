@@ -7,36 +7,38 @@ import (
 	"github.com/kuskoman/logstash-exporter/httpclient"
 )
 
-func TestNewClientDefaultHandler(t *testing.T) {
-	client := NewClient(nil)
-	httpClient := client.httpClient
-	if httpClient == nil {
-		t.Error("Expected httpClient to be set")
-	}
+func TestNewClient(t *testing.T) {
+	t.Run("with DefaultHTTPHandler", func(t *testing.T) {
+		client := NewClient(nil)
+		httpClient := client.httpClient
+		if httpClient == nil {
+			t.Error("Expected httpClient to be set")
+		}
 
-	_, isDefaultHandler := httpClient.(*httpclient.DefaultHTTPHandler)
-	if !isDefaultHandler {
-		t.Error("Expected httpClient to be of type HTTPHandler")
-	}
-}
+		_, isDefaultHandler := httpClient.(*httpclient.DefaultHTTPHandler)
+		if !isDefaultHandler {
+			t.Error("Expected httpClient to be of type HTTPHandler")
+		}
+	})
 
-func TestNewClientCustomHandler(t *testing.T) {
-	handler := &mockHTTPHandler{}
-	client := NewClient(handler)
-	httpClient := client.httpClient
-	if httpClient == nil {
-		t.Error("Expected httpClient to be set")
-	}
+	t.Run("with custom HTTPHandler", func(t *testing.T) {
+		handler := &mockHTTPHandler{}
+		client := NewClient(handler)
+		httpClient := client.httpClient
+		if httpClient == nil {
+			t.Error("Expected httpClient to be set")
+		}
 
-	_, isCustomHandler := httpClient.(*mockHTTPHandler)
-	if !isCustomHandler {
-		t.Error("Expected httpClient to be of type *mockHTTPHandler")
-	}
+		_, isCustomHandler := httpClient.(*mockHTTPHandler)
+		if !isCustomHandler {
+			t.Error("Expected httpClient to be of type *mockHTTPHandler")
+		}
 
-	_, isDefaultHandler := httpClient.(*httpclient.DefaultHTTPHandler)
-	if isDefaultHandler {
-		t.Error("Expected httpClient to not be of type *httpclient.DefaultHTTPHandler")
-	}
+		_, isDefaultHandler := httpClient.(*httpclient.DefaultHTTPHandler)
+		if isDefaultHandler {
+			t.Error("Expected httpClient to not be of type *httpclient.DefaultHTTPHandler")
+		}
+	})
 }
 
 type mockHTTPHandler struct{}
