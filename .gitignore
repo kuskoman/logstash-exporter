@@ -25,3 +25,6 @@ out/
 
 # Temporary build files
 tmp/
+
+# Release notes temporary file
+release_notes.txt
