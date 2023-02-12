@@ -139,14 +139,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Output tag information
+        run: |
+          echo "Tag name: ${{ env.TAG_NAME }}"
+          echo "Tag ref: ${{ github.ref }}"
       - name: Create GitHub release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: Release ${{ env.TAG_NAME }}
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
 
