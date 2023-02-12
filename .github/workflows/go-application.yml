@@ -51,7 +51,7 @@ jobs:
         run: make build-linux
 
       - name: Upload Linux binary
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v1
         with:
           name: logstash-exporter-linux
@@ -61,7 +61,7 @@ jobs:
     name: Build Mac binary
     runs-on: ubuntu-20.04
     needs: [lint, test]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -79,7 +79,7 @@ jobs:
     name: Build Windows binary
     runs-on: ubuntu-20.04
     needs: [lint, test]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -112,7 +112,7 @@ jobs:
         run: echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u kuskoman --password-stdin
 
       - name: Login to Docker Hub
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u kuskoman --password-stdin
 
       - name: Tag Docker image with master
@@ -120,14 +120,14 @@ jobs:
         run: docker tag logstash-exporter:latest ghcr.io/kuskoman/flashbot:master
 
       - name: Tag Docker image with tag
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         run: docker tag logstash-exporter:latest kuskoman/logstash-exporter:${{ env.TAG_NAME }}
 
   create-release:
     name: Create GitHub release
     runs-on: ubuntu-20.04
     needs: [build-linux, build-mac, build-windows, build-linux-docker-image]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -143,22 +143,25 @@ jobs:
           prerelease: false
 
   upload-linux-binary:
-    name: Upload Linux binary to GitHub release
+    name: Upload ${{ matrix.os }} binary to GitHub release
     runs-on: ubuntu-20.04
     needs: [create-release, build-linux]
-    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        os: [linux, darwin, windows]
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download Linux binary
+      - name: Download ${{ matrix.os }} binary
         uses: actions/download-artifact@v1
         with:
-          name: logstash-exporter-linux
+          name: logstash-exporter-${{ matrix.os }}
 
-      - name: Upload Linux binary to GitHub release
+      - name: Upload ${{ matrix.os }} binary to GitHub release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./logstash-exporter-linux/main-linux
-          asset_name: logstash-exporter-linux
+          asset_path: ./logstash-exporter-${{ matrix.os }}/main-${{ matrix.os }}
+          asset_name: logstash-exporter-${{ matrix.os }}
           asset_content_type: application/octet-stream
