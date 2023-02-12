@@ -52,6 +52,10 @@ func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	waitGroup.Wait()
 }
 
+func (manager *CollectorManager) Describe(ch chan<- *prometheus.Desc) {
+	manager.scrapeDurations.Describe(ch)
+}
+
 func (manager *CollectorManager) executeCollector(name string, collector Collector, ch chan<- prometheus.Metric) {
 	executionStart := time.Now()
 	err := collector.Collect(ch)
