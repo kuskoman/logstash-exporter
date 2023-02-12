@@ -57,6 +57,33 @@ jobs:
           name: logstash-exporter-linux
           path: out/main-linux
 
+  build-linux-minified:
+    name: Minify Linux binary
+    runs-on: ubuntu-20.04
+    needs: [build-linux]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Install upx
+        run: sudo apt-get install -y upx
+
+      - name: Download Linux binary
+        uses: actions/download-artifact@v1
+        with:
+          name: logstash-exporter-linux
+          path: out
+
+      - name: Minify Linux binary
+        run: upx out/main-linux
+
+      - name: Move minified binary
+        run: mv out/main-linux out/main-linux-minified
+
+      - name: Upload minified Linux binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: logstash-exporter-linux
+          path: out/main-linux-minified
+
   build-darwin:
     name: Build Mac binary
     runs-on: ubuntu-20.04
@@ -157,62 +184,29 @@ jobs:
           draft: false
           prerelease: false
 
-  upload-linux-binary:
-    name: Upload Linux binary to GitHub release
+  upload-binaries:
+    strategy:
+      matrix:
+        binary: [linux, darwin, windows, linux-minified]
     runs-on: ubuntu-20.04
-    needs: [create-release, build-linux]
+    needs:
+      - create-release
+      - build-linux
+      - build-darwin
+      - build-windows
+      - build-linux-minified
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download Linux binary
+      - name: Download binary
         uses: actions/download-artifact@v1
         with:
-          name: logstash-exporter-linux
-      - name: Upload Linux binary to GitHub release
+          name: logstash-exporter-${{ matrix.binary }}
+      - name: Upload binary to GitHub release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./logstash-exporter-linux/main-linux
-          asset_name: logstash-exporter-linux
-          asset_content_type: application/octet-stream
-
-  upload-darwin-binary:
-    name: Upload Mac binary to GitHub release
-    runs-on: ubuntu-20.04
-    needs: [create-release, build-darwin]
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Download Mac binary
-        uses: actions/download-artifact@v1
-        with:
-          name: logstash-exporter-darwin
-      - name: Upload Mac binary to GitHub release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./logstash-exporter-darwin/main-darwin
-          asset_name: logstash-exporter-darwin
-          asset_content_type: application/octet-stream
-
-  upload-windows-binary:
-    name: Upload Windows binary to GitHub release
-    runs-on: ubuntu-20.04
-    needs: [create-release, build-windows]
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Download Windows binary
-        uses: actions/download-artifact@v1
-        with:
-          name: logstash-exporter-windows
-      - name: Upload Windows binary to GitHub release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./logstash-exporter-windows/main-windows
-          asset_name: logstash-exporter-windows
+          asset_path: ./logstash-exporter-${{ matrix.binary }}/main-${{ matrix.binary }}
+          asset_name: logstash-exporter-${{ matrix.binary }}
           asset_content_type: application/octet-stream
