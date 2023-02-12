@@ -54,8 +54,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v1
         with:
-          name: linux-binary-${{ env.TAG_NAME }}.tar.gz
-          path: out/main
+          name: logstash-exporter-linux
+          path: out/main-linux
 
   build-mac:
     name: Build Mac binary
@@ -72,8 +72,8 @@ jobs:
       - name: Upload Mac binary
         uses: actions/upload-artifact@v1
         with:
-          name: mac-binary-${{ env.TAG_NAME }}.tar.gz
-          path: out/main
+          name: logstash-exporter-darwin
+          path: out/main-darwin
 
   build-windows:
     name: Build Windows binary
@@ -90,8 +90,8 @@ jobs:
       - name: Upload Windows binary
         uses: actions/upload-artifact@v1
         with:
-          name: windows-binary-${{ env.TAG_NAME }}.tar.gz
-          path: out/main
+          name: logstash-exporter-windows
+          path: out/main-windows
 
   build-linux-docker-image:
     name: Build Linux Docker image
@@ -122,3 +122,43 @@ jobs:
       - name: Tag Docker image with tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: docker tag logstash-exporter:latest kuskoman/logstash-exporter:${{ env.TAG_NAME }}
+
+  create-release:
+    name: Create GitHub release
+    runs-on: ubuntu-20.04
+    needs: [build-linux, build-mac, build-windows, build-linux-docker-image]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Release ${{ env.TAG_NAME }}
+          draft: false
+          prerelease: false
+
+  upload-linux-binary:
+    name: Upload Linux binary to GitHub release
+    runs-on: ubuntu-20.04
+    needs: [create-release, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Linux binary
+        uses: actions/download-artifact@v1
+        with:
+          name: logstash-exporter-linux
+
+      - name: Upload Linux binary to GitHub release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./logstash-exporter-linux/main-linux
+          asset_name: logstash-exporter-linux
+          asset_content_type: application/octet-stream
