@@ -117,7 +117,7 @@ jobs:
 
       - name: Tag Docker image with master
         if: github.ref == 'refs/heads/master'
-        run: docker tag logstash-exporter:latest ghcr.io/kuskoman/flashbot:master
+        run: docker tag logstash-exporter:latest ghcr.io/kuskoman/logstash-exporter:master
 
       - name: Tag Docker image with tag
         if: startsWith(github.ref, 'refs/tags/')
@@ -125,7 +125,7 @@ jobs:
 
       - name: Push Docker image to GitHub registry
         if: github.ref == 'refs/heads/master'
-        run: docker push ghcr.io/kuskoman/flashbot:master
+        run: docker push ghcr.io/kuskoman/logstash-exporter:master
 
       - name: Push Docker image to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
@@ -166,7 +166,6 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: logstash-exporter-${{ matrix.os }}
-
       - name: Upload ${{ matrix.os }} binary to GitHub release
         uses: actions/upload-release-asset@v1
         env:
