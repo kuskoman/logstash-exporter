@@ -3,12 +3,12 @@ name: Go application CI/CD
 on:
   push:
     branches:
-      - main
+      - master
     tags:
       - "*"
   pull_request:
     branches:
-      - main
+      - master
 
 env:
   GOLANGCI_LINT_VERSION: v1.40.0
