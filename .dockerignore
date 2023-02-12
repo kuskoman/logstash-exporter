@@ -26,3 +26,4 @@ Dockerfile
 README.md
 .gitignore
 .git
+out/
