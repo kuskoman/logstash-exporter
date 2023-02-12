@@ -6,6 +6,8 @@ The project was created as rewrite of existing awesome application
 which was also written in Go, but it was not maintained for a long time.
 A lot of code was reused from the original project.
 
+**This project is under development and is not ready for use.**
+
 ## Building
 
 ### Makefile
