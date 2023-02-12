@@ -57,33 +57,6 @@ jobs:
           name: logstash-exporter-linux
           path: out/main-linux
 
-  build-linux-minified:
-    name: Minify Linux binary
-    runs-on: ubuntu-20.04
-    needs: [build-linux]
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Install upx
-        run: sudo apt-get install -y upx
-
-      - name: Download Linux binary
-        uses: actions/download-artifact@v1
-        with:
-          name: logstash-exporter-linux
-          path: out
-
-      - name: Minify Linux binary
-        run: upx out/main-linux
-
-      - name: Move minified binary
-        run: mv out/main-linux out/main-linux-minified
-
-      - name: Upload minified Linux binary
-        uses: actions/upload-artifact@v1
-        with:
-          name: logstash-exporter-linux
-          path: out/main-linux-minified
-
   build-darwin:
     name: Build Mac binary
     runs-on: ubuntu-20.04
@@ -187,14 +160,13 @@ jobs:
   upload-binaries:
     strategy:
       matrix:
-        binary: [linux, darwin, windows, linux-minified]
+        binary: [linux, darwin, windows]
     runs-on: ubuntu-20.04
     needs:
       - create-release
       - build-linux
       - build-darwin
       - build-windows
-      - build-linux-minified
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
