@@ -15,7 +15,7 @@ build-darwin: out/main-darwin
 build-windows: out/main-windows
 
 build-docker:
-	docker build -t exporter .
+	docker build -t logstash-exporter .
 
 clean:
 	rm -f $(GOOS_EXES)
