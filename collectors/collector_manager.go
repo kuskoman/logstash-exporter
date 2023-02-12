@@ -45,7 +45,9 @@ func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	waitGroup.Add(len(manager.collectors))
 	for name, collector := range manager.collectors {
 		go func(name string, collector Collector) {
+			log.Printf("executing collector %s", name)
 			manager.executeCollector(name, collector, ch)
+			log.Printf("collector %s finished", name)
 			waitGroup.Done()
 		}(name, collector)
 	}
