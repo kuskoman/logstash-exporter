@@ -66,7 +66,7 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      - LOGSTASH_URL=${LOGSTASH_URL:-http://logstash:5044}
+      - LOGSTASH_URL=${LOGSTASH_URL:-http://logstash:9600}
     ports:
       - ${EXPORTER_PORT:-9198}:9198
 volumes:
