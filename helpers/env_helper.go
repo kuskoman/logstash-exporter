@@ -26,3 +26,11 @@ func GetRequiredEnv(key string) (string, error) {
 	}
 	return value, nil
 }
+
+func GetEnvWithDefault(key string, defaultValue string) string {
+	value := GetEnv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
