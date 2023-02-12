@@ -8,4 +8,4 @@ scrape_configs:
     metrics_path: "/metrics"
     scheme: "http"
     static_configs:
-      - targets: ["localhost:9198"]
+      - targets: ["exporter:9198"]
