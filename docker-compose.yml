@@ -25,6 +25,8 @@ services:
     restart: unless-stopped
     volumes:
       - prometheus-data:/prometheus
+      - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+    network_mode: bridge
     healthcheck:
       test:
         - "CMD"
