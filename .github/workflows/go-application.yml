@@ -39,6 +39,25 @@ jobs:
       - name: Test code
         run: go test ./...
 
+  test-integration:
+    name: Test integration with Prometheus
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Print compose version
+        run: docker-compose version
+
+      - name: Wait for compose
+        run: make wait-for-compose
+
+      - name: Run metrics integration test
+        run: make verify-metrics
+
+      - name: Shutdown compose
+        run: docker-compose down -v
+
   build-linux:
     name: Build Linux binary
     runs-on: ubuntu-20.04
