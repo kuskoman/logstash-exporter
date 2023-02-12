@@ -142,10 +142,10 @@ jobs:
           draft: false
           prerelease: false
 
-  upload-linux-binary:
+  upload-binaries:
     name: Upload ${{ matrix.os }} binary to GitHub release
     runs-on: ubuntu-20.04
-    needs: [create-release, build-linux]
+    needs: [create-release, build-linux, build-mac, build-windows]
     strategy:
       matrix:
         os: [linux, darwin, windows]
