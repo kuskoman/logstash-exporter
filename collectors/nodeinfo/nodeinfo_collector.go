@@ -1,4 +1,4 @@
-package nodestats
+package nodeinfo
 
 import (
 	"strconv"
