@@ -26,6 +26,12 @@ test:
 compose:
 	docker-compose up -d --build
 
+wait-for-compose:
+	docker-compose up -d --wait
+
+compose-down:
+	docker-compose down
+
 verify-metrics:
 	./scripts/verify-metrics.sh
 
