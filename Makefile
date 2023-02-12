@@ -1,6 +1,6 @@
 GOOS_VALUES := linux darwin windows
 GOOS_BINARIES := $(foreach goos,$(GOOS_VALUES),out/main-$(goos))
-GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/main-$(goos).exe,out/main-$(goos)))
+GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/main-$(goos),out/main-$(goos)))
 
 all: $(GOOS_BINARIES)
 
@@ -19,5 +19,20 @@ build-docker:
 
 clean:
 	rm -f $(GOOS_EXES)
+
+test:
+	go test -v ./...
+
+compose:
+	docker-compose up -d --build
+
+pull:
+	docker-compose pull
+
+logs:
+	docker-compose logs -f
+
+minify:
+	upx -9 $(GOOS_EXES)
 
 .DEFAULT_GOAL := run
