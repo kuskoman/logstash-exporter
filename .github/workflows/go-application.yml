@@ -154,25 +154,62 @@ jobs:
           draft: false
           prerelease: false
 
-  upload-binaries:
-    name: Upload ${{ matrix.os }} binary to GitHub release
+  upload-linux-binary:
+    name: Upload Linux binary to GitHub release
     runs-on: ubuntu-20.04
-    needs: [create-release, build-linux, build-darwin, build-windows]
-    strategy:
-      matrix:
-        os: [linux, darwin, windows]
+    needs: [create-release, build-linux]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download ${{ matrix.os }} binary
+      - name: Download Linux binary
         uses: actions/download-artifact@v1
         with:
-          name: logstash-exporter-${{ matrix.os }}
-      - name: Upload ${{ matrix.os }} binary to GitHub release
+          name: logstash-exporter-linux
+      - name: Upload Linux binary to GitHub release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./logstash-exporter-${{ matrix.os }}/main-${{ matrix.os }}
-          asset_name: logstash-exporter-${{ matrix.os }}
+          upload_url: ${{ needs.build-linux.outputs.upload_url }}
+          asset_path: ./logstash-exporter-linux/main-linux
+          asset_name: logstash-exporter-linux
+          asset_content_type: application/octet-stream
+
+  upload-darwin-binary:
+    name: Upload Mac binary to GitHub release
+    runs-on: ubuntu-20.04
+    needs: [create-release, build-darwin]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download Mac binary
+        uses: actions/download-artifact@v1
+        with:
+          name: logstash-exporter-darwin
+      - name: Upload Mac binary to GitHub release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          upload_url: ${{ needs.build-darwin.outputs.upload_url }}
+          asset_path: ./logstash-exporter-darwin/main-darwin
+          asset_name: logstash-exporter-darwin
+          asset_content_type: application/octet-stream
+
+  upload-windows-binary:
+    name: Upload Windows binary to GitHub release
+    runs-on: ubuntu-20.04
+    needs: [create-release, build-windows]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download Windows binary
+        uses: actions/download-artifact@v1
+        with:
+          name: logstash-exporter-windows
+      - name: Upload Windows binary to GitHub release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          upload_url: ${{ needs.build-windows.outputs.upload_url }}
+          asset_path: ./logstash-exporter-windows/main-windows
+          asset_name: logstash-exporter-windows
           asset_content_type: application/octet-stream
