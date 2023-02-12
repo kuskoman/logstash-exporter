@@ -12,7 +12,7 @@ import (
 )
 
 type NodestatsCollector struct {
-	client *logstashclient.Client
+	client logstashclient.Client
 
 	NodeInfos  *prometheus.Desc
 	BuildInfos *prometheus.Desc
@@ -24,7 +24,7 @@ type NodestatsCollector struct {
 	Status *prometheus.Desc
 }
 
-func NewNodestatsCollector(client *logstashclient.Client) *NodestatsCollector {
+func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 	const subsystem = "info"
 	namespace := config.PrometheusNamespace
 	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}

@@ -1,14 +1,21 @@
 package logstashclient
 
-import "github.com/kuskoman/logstash-exporter/httphandler"
+import (
+	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/httphandler"
+)
 
-type Client struct {
+type DefaultClient struct {
 	httpClient httphandler.HTTPHandler
+}
+
+type Client interface {
+	GetNodeInfo() (*responses.NodeInfoResponse, error)
 }
 
 const defaultLogstashEndpoint = "http://localhost:9600"
 
-func NewClient(httpClient httphandler.HTTPHandler) *Client {
+func NewClient(httpClient httphandler.HTTPHandler) *DefaultClient {
 	var clientHandler httphandler.HTTPHandler
 
 	if httpClient == nil {
@@ -18,5 +25,5 @@ func NewClient(httpClient httphandler.HTTPHandler) *Client {
 		clientHandler = httpClient
 	}
 
-	return &Client{httpClient: clientHandler}
+	return &DefaultClient{httpClient: clientHandler}
 }
