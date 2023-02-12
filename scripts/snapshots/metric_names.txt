@@ -1,0 +1,7 @@
+logstash_exporter_build_info
+logstash_info_build
+logstash_info_node
+logstash_info_pipeline_batch_delay
+logstash_info_pipeline_batch_size
+logstash_info_pipeline_workers
+logstash_info_status

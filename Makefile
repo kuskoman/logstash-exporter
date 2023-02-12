@@ -26,6 +26,9 @@ test:
 compose:
 	docker-compose up -d --build
 
+verify-metrics:
+	./scripts/verify-metrics.sh
+
 pull:
 	docker-compose pull
 
