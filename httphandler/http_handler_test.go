@@ -40,7 +40,7 @@ func TestGetMetrics(t *testing.T) {
 	var target responses.NodeInfoResponse
 
 	// Call the getMetrics function with the mockHTTPHandler
-	err := httphandler.GetMetrics(mock, &target)
+	err := httphandler.GetMetrics(mock, "", &target)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

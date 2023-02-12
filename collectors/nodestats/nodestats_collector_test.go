@@ -1,4 +1,4 @@
-package nodeinfo
+package nodestats
 
 import (
 	"encoding/json"
@@ -12,22 +12,22 @@ import (
 type mockClient struct{}
 
 func (m *mockClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
-	b, err := os.ReadFile("../../fixtures/node_info.json")
-	if err != nil {
-		return nil, err
-	}
-
-	var nodeInfo responses.NodeInfoResponse
-	err = json.Unmarshal(b, &nodeInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	return &nodeInfo, nil
+	return nil, nil
 }
 
 func (m *mockClient) GetNodeStats() (*responses.NodestatsResponse, error) {
-	return nil, nil
+	b, err := os.ReadFile("../../fixtures/node_stats.json")
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeStats responses.NodestatsResponse
+	err = json.Unmarshal(b, &nodeStats)
+	if err != nil {
+		return nil, err
+	}
+
+	return &nodeStats, nil
 }
 
 func TestCollectNotNil(t *testing.T) {
@@ -41,7 +41,7 @@ func TestCollectNotNil(t *testing.T) {
 		}
 	}()
 
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 16; i++ {
 		metric := <-ch
 		if metric == nil {
 			t.Errorf("Expected metric %s to be not nil", metric.Desc().String())

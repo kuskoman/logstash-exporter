@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/kuskoman/logstash-exporter/collectors/nodeinfo"
+	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/httphandler"
@@ -37,6 +38,7 @@ func NewCollectorManager(endpoint string) *CollectorManager {
 func getCollectors(client logstashclient.Client) map[string]Collector {
 	collectors := make(map[string]Collector)
 	collectors["nodeinfo"] = nodeinfo.NewNodestatsCollector(client)
+	collectors["nodestats"] = nodestats.NewNodestatsCollector(client)
 	return collectors
 }
 

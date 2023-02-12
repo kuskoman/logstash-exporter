@@ -11,6 +11,7 @@ type DefaultClient struct {
 
 type Client interface {
 	GetNodeInfo() (*responses.NodeInfoResponse, error)
+	GetNodeStats() (*responses.NodestatsResponse, error)
 }
 
 const defaultLogstashEndpoint = "http://localhost:9600"

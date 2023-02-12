@@ -7,10 +7,20 @@ import (
 
 func (c *DefaultClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
 	var nodeInfoResponse responses.NodeInfoResponse
-	err := httphandler.GetMetrics(c.httpClient, &nodeInfoResponse)
+	err := httphandler.GetMetrics(c.httpClient, "", &nodeInfoResponse)
 	if err != nil {
 		return nil, err
 	}
 
 	return &nodeInfoResponse, nil
+}
+
+func (c *DefaultClient) GetNodeStats() (*responses.NodestatsResponse, error) {
+	var nodeStatsResponse responses.NodestatsResponse
+	err := httphandler.GetMetrics(c.httpClient, "", &nodeStatsResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &nodeStatsResponse, nil
 }
