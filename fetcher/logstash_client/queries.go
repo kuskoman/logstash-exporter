@@ -17,7 +17,7 @@ func (c *DefaultClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
 
 func (c *DefaultClient) GetNodeStats() (*responses.NodestatsResponse, error) {
 	var nodeStatsResponse responses.NodestatsResponse
-	err := httphandler.GetMetrics(c.httpClient, "_node/stats", &nodeStatsResponse)
+	err := httphandler.GetMetrics(c.httpClient, "/_node/stats", &nodeStatsResponse)
 	if err != nil {
 		return nil, err
 	}
