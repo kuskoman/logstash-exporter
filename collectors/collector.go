@@ -26,13 +26,18 @@ func NewCollectorManager(endpoint string) *CollectorManager {
 	httpHandler := httphandler.GetDefaultHTTPHandler(endpoint)
 	client := logstashclient.NewClient(httpHandler)
 
-	collectors := make(map[string]Collector)
-	collectors["nodeinfo"] = nodestats.NewNodestatsCollector(client)
+	collectors := getCollectors(client)
 
 	scrapeDurations := getScrapeDurationsCollector()
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
 	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations}
+}
+
+func getCollectors(client *logstashclient.Client) map[string]Collector {
+	collectors := make(map[string]Collector)
+	collectors["nodeinfo"] = nodestats.NewNodestatsCollector(client)
+	return collectors
 }
 
 func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
