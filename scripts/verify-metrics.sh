@@ -1,46 +1,46 @@
 #! /usr/bin/env bash
 
-PROMETHEUS_RESPONSE=$(curl -s -X GET http://localhost:9090/api/v1/label/__name__/values)
-STATUS=$(echo $PROMETHEUS_RESPONSE | jq -r '.status')
-if [ "$STATUS" != "success" ]; then
-    echo "Prometheus API returned an error: $PROMETHEUS_RESPONSE"
+prometheus_response=$(curl -s -X GET http://localhost:9090/api/v1/label/__name__/values)
+status=$(echo $prometheus_response | jq -r '.status')
+if [ "$status" != "success" ]; then
+    echo "Prometheus API returned an error: $prometheus_response"
     exit 1
 fi
 
-LOGSTASH_METRICS=$(echo $PROMETHEUS_RESPONSE | jq -r '.data[]' | grep -E '^logstash_')
-SCRIPT_LOCATION=$(dirname "$0")
-SNAPSHOT_DIR="$SCRIPT_LOCATION/snapshots"
-SNAPSHOT_FILE="$SNAPSHOT_DIR/metric_names.txt"
+logstash_metrics=$(echo $prometheus_response | jq -r '.data[]' | grep -E '^logstash_')
+script_location=$(dirname "$0")
+snapshot_dir="$script_location/snapshots"
+snapshot_file="$snapshot_dir/metric_names.txt"
 
-mkdir -p "$SNAPSHOT_DIR"
+mkdir -p "$snapshot_dir"
 
-if [ ! -f "$SNAPSHOT_FILE" ]; then
-    echo "Snapshot file $SNAPSHOT_FILE does not exist. Creating it."
-    echo "$LOGSTASH_METRICS" > "$SNAPSHOT_FILE"
+if [ ! -f "$snapshot_file" ]; then
+    echo "Snapshot file $snapshot_file does not exist. Creating it."
+    echo "$logstash_metrics" > "$snapshot_file"
 fi
 
-SNAPSHOT_METRICS=$(cat "$SNAPSHOT_FILE")
+snapshot_metrics=$(cat "$snapshot_file")
 
-echo "Checking that all metrics are in the snapshot file $SNAPSHOT_FILE"
-for METRIC in $LOGSTASH_METRICS; do
-    echo "Checking existence of metric $METRIC"
-    if [[ ! "$SNAPSHOT_METRICS" =~ "$METRIC" ]]; then
+echo "Checking that all metrics are in the snapshot file $snapshot_file"
+for metric in $logstash_metrics; do
+    echo "Checking existence of metric $metric"
+    if [[ ! "$snapshot_metrics" =~ "$metric" ]]; then
         if [ "$CI" == "true" ]; then
-            echo "Metric $METRIC is not in the snapshot file $SNAPSHOT_FILE"
+            echo "Metric $metric is not in the snapshot file $snapshot_file"
             exit 1
         else
-            echo "Metric $METRIC is not in the snapshot file $SNAPSHOT_FILE. Updating it."
-            echo "$LOGSTASH_METRICS" >> "$SNAPSHOT_FILE"
+            echo "Metric $metric is not in the snapshot file $snapshot_file. Updating it."
+            echo "$logstash_metrics" >> "$snapshot_file"
         fi
     fi
 done
 
-for METRIC in $LOGSTASH_METRICS; do
-    echo "Checking metric endpoint for $METRIC"
-    PROMETHEUS_RESPONSE=$(curl -s -X GET http://localhost:9090/api/v1/series?match[]=$METRIC)
-    STATUS=$(echo $PROMETHEUS_RESPONSE | jq -r '.status')
-    if [ "$STATUS" != "success" ]; then
-        echo "Prometheus API returned an error: $PROMETHEUS_RESPONSE"
+for metric in $logstash_metrics; do
+    echo "Checking metric endpoint for $metric"
+    prometheus_response=$(curl -s -X GET http://localhost:9090/api/v1/series?match[]=$metric)
+    status=$(echo $prometheus_response | jq -r '.status')
+    if [ "$status" != "success" ]; then
+        echo "Prometheus API returned an error: $prometheus_response"
         exit 1
     fi
 done
