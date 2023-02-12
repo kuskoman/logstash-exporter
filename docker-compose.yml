@@ -26,7 +26,9 @@ services:
     volumes:
       - prometheus-data:/prometheus
       - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
-    network_mode: bridge
+    network_mode: host
+    environment:
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT:-9090}
     healthcheck:
       test:
         - "CMD"
@@ -37,8 +39,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    ports:
-      - ${PROMETHEUS_PORT:-9090}:9090
   elasticsearch:
     image: elasticsearch:8.6.1
     restart: unless-stopped
