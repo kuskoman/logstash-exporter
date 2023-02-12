@@ -1,5 +1,11 @@
 # Logstash-exporter
 
+Export metrics from Logstash to Prometheus.
+The project was created as rewrite of existing awesome application
+[logstash_exporter](https://github.com/BonnierNews/logstash_exporter),
+which was also written in Go, but it was not maintained for a long time.
+A lot of code was reused from the original project.
+
 ## Building
 
 ### Makefile
