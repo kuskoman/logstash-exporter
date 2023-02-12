@@ -55,7 +55,7 @@ jobs:
           path: out/main
 
   build-mac:
-    runs-on: macos-latest
+    runs-on: ubuntu-20.04
     needs: [lint, test]
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -72,7 +72,7 @@ jobs:
           path: out/main
 
   build-windows:
-    runs-on: windows-latest
+    runs-on: ubuntu-20.04
     needs: [lint, test]
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -87,3 +87,29 @@ jobs:
         with:
           name: windows-binary-${{ env.TAG_NAME }}.tar.gz
           path: out/main
+
+  build-docker-image:
+    runs-on: ubuntu-20.04
+    needs: [build-linux]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: make build-docker
+
+      - name: Login to GitHub registry
+        if: github.ref == 'refs/heads/master'
+        run: echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u kuskoman --password-stdin
+
+      - name: Login to Docker Hub
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u kuskoman --password-stdin
+
+      - name: Tag Docker image with master
+        if: github.ref == 'refs/heads/master'
+        run: docker tag logstash-exporter:latest ghcr.io/kuskoman/flashbot:master
+
+      - name: Tag Docker image with tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: docker tag logstash-exporter:latest kuskoman/logstash-exporter:${{ env.TAG_NAME }}

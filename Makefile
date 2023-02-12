@@ -14,6 +14,9 @@ build-linux: out/main-linux
 build-darwin: out/main-darwin
 build-windows: out/main-windows
 
+build-docker:
+	docker build -t exporter .
+
 clean:
 	rm -f $(GOOS_EXES)
 
