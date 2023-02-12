@@ -30,7 +30,7 @@ type HTTPHandler interface {
 }
 
 func GetMetrics(h HTTPHandler, path string, target interface{}) error {
-	response, err := h.Get("")
+	response, err := h.Get(path)
 	if err != nil {
 		return errors.New("Cannot get metrics from Logstash: " + err.Error())
 	}

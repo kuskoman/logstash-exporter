@@ -62,7 +62,11 @@ services:
     ports:
       - ${ELASTICSEARCH_PORT:-9200}:9200
   exporter:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
     restart: unless-stopped
     environment:
       - LOGSTASH_URL=${LOGSTASH_URL:-http://logstash:9600}

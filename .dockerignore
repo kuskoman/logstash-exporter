@@ -27,3 +27,4 @@ README.md
 .gitignore
 .git
 out/
+tmp/
