@@ -10,7 +10,9 @@ out/main-%:
 run:
 	go run cmd/exporter/main.go
 
-build-%: out/main-%
+build-linux: out/main-linux
+build-darwin: out/main-darwin
+build-windows: out/main-windows
 
 clean:
 	rm -f $(GOOS_EXES)
