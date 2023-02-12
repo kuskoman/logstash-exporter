@@ -2,7 +2,7 @@ package nodeinfo
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
@@ -12,7 +12,7 @@ import (
 type mockClient struct{}
 
 func (m *mockClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
-	b, err := ioutil.ReadFile("../../fixtures/node_info.json")
+	b, err := os.ReadFile("../../fixtures/node_info.json")
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,13 @@ func (m *mockClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
 func TestCollectNotNil(t *testing.T) {
 	collector := NewNodestatsCollector(&mockClient{})
 	ch := make(chan prometheus.Metric)
-	go collector.Collect(ch)
+
+	go func() {
+		err := collector.Collect(ch)
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+	}()
 
 	for i := 0; i < 6; i++ {
 		metric := <-ch

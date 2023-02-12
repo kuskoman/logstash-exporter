@@ -2,15 +2,16 @@ package logstashclient
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 )
 
 func TestGetNodeInfo(t *testing.T) {
 	t.Run("with valid response", func(t *testing.T) {
-		fixtureContent, err := ioutil.ReadFile("../../fixtures/node_stats.json")
+		fixtureContent, err := os.ReadFile("../../fixtures/node_stats.json")
 		if err != nil {
 			t.Fatalf("Error reading fixture file: %v", err)
 		}
@@ -43,7 +44,7 @@ type workingHandlerMock struct {
 
 func (h *workingHandlerMock) Get(path string) (*http.Response, error) {
 	reader := strings.NewReader(h.fixture)
-	closer := ioutil.NopCloser(reader)
+	closer := io.NopCloser(reader)
 	response := &http.Response{Body: closer}
 	return response, nil
 }

@@ -47,7 +47,10 @@ func TestGetMetrics(t *testing.T) {
 
 	// Unmarshal the sample JSON response to a map
 	var expected map[string]interface{}
-	json.Unmarshal([]byte(sampleResponse), &expected)
+	err = json.Unmarshal([]byte(sampleResponse), &expected)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
 
 	// Compare the target struct and the expected map
 	if target.Host != expected["host"] {

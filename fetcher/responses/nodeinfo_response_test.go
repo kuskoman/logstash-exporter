@@ -2,7 +2,7 @@ package responses_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestNodeInfoResponseStructure(t *testing.T) {
-	fixtureContent, err := ioutil.ReadFile("../../fixtures/node_info.json")
+	fixtureContent, err := os.ReadFile("../../fixtures/node_info.json")
 	if err != nil {
 		t.Fatalf("Error reading fixture file: %v", err)
 	}
