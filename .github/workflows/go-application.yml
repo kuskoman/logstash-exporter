@@ -57,7 +57,7 @@ jobs:
           name: logstash-exporter-linux
           path: out/main-linux
 
-  build-mac:
+  build-darwin:
     name: Build Mac binary
     runs-on: ubuntu-20.04
     needs: [lint, test]
@@ -67,7 +67,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Mac binary
-        run: make build-mac
+        run: make build-darwin
 
       - name: Upload Mac binary
         uses: actions/upload-artifact@v1
@@ -126,7 +126,7 @@ jobs:
   create-release:
     name: Create GitHub release
     runs-on: ubuntu-20.04
-    needs: [build-linux, build-mac, build-windows, build-linux-docker-image]
+    needs: [build-linux, build-darwin, build-windows, build-linux-docker-image]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
@@ -145,7 +145,7 @@ jobs:
   upload-binaries:
     name: Upload ${{ matrix.os }} binary to GitHub release
     runs-on: ubuntu-20.04
-    needs: [create-release, build-linux, build-mac, build-windows]
+    needs: [create-release, build-linux, build-darwin, build-windows]
     strategy:
       matrix:
         os: [linux, darwin, windows]
