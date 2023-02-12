@@ -46,6 +46,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install Compose
+        uses: ndeloof/install-compose-action@v0.0.1
+        with:
+          version: v2.15.1
+          legacy: true
+
       - name: Print compose version
         run: docker-compose version
 
