@@ -30,7 +30,7 @@ for metric in $logstash_metrics; do
             exit 1
         else
             echo "Metric $metric is not in the snapshot file $snapshot_file. Updating it."
-            echo "$logstash_metrics" >> "$snapshot_file"
+            echo "$metric" >> "$snapshot_file"
         fi
     fi
 done
