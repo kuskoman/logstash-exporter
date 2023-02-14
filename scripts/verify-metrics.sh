@@ -7,7 +7,7 @@ if [ "$status" != "success" ]; then
     exit 1
 fi
 
-logstash_metrics=$(echo $prometheus_response | jq -r '.data[]' | grep -E '^logstash_')
+logstash_metrics=$(echo $prometheus_response | jq -r '.data[]' | grep -E '^logstash_' | sort)
 script_location=$(dirname "$0")
 snapshot_dir="$script_location/snapshots"
 snapshot_file="$snapshot_dir/metric_names.txt"

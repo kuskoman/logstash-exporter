@@ -243,4 +243,5 @@ Table of exported metrics:
 | logstash_stats_queue_events_count | gauge | queue_events_count |
 | logstash_stats_reload_failures | gauge | reload_failures |
 | logstash_stats_reload_successes | gauge | reload_successes |
+
 <!-- METRICS_TABLE_END -->
