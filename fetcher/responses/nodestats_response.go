@@ -176,10 +176,6 @@ type SinglePipelineResponse struct {
 	EphemeralID string `json:"ephemeral_id"`
 }
 
-type PipelinesResponse struct {
-	Pipelines map[string]SinglePipelineResponse `json:"pipelines"`
-}
-
 type PipelineLogstashMonitoringResponse struct {
 	Events struct {
 		Out                       int `json:"out"`
@@ -255,19 +251,20 @@ type QueueResponse struct {
 }
 
 type NodestatsResponse struct {
-	Host        string            `json:"host"`
-	Version     string            `json:"version"`
-	HttpAddress string            `json:"http_address"`
-	Id          string            `json:"id"`
-	Name        string            `json:"name"`
-	EphemeralId string            `json:"ephemeral_id"`
-	Status      string            `json:"status"`
-	Snapshot    bool              `json:"snapshot"`
-	Pipeline    PipelineResponse  `json:"pipeline"`
-	Jvm         JvmResponse       `json:"jvm"`
-	Process     ProcessResponse   `json:"process"`
-	Pipelines   PipelinesResponse `json:"pipelines"`
-	Reloads     ReloadResponse    `json:"reloads"`
-	Os          OsResponse        `json:"os"`
-	Queue       QueueResponse     `json:"queue"`
+	Host        string           `json:"host"`
+	Version     string           `json:"version"`
+	HttpAddress string           `json:"http_address"`
+	Id          string           `json:"id"`
+	Name        string           `json:"name"`
+	EphemeralId string           `json:"ephemeral_id"`
+	Status      string           `json:"status"`
+	Snapshot    bool             `json:"snapshot"`
+	Pipeline    PipelineResponse `json:"pipeline"`
+	Jvm         JvmResponse      `json:"jvm"`
+	Process     ProcessResponse  `json:"process"`
+	Reloads     ReloadResponse   `json:"reloads"`
+	Os          OsResponse       `json:"os"`
+	Queue       QueueResponse    `json:"queue"`
+
+	Pipelines map[string]SinglePipelineResponse `json:"pipelines"`
 }

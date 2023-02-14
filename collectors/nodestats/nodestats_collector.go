@@ -1,14 +1,24 @@
 package nodestats
 
 import (
+	"log"
+
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const subsystem = "stats"
+
+var (
+	namespace  = config.PrometheusNamespace
+	descHelper = helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
+)
+
 type NodestatsCollector struct {
-	client logstashclient.Client
+	client               logstashclient.Client
+	pipelineSubcollector *PipelineSubcollector
 
 	JvmThreadsCount     *prometheus.Desc
 	JvmThreadsPeakCount *prometheus.Desc
@@ -34,12 +44,11 @@ type NodestatsCollector struct {
 }
 
 func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
-	const subsystem = "stats"
-	namespace := config.PrometheusNamespace
-	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodestatsCollector{
 		client: client,
+
+		pipelineSubcollector: NewPipelineSubcollector(),
 
 		JvmThreadsCount:     descHelper.NewDesc("jvm_threads_count"),
 		JvmThreadsPeakCount: descHelper.NewDesc("jvm_threads_peak_count"),
@@ -93,5 +102,14 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 
 	ch <- prometheus.MustNewConstMetric(c.QueueEventsCount, prometheus.GaugeValue, float64(nodeStats.Queue.EventsCount))
 
-	return nil
+	for pipelineId, pipelineStats := range nodeStats.Pipelines {
+		err = c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
+		if err != nil {
+			log.Printf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
+		}
+		// we don't want to stop collecting other pipelines if one of them fails
+	}
+
+	// last error is returned
+	return err
 }
