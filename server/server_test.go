@@ -8,7 +8,7 @@ import (
 
 func TestNewAppServer(t *testing.T) {
 	t.Run("Test handling of /metrics endpoint", func(t *testing.T) {
-		server := NewAppServer("8080")
+		server := NewAppServer("", "8080")
 		req, err := http.NewRequest("GET", "/metrics", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -21,7 +21,7 @@ func TestNewAppServer(t *testing.T) {
 	})
 
 	t.Run("Test handling of / endpoint", func(t *testing.T) {
-		server := NewAppServer("8080")
+		server := NewAppServer("", "8080")
 		req, err := http.NewRequest("GET", "/", nil)
 		if err != nil {
 			t.Fatal(err)
