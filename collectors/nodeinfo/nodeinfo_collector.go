@@ -5,6 +5,7 @@ import (
 
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -16,6 +17,8 @@ type NodestatsCollector struct {
 
 	NodeInfos  *prometheus.Desc
 	BuildInfos *prometheus.Desc
+
+	Up *prometheus.Desc
 
 	PipelineWorkers    *prometheus.Desc
 	PipelineBatchSize  *prometheus.Desc
@@ -44,6 +47,13 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 			nil,
 		),
 
+		Up: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, subsystem, "up"),
+			"A metric that returns 1 if the node is up, 0 otherwise.",
+			nil,
+			nil,
+		),
+
 		PipelineWorkers:    descHelper.NewDesc("pipeline_workers"),
 		PipelineBatchSize:  descHelper.NewDesc("pipeline_batch_size"),
 		PipelineBatchDelay: descHelper.NewDesc("pipeline_batch_delay"),
@@ -60,6 +70,8 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 	nodeInfo, err := c.client.GetNodeInfo()
 	if err != nil {
+		ch <- c.getUpStatus(nodeInfo, err)
+
 		log.Printf("Error while fetching node info: %s", err)
 		return err
 	}
@@ -82,6 +94,12 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 		nodeInfo.BuildDate,
 		nodeInfo.BuildSHA,
 		strconv.FormatBool(nodeInfo.BuildSnapshot),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		c.Up,
+		prometheus.GaugeValue,
+		float64(1),
 	)
 
 	ch <- prometheus.MustNewConstMetric(
@@ -110,4 +128,19 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 	)
 
 	return nil
+}
+
+func (c *NodestatsCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) prometheus.Metric {
+	status := 1
+	if err != nil {
+		status = 0
+	} else if nodeinfo.Status != "green" && nodeinfo.Status != "yellow" {
+		status = 0
+	}
+
+	return prometheus.MustNewConstMetric(
+		c.Up,
+		prometheus.GaugeValue,
+		float64(status),
+	)
 }
