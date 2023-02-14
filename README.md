@@ -217,6 +217,7 @@ Table of exported metrics:
 | logstash_info_pipeline_batch_size | counter | pipeline_batch_size |
 | logstash_info_pipeline_workers | counter | pipeline_workers |
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
+| logstash_info_up | gauge | A metric that returns 1 if the node is up, 0 otherwise. |
 | logstash_stats_jvm_mem_heap_committed_bytes | gauge | jvm_mem_heap_committed_bytes |
 | logstash_stats_jvm_mem_heap_max_bytes | gauge | jvm_mem_heap_max_bytes |
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | jvm_mem_heap_used_bytes |
