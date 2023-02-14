@@ -8,7 +8,7 @@ import (
 
 func TestNewAppServer(t *testing.T) {
 	t.Run("Test handling of /metrics endpoint", func(t *testing.T) {
-		server := NewAppServer("8080")
+		server := NewAppServer("", "8080")
 		req, err := http.NewRequest("GET", "/metrics", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -21,7 +21,7 @@ func TestNewAppServer(t *testing.T) {
 	})
 
 	t.Run("Test handling of / endpoint", func(t *testing.T) {
-		server := NewAppServer("8080")
+		server := NewAppServer("", "8080")
 		req, err := http.NewRequest("GET", "/", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -33,6 +33,19 @@ func TestNewAppServer(t *testing.T) {
 		}
 		if location := rr.Header().Get("Location"); location != "/metrics" {
 			t.Errorf("unexpected redirect location: got %v want %v", location, "/metrics")
+		}
+	})
+
+	t.Run("Test handling of /healthcheck endpoint", func(t *testing.T) {
+		server := NewAppServer("", "8080")
+		req, err := http.NewRequest("GET", "/healthcheck", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rr := httptest.NewRecorder()
+		server.Handler.ServeHTTP(rr, req)
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("unexpected status code: got %v want %v", status, http.StatusOK)
 		}
 	})
 }

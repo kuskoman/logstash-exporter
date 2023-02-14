@@ -11,12 +11,13 @@ import (
 
 func main() {
 	port := config.Port
+	host := config.Host
 	logstashUrl := config.LogstashUrl
 
 	log.Println("Application starting...")
 
 	collectorManager := collectors.NewCollectorManager(logstashUrl)
-	server := server.NewAppServer(port)
+	server := server.NewAppServer(host, port)
 	prometheus.MustRegister(collectorManager)
 
 	log.Printf("Starting server on port %s", port)
