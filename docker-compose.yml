@@ -65,6 +65,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    healthcheck:
+      test:
+        - "CMD"
+        - "curl"
+        - "localhost:9198/healthcheck"
+        - "-f"
+      interval: 30s
+      timeout: 10s
+      retries: 8
     volumes:
       - .:/app
     restart: unless-stopped
