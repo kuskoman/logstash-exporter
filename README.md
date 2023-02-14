@@ -55,6 +55,7 @@ The application can be configured using the following environment variables, whi
 | -------------- | --------------------------------------------- | ----------------------- |
 | `LOGSTASH_URL` | URL to Logstash API                           | `http://localhost:9600` |
 | `PORT`         | Port on which the application will be exposed | `9198`                  |
+| `HOST`         | Host on which the application will be exposed | empty string            |
 
 All configuration variables can be checked in the [config directory](./config/).
 
