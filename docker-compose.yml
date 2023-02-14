@@ -66,7 +66,11 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     healthcheck:
-      test: ["curl", "localhost:9198/healthcheck", "-f"]
+      test:
+        - "CMD"
+        - "curl"
+        - "localhost:9198/healthcheck"
+        - "-f"
       interval: 30s
       timeout: 10s
       retries: 8
