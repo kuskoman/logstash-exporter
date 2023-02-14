@@ -208,30 +208,39 @@ Table of exported metrics:
 
 <!-- METRICS_TABLE_START -->
 
-| Metric Name                                     | Type    | Description                                                                                                                    |
-| ----------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| logstash_exporter_build_info                    | gauge   | A metric with a constant '1' value labeled by version, revision, branch, and goversion from which logstash_exporter was built. |
-| logstash_info_build                             | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot.                                                   |
-| logstash_info_node                              | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id.                                  |
-| logstash_info_pipeline_batch_delay              | counter | pipeline_batch_delay                                                                                                           |
-| logstash_info_pipeline_batch_size               | counter | pipeline_batch_size                                                                                                            |
-| logstash_info_pipeline_workers                  | counter | pipeline_workers                                                                                                               |
-| logstash_info_status                            | counter | A metric with a constant '1' value labeled by status.                                                                          |
-| logstash_stats_jvm_mem_heap_committed_bytes     | gauge   | jvm_mem_heap_committed_bytes                                                                                                   |
-| logstash_stats_jvm_mem_heap_max_bytes           | gauge   | jvm_mem_heap_max_bytes                                                                                                         |
-| logstash_stats_jvm_mem_heap_used_bytes          | gauge   | jvm_mem_heap_used_bytes                                                                                                        |
-| logstash_stats_jvm_mem_heap_used_percent        | gauge   | jvm_mem_heap_used_percent                                                                                                      |
-| logstash_stats_jvm_mem_non_heap_committed_bytes | gauge   | jvm_mem_non_heap_committed_bytes                                                                                               |
-| logstash_stats_jvm_threads_count                | gauge   | jvm_threads_count                                                                                                              |
-| logstash_stats_jvm_threads_peak_count           | gauge   | jvm_threads_peak_count                                                                                                         |
-| logstash_stats_jvm_uptime_millis                | gauge   | jvm_uptime_millis                                                                                                              |
-| logstash_stats_process_cpu_percent              | gauge   | process_cpu_percent                                                                                                            |
-| logstash_stats_process_cpu_total_millis         | gauge   | process_cpu_total_millis                                                                                                       |
-| logstash_stats_process_max_file_descriptors     | gauge   | process_max_file_descriptors                                                                                                   |
-| logstash_stats_process_mem_total_virtual        | gauge   | process_mem_total_virtual                                                                                                      |
-| logstash_stats_process_open_file_descriptors    | gauge   | process_open_file_descriptors                                                                                                  |
-| logstash_stats_queue_events_count               | gauge   | queue_events_count                                                                                                             |
-| logstash_stats_reload_failures                  | gauge   | reload_failures                                                                                                                |
-| logstash_stats_reload_successes                 | gauge   | reload_successes                                                                                                               |
-
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, and goversion from which logstash_exporter was built. |
+| logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot. |
+| logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id. |
+| logstash_info_pipeline_batch_delay | counter | pipeline_batch_delay |
+| logstash_info_pipeline_batch_size | counter | pipeline_batch_size |
+| logstash_info_pipeline_workers | counter | pipeline_workers |
+| logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
+| logstash_stats_jvm_mem_heap_committed_bytes | gauge | jvm_mem_heap_committed_bytes |
+| logstash_stats_jvm_mem_heap_max_bytes | gauge | jvm_mem_heap_max_bytes |
+| logstash_stats_jvm_mem_heap_used_bytes | gauge | jvm_mem_heap_used_bytes |
+| logstash_stats_jvm_mem_heap_used_percent | gauge | jvm_mem_heap_used_percent |
+| logstash_stats_jvm_mem_non_heap_committed_bytes | gauge | jvm_mem_non_heap_committed_bytes |
+| logstash_stats_jvm_threads_count | gauge | jvm_threads_count |
+| logstash_stats_jvm_threads_peak_count | gauge | jvm_threads_peak_count |
+| logstash_stats_jvm_uptime_millis | gauge | jvm_uptime_millis |
+| logstash_stats_pipeline_events_duration | counter | pipeline_events_duration |
+| logstash_stats_pipeline_events_filtered | counter | pipeline_events_filtered |
+| logstash_stats_pipeline_events_in | counter | pipeline_events_in |
+| logstash_stats_pipeline_events_out | counter | pipeline_events_out |
+| logstash_stats_pipeline_events_queue_push_duration | counter | pipeline_events_queue_push_duration |
+| logstash_stats_pipeline_queue_events_count | counter | pipeline_queue_events_count |
+| logstash_stats_pipeline_queue_events_queue_size | counter | pipeline_queue_events_queue_size |
+| logstash_stats_pipeline_queue_max_size_in_bytes | counter | pipeline_queue_max_size_in_bytes |
+| logstash_stats_pipeline_reloads_failures | counter | pipeline_reloads_failures |
+| logstash_stats_pipeline_reloads_successes | counter | pipeline_reloads_successes |
+| logstash_stats_process_cpu_percent | gauge | process_cpu_percent |
+| logstash_stats_process_cpu_total_millis | gauge | process_cpu_total_millis |
+| logstash_stats_process_max_file_descriptors | gauge | process_max_file_descriptors |
+| logstash_stats_process_mem_total_virtual | gauge | process_mem_total_virtual |
+| logstash_stats_process_open_file_descriptors | gauge | process_open_file_descriptors |
+| logstash_stats_queue_events_count | gauge | queue_events_count |
+| logstash_stats_reload_failures | gauge | reload_failures |
+| logstash_stats_reload_successes | gauge | reload_successes |
 <!-- METRICS_TABLE_END -->
