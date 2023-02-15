@@ -15,4 +15,6 @@ FROM scratch as release
 
 COPY --from=build /app/main /app/main
 
+EXPOSE 9198
+
 ENTRYPOINT ["/app/main"]
