@@ -3,6 +3,7 @@ package nodeinfo
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
@@ -41,10 +42,38 @@ func TestCollectNotNil(t *testing.T) {
 		}
 	}()
 
-	for i := 0; i < 6; i++ {
+	expectedMetrics := []string{
+		"logstash_info_build",
+		"logstash_info_node",
+		"logstash_info_pipeline_batch_delay",
+		"logstash_info_pipeline_batch_size",
+		"logstash_info_pipeline_workers",
+		"logstash_info_status",
+		"logstash_info_up",
+	}
+
+	var foundMetrics []string
+	for i := 0; i < len(expectedMetrics); i++ {
 		metric := <-ch
 		if metric == nil {
-			t.Errorf("Expected metric %s to be not nil", metric.Desc().String())
+			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+		}
+
+		foundMetrics = append(foundMetrics, metric.Desc().String())
+	}
+
+	for _, expectedMetric := range expectedMetrics {
+		found := false
+		for _, foundMetric := range foundMetrics {
+			// todo: find a better way to compare metrics, unfortunetely Prometheus doesn't provide easy way to extract fqdn
+			if strings.Contains(foundMetric, expectedMetric) {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			t.Errorf("Expected metric %s to be found", expectedMetric)
 		}
 	}
 }
