@@ -15,7 +15,7 @@ func TestNodeStatsResponseStructure(t *testing.T) {
 		t.Fatalf("Error reading fixture file: %v", err)
 	}
 
-	var target responses.NodestatsResponse
+	var target responses.NodeStatsResponse
 	err = json.Unmarshal(fixtureContent, &target)
 	if err != nil {
 		t.Fatalf("Error unmarshalling fixture: %v", err)

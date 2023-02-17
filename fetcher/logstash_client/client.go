@@ -9,7 +9,7 @@ import (
 
 type Client interface {
 	GetNodeInfo() (*responses.NodeInfoResponse, error)
-	GetNodeStats() (*responses.NodestatsResponse, error)
+	GetNodeStats() (*responses.NodeStatsResponse, error)
 }
 
 type httpClient interface {

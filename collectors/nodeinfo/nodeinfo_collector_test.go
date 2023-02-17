@@ -27,7 +27,7 @@ func (m *mockClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
 	return &nodeInfo, nil
 }
 
-func (m *mockClient) GetNodeStats() (*responses.NodestatsResponse, error) {
+func (m *mockClient) GetNodeStats() (*responses.NodeStatsResponse, error) {
 	return nil, nil
 }
 

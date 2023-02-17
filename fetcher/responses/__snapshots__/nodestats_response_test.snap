@@ -1,7 +1,7 @@
 
 [TestNodeStatsResponseStructure - 1]
 Unmarshalled NodestatsResponse
-responses.NodestatsResponse{
+responses.NodeStatsResponse{
     Host:        "9e6e14cf5532",
     Version:     "8.6.1",
     HttpAddress: "0.0.0.0:9600",

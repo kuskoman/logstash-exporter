@@ -12,13 +12,13 @@ import (
 
 type mockClient struct{}
 
-func (m *mockClient) GetNodeStats() (*responses.NodestatsResponse, error) {
+func (m *mockClient) GetNodeStats() (*responses.NodeStatsResponse, error) {
 	b, err := os.ReadFile("../../fixtures/node_stats.json")
 	if err != nil {
 		return nil, err
 	}
 
-	var nodestats responses.NodestatsResponse
+	var nodestats responses.NodeStatsResponse
 	err = json.Unmarshal(b, &nodestats)
 	if err != nil {
 		return nil, err
