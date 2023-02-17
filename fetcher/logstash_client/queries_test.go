@@ -1,56 +1,130 @@
 package logstashclient
 
 import (
-	"errors"
+	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"testing"
 )
 
+type MockHTTPClient struct {
+	Response *http.Response
+	Err      error
+}
+
+func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
+	return m.Response, m.Err
+}
+
 func TestGetNodeInfo(t *testing.T) {
-	t.Run("with valid response", func(t *testing.T) {
-		fixtureContent, err := os.ReadFile("../../fixtures/node_stats.json")
+	t.Run("should return a valid NodeInfoResponse when the request is successful", func(t *testing.T) {
+		mockClient, err := setupSuccessfulHttpMock("node_info.json")
 		if err != nil {
-			t.Fatalf("Error reading fixture file: %v", err)
+			t.Fatalf("error setting up mock http client: %s", err)
 		}
-		handlerMock := &workingHandlerMock{fixture: string(fixtureContent)}
-		client := NewClient(handlerMock)
+
+		client := &DefaultClient{
+			httpClient: mockClient,
+			endpoint:   "http://localhost:9600",
+		}
+
 		response, err := client.GetNodeInfo()
 		if err != nil {
-			t.Fatalf("Error getting node info: %v", err)
+			t.Fatalf("error getting node info: %s", err)
 		}
 
-		// we don't check every property, unmarschalling is tested in another test
-		if (response.ID == "") || (response.Name == "") {
-			t.Error("Expected response to be populated")
+		if response.Status != "green" {
+			t.Fatalf("expected status to be properly read as green, got %s", response.Status)
 		}
+		// detailed checks are done in the responses package
 	})
 
-	t.Run("with invalid response", func(t *testing.T) {
-		handlerMock := &failingHandlerMock{}
-		client := NewClient(handlerMock)
+	t.Run("should return an error when the request fails", func(t *testing.T) {
+		mockClient := &MockHTTPClient{
+			Response: nil,
+			Err:      fmt.Errorf("error"),
+		}
+
+		client := &DefaultClient{
+			httpClient: mockClient,
+			endpoint:   "http://localhost:9600",
+		}
+
 		_, err := client.GetNodeInfo()
 		if err == nil {
-			t.Error("Expected error")
+			t.Fatalf("expected error, got nil")
 		}
 	})
 }
 
-type workingHandlerMock struct {
-	fixture string
+func TestGetNodeStats(t *testing.T) {
+	t.Run("should return a valid NodestatsResponse when the request is successful", func(t *testing.T) {
+		mockClient, err := setupSuccessfulHttpMock("node_stats.json")
+		if err != nil {
+			t.Fatalf("error setting up mock http client: %s", err)
+		}
+
+		client := &DefaultClient{
+			httpClient: mockClient,
+			endpoint:   "http://localhost:9600",
+		}
+
+		response, err := client.GetNodeStats()
+		if err != nil {
+			t.Fatalf("error getting node stats: %s", err)
+		}
+
+		if response.Status != "green" {
+			t.Fatalf("expected status to be properly read as green, got %s", response.Status)
+		}
+		// detailed checks are done in the responses package
+	})
+
+	t.Run("should return an error when the request fails", func(t *testing.T) {
+		mockClient := &MockHTTPClient{
+			Response: nil,
+			Err:      fmt.Errorf("error"),
+		}
+
+		client := &DefaultClient{
+			httpClient: mockClient,
+			endpoint:   "http://localhost:9600",
+		}
+
+		_, err := client.GetNodeStats()
+		if err == nil {
+			t.Fatalf("expected error, got nil")
+		}
+	})
 }
 
-func (h *workingHandlerMock) Get(path string) (*http.Response, error) {
-	reader := strings.NewReader(h.fixture)
-	closer := io.NopCloser(reader)
-	response := &http.Response{Body: closer}
-	return response, nil
+func loadFixture(filename string) ([]byte, error) {
+	fullPath := fmt.Sprintf("../../fixtures/%s", filename)
+	fixtureBytes, err := os.ReadFile(fullPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return fixtureBytes, nil
 }
 
-type failingHandlerMock struct{}
+func setupSuccessfulHttpMock(filename string) (*MockHTTPClient, error) {
+	fixtureBytes, err := loadFixture(filename)
+	if err != nil {
+		return nil, err
+	}
 
-func (h *failingHandlerMock) Get(path string) (*http.Response, error) {
-	return nil, errors.New("failed to get response")
+	fixtureReader := bytes.NewReader(fixtureBytes)
+
+	mockResponse := &http.Response{
+		Body:       io.NopCloser(fixtureReader),
+		StatusCode: 200,
+	}
+
+	return &MockHTTPClient{
+		Response: mockResponse,
+		Err:      nil,
+	}, nil
 }
