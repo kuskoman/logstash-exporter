@@ -22,6 +22,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "^1.20"
+
       - name: Install golangci-lint
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin ${GOLANGCI_LINT_VERSION}
@@ -35,6 +39,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "^1.20"
 
       - name: Test code
         run: go test ./...
@@ -72,6 +80,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "^1.20"
+
       - name: Build Linux binary
         run: make build-linux
 
@@ -91,6 +103,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "^1.20"
+
       - name: Build Mac binary
         run: make build-darwin
 
@@ -108,6 +124,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "^1.20"
 
       - name: Build Windows binary
         run: make build-windows

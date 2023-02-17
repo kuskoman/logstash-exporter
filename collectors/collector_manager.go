@@ -9,7 +9,6 @@ import (
 	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
-	"github.com/kuskoman/logstash-exporter/httphandler"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 )
@@ -24,8 +23,7 @@ type CollectorManager struct {
 }
 
 func NewCollectorManager(endpoint string) *CollectorManager {
-	httpHandler := httphandler.GetDefaultHTTPHandler(endpoint)
-	client := logstashclient.NewClient(httpHandler)
+	client := logstashclient.NewClient(endpoint)
 
 	collectors := getCollectors(client)
 
