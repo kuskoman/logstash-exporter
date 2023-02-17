@@ -250,7 +250,7 @@ type QueueResponse struct {
 	EventsCount int `json:"events_count"`
 }
 
-type NodestatsResponse struct {
+type NodeStatsResponse struct {
 	Host        string           `json:"host"`
 	Version     string           `json:"version"`
 	HttpAddress string           `json:"http_address"`

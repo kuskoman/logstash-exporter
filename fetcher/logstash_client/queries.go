@@ -11,7 +11,7 @@ func (client *DefaultClient) GetNodeInfo() (*responses.NodeInfoResponse, error) 
 	return getMetrics[responses.NodeInfoResponse](client.httpClient, fullPath)
 }
 
-func (client *DefaultClient) GetNodeStats() (*responses.NodestatsResponse, error) {
+func (client *DefaultClient) GetNodeStats() (*responses.NodeStatsResponse, error) {
 	fullPath := fmt.Sprintf("%s/_node/stats", client.endpoint)
-	return getMetrics[responses.NodestatsResponse](client.httpClient, fullPath)
+	return getMetrics[responses.NodeStatsResponse](client.httpClient, fullPath)
 }
