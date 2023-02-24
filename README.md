@@ -23,6 +23,12 @@ The binary executable can be downloaded from the [releases page](https://github.
 Linux binary is available under `https://github.com/kuskoman/logstash-exporter/releases/download/v${VERSION}/logstash-exporter-linux`.
 The binary can be run without additional arguments, as the configuration is loaded from the `.env` file and environment variables.
 
+Each binary should contain a SHA256 checksum file, which can be used to verify the integrity of the binary.
+
+    # Download the binary
+    VERSION=0.1.0 wget https://github.com/kuskoman/logstash-exporter/releases/download/test-tag/logstash-exporter-linux.sha256 && \
+        wget https://github.com/kuskoman/logstash-exporter/releases/download/test-tag/logstash-exporter-linux
+
 It is recommended to use the binary executable in combination with the [systemd](https://systemd.io/) service.
 The application should not require any of root privileges, so it is recommended to run it as a non-root user.
 
