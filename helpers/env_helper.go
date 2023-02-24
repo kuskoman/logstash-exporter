@@ -2,17 +2,13 @@ package helpers
 
 import (
 	"errors"
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
+func InitializeEnv() error {
+	return godotenv.Load()
 }
 
 func GetEnv(key string) string {
