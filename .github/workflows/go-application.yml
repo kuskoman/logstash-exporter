@@ -195,6 +195,8 @@ jobs:
         run: |
           echo "Tag name: ${{ env.TAG_NAME }}"
           echo "Tag ref: ${{ github.ref }}"
+      - name: Generate release notes
+        run: ./scripts/create_release_notes.sh
       - name: Create GitHub release
         id: create_release
         uses: actions/create-release@v1
@@ -203,6 +205,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body_path: "./release_notes.txt"
           draft: false
           prerelease: false
 
