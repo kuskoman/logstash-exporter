@@ -219,6 +219,11 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: logstash-exporter-${{ matrix.binary }}
+      - name: Generate sha256 checksum
+        run: |
+          CHECKSUM_FILE="logstash-exporter-${{ matrix.binary }}/main-${{ matrix.binary }}.sha256"
+          sha256sum logstash-exporter-${{ matrix.binary }}/main-${{ matrix.binary }} | cut -d ' ' -f1 | tr -d $'\n' > "$CHECKSUM_FILE"
+          echo -n '  logstash-exporter-${{ matrix.binary }}' >> "$CHECKSUM_FILE"
       - name: Upload binary to GitHub release
         uses: actions/upload-release-asset@v1
         env:
@@ -228,3 +233,12 @@ jobs:
           asset_path: ./logstash-exporter-${{ matrix.binary }}/main-${{ matrix.binary }}
           asset_name: logstash-exporter-${{ matrix.binary }}
           asset_content_type: application/octet-stream
+      - name: Upload sha256 checksum to GitHub release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./logstash-exporter-${{ matrix.binary }}/main-${{ matrix.binary }}.sha256
+          asset_name: logstash-exporter-${{ matrix.binary }}.sha256
+          asset_content_type: text/plain
