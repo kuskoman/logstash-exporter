@@ -1,8 +1,6 @@
 package nodestats
 
 import (
-	"log"
-
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/helpers"
@@ -105,7 +103,7 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
 		err = c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
 		if err != nil {
-			log.Printf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
+			helpers.Logger.Errorf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
 		}
 		// we don't want to stop collecting other pipelines if one of them fails
 	}

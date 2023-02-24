@@ -1,7 +1,6 @@
 package collectors
 
 import (
-	"log"
 	"sync"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 )
@@ -45,9 +45,9 @@ func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	waitGroup.Add(len(manager.collectors))
 	for name, collector := range manager.collectors {
 		go func(name string, collector Collector) {
-			log.Printf("executing collector %s", name)
+			helpers.Logger.Infof("executing collector %s", name)
 			manager.executeCollector(name, collector, ch)
-			log.Printf("collector %s finished", name)
+			helpers.Logger.Infof("collector %s finished", name)
 			waitGroup.Done()
 		}(name, collector)
 	}
@@ -65,10 +65,10 @@ func (manager *CollectorManager) executeCollector(name string, collector Collect
 	var executionStatus string
 
 	if err != nil {
-		log.Printf("executor %s failed after %s: %s", name, executionDuration, err.Error())
+		helpers.Logger.Errorf("executor %s failed after %s: %s", name, executionDuration, err.Error())
 		executionStatus = "error"
 	} else {
-		log.Printf("executor %s succeeded after %s", name, executionDuration)
+		helpers.Logger.Infof("executor %s succeeded after %s", name, executionDuration)
 		executionStatus = "success"
 	}
 

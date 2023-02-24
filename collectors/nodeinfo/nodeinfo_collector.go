@@ -8,8 +8,6 @@ import (
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
-
-	"log"
 )
 
 type NodestatsCollector struct {
@@ -72,7 +70,7 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 	if err != nil {
 		ch <- c.getUpStatus(nodeInfo, err)
 
-		log.Printf("Error while fetching node info: %s", err)
+		helpers.Logger.Errorf("Error while fetching node info: %s", err)
 		return err
 	}
 

@@ -1,10 +1,10 @@
 package nodestats
 
 import (
-	"log"
 	"time"
 
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -44,7 +44,7 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 
 func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric) error {
 	collectingStart := time.Now()
-	log.Printf("collecting pipeline stats for pipeline %s", pipelineID)
+	helpers.Logger.Infof("collecting pipeline stats for pipeline %s", pipelineID)
 
 	ch <- prometheus.MustNewConstMetric(collector.EventsOut, prometheus.CounterValue, float64(pipeStats.Events.Out), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.EventsFiltered, prometheus.CounterValue, float64(pipeStats.Events.Filtered), pipelineID)
@@ -62,6 +62,6 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, float64(pipeStats.Queue.MaxQueueSizeInBytes), pipelineID)
 
 	collectingEnd := time.Now()
-	log.Printf("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
+	helpers.Logger.Infof("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
 	return nil
 }
