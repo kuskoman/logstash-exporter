@@ -1,4 +1,4 @@
-FROM golang:1.20.0-alpine3.17 as build
+FROM golang:1.20.1-alpine3.17 as build
 
 RUN apk add bash curl && curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b /usr/local/bin
 
