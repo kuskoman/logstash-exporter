@@ -13,6 +13,7 @@ on:
 env:
   GOLANGCI_LINT_VERSION: v1.51.1
   TAG_NAME: "${GITHUB_REF##*/}"
+  gh_user: "kuskoman"
 
 jobs:
   lint:
@@ -151,27 +152,27 @@ jobs:
 
       - name: Login to GitHub registry
         if: github.ref == 'refs/heads/master'
-        run: echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u kuskoman --password-stdin
+        run: echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u ${{ env.gh_user }} --password-stdin
 
       - name: Login to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
-        run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u kuskoman --password-stdin
+        run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u ${{ env.gh_user }} --password-stdin
 
       - name: Tag Docker image with master
         if: github.ref == 'refs/heads/master'
-        run: docker tag logstash-exporter:latest ghcr.io/kuskoman/logstash-exporter:master
+        run: docker tag logstash-exporter:latest ghcr.io/${{ env.gh_user }}/logstash-exporter:master
 
       - name: Tag Docker image with tag
         if: startsWith(github.ref, 'refs/tags/')
-        run: docker tag logstash-exporter:latest kuskoman/logstash-exporter:${{ env.TAG_NAME }}
+        run: docker tag logstash-exporter:latest ${{ env.gh_user }}/logstash-exporter:${{ env.TAG_NAME }}
 
       - name: Push Docker image to GitHub registry
         if: github.ref == 'refs/heads/master'
-        run: docker push ghcr.io/kuskoman/logstash-exporter:master
+        run: docker push ghcr.io/${{ env.gh_user }}/logstash-exporter:master
 
       - name: Push Docker image to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
-        run: docker push kuskoman/logstash-exporter:${{ env.TAG_NAME }}
+        run: docker push ${{ env.gh_user }}/logstash-exporter:${{ env.TAG_NAME }}
 
   create-release:
     name: Create GitHub release
