@@ -1,8 +1,18 @@
 #!/bin/bash
 
-current_tag=$(git describe --abbrev=0 --tags HEAD)
-previous_tag_hash=$(git rev-list --tags --skip=1 --max-count=1)
+function is_head_tagged() {
+  git describe --exact-match --tags HEAD 2>/dev/null
+}
+
+if is_head_tagged; then
+  current_tag=$(git describe --abbrev=0 --tags HEAD)
+  previous_tag_hash=$(git rev-list --tags --skip=1 --max-count=1)
+else
+  previous_tag_hash=$(git rev-list --tags --max-count=1)
+fi
+
 previous_tag=$(git describe --abbrev=0 --tags $previous_tag_hash)
+
 
 range="$previous_tag..HEAD"
 
