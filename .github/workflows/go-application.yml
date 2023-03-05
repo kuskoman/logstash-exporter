@@ -74,6 +74,12 @@ jobs:
       - name: Run metrics integration test
         run: make verify-metrics
 
+      - name: Generate metric names for README
+        run: ./scripts/add_metrics_to_readme.sh
+
+      - name: Verify that there are no changes
+        run: git diff --exit-code || echo "README.md is not up to date. Please use add_metrics_to_readme.sh and commit the changes."
+
       - name: Shutdown compose
         run: docker-compose down -v
 
