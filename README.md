@@ -205,9 +205,9 @@ These are the features that are planned to be implemented in the future:
 
 - [ ] Parse missing metrics
 - [ ] Add description to all metrics
-- [ ] Improve test coverage
+- [x] Improve test coverage
 - [ ] Build Helm chart
-- [ ] Automatically add release notes to GitHub release
+- [x] Automatically add release notes to GitHub release
 
 Feel free to create an issue if you have any suggestions, ideas or questions.
 
