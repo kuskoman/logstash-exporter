@@ -142,13 +142,18 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 
 	pipelineErrors := make(map[string]error)
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
-		err = c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
+		pipeErr := c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
 		if err != nil {
 			log.Printf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
-			pipelineErrors[pipelineId] = err
+			pipelineErrors[pipelineId] = pipeErr
 		}
 	}
 
+	err = parseSubcollectorErrors(pipelineErrors)
+	return err
+}
+
+func parseSubcollectorErrors(pipelineErrors map[string]error) error {
 	if len(pipelineErrors) == 1 {
 		for pipelineId, err := range pipelineErrors {
 			return fmt.Errorf("error collecting pipeline %s, stats: %s", pipelineId, err.Error())
@@ -161,5 +166,5 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 			errorMessage += fmt.Sprintf("pipeline %s: %s\n", pipelineId, err.Error())
 		}
 	}
-	return err
+	return nil
 }
