@@ -34,6 +34,18 @@ Each binary should contain a SHA256 checksum file, which can be used to verify t
 It is recommended to use the binary executable in combination with the [systemd](https://systemd.io/) service.
 The application should not require any of root privileges, so it is recommended to run it as a non-root user.
 
+##### Unstable (master) version
+
+The unstable version of the application can be downloaded from the
+[GitHub Actions](https://github.com/kuskoman/logstash-exporter/actions?query=branch%3Amaster+workflow%3A%22Go+application+CI%2FCD%22).
+The latest successful build can be found under the `Go application CI/CD` workflow (already selected in the link).
+To download the binary, simply go to the link location, click on the latest successful build, and download the binary
+from the `Artifacts` section on the bottom of the page.
+
+You are able to download artifact from any workflow run, not only master branch. To do that, go to
+[GitHub Actions without master filter](https://github.com/kuskoman/logstash-exporter/actions?query=workflow%3A%22Go+application+CI%2FCD%22),
+select the workflow run you want to download artifact from, and download the binary from the `Artifacts` section.
+
 #### Docker Image
 
 The Docker image is available under `kuskoman/logstash-exporter:<tag>`.
@@ -49,6 +61,14 @@ The Docker image can be run using the following command:
         -p 9198:9198 \
         -e LOGSTASH_URL=http://logstash:9600 \
         kuskoman/logstash-exporter:<tag>
+
+##### Unstable (master) image
+
+The unstable version of the Docker image can be downloaded from the
+[GitHub Container Registry](https://github.com/users/kuskoman/packages/container/package/logstash-exporter).
+To pull the image from command line simply use:
+
+        docker pull ghcr.io/kuskoman/logstash-exporter:master
 
 ### Endpoints
 
