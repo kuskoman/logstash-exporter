@@ -1,10 +1,12 @@
 package nodestats
 
 import (
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -26,19 +28,20 @@ type PipelineSubcollector struct {
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
+	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
 	return &PipelineSubcollector{
-		EventsOut:               descHelper.NewDescWithLabels("pipeline_events_out", []string{"pipeline_id"}),
-		EventsFiltered:          descHelper.NewDescWithLabels("pipeline_events_filtered", []string{"pipeline_id"}),
-		EventsIn:                descHelper.NewDescWithLabels("pipeline_events_in", []string{"pipeline_id"}),
-		EventsDuration:          descHelper.NewDescWithLabels("pipeline_events_duration", []string{"pipeline_id"}),
-		EventsQueuePushDuration: descHelper.NewDescWithLabels("pipeline_events_queue_push_duration", []string{"pipeline_id"}),
+		EventsOut:               descHelper.NewDescWithHelpAndLabel("events_out", "Number of events that have been processed by this pipeline.", "pipeline_id"),
+		EventsFiltered:          descHelper.NewDescWithHelpAndLabel("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline_id"),
+		EventsIn:                descHelper.NewDescWithHelpAndLabel("events_in", "Number of events that have been inputted into this pipeline.", "pipeline_id"),
+		EventsDuration:          descHelper.NewDescWithHelpAndLabel("events_duration", "Time needed to process event.", "pipeline_id"),
+		EventsQueuePushDuration: descHelper.NewDescWithHelpAndLabel("events_queue_push_duration", "Time needed to push event to queue.", "pipeline_id"),
 
-		ReloadsSuccesses: descHelper.NewDescWithLabels("pipeline_reloads_successes", []string{"pipeline_id"}),
-		ReloadsFailures:  descHelper.NewDescWithLabels("pipeline_reloads_failures", []string{"pipeline_id"}),
+		ReloadsSuccesses: descHelper.NewDescWithHelpAndLabel("reloads_successes", "Number of successful pipeline reloads.", "pipeline_id"),
+		ReloadsFailures:  descHelper.NewDescWithHelpAndLabel("reloads_failures", "Number of failed pipeline reloads.", "pipeline_id"),
 
-		QueueEventsCount:         descHelper.NewDescWithLabels("pipeline_queue_events_count", []string{"pipeline_id"}),
-		QueueEventsQueueSize:     descHelper.NewDescWithLabels("pipeline_queue_events_queue_size", []string{"pipeline_id"}),
-		QueueMaxQueueSizeInBytes: descHelper.NewDescWithLabels("pipeline_queue_max_size_in_bytes", []string{"pipeline_id"}),
+		QueueEventsCount:         descHelper.NewDescWithHelpAndLabel("queue_events_count", "Number of events in the queue.", "pipeline_id"),
+		QueueEventsQueueSize:     descHelper.NewDescWithHelpAndLabel("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline_id"),
+		QueueMaxQueueSizeInBytes: descHelper.NewDescWithHelpAndLabel("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline_id"),
 	}
 }
 

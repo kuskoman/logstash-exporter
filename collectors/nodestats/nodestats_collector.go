@@ -1,6 +1,7 @@
 package nodestats
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/kuskoman/logstash-exporter/config"
@@ -12,8 +13,7 @@ import (
 const subsystem = "stats"
 
 var (
-	namespace  = config.PrometheusNamespace
-	descHelper = helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
+	namespace = config.PrometheusNamespace
 )
 
 type NodestatsCollector struct {
@@ -50,39 +50,45 @@ type NodestatsCollector struct {
 }
 
 func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
+	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodestatsCollector{
 		client: client,
 
 		pipelineSubcollector: NewPipelineSubcollector(),
 
-		JvmThreadsCount:     descHelper.NewDesc("jvm_threads_count"),
-		JvmThreadsPeakCount: descHelper.NewDesc("jvm_threads_peak_count"),
+		JvmThreadsCount:     descHelper.NewDescWithHelp("jvm_threads_count", "Number of live threads including both daemon and non-daemon threads."),
+		JvmThreadsPeakCount: descHelper.NewDescWithHelp("jvm_threads_peak_count", "Peak live thread count since the Java virtual machine started or peak was reset."),
 
-		JvmMemHeapUsedPercent:       descHelper.NewDesc("jvm_mem_heap_used_percent"),
-		JvmMemHeapCommittedBytes:    descHelper.NewDesc("jvm_mem_heap_committed_bytes"),
-		JvmMemHeapMaxBytes:          descHelper.NewDesc("jvm_mem_heap_max_bytes"),
-		JvmMemHeapUsedBytes:         descHelper.NewDesc("jvm_mem_heap_used_bytes"),
-		JvmMemNonHeapCommittedBytes: descHelper.NewDesc("jvm_mem_non_heap_committed_bytes"),
+		JvmMemHeapUsedPercent:       descHelper.NewDescWithHelp("jvm_mem_heap_used_percent", "Percentage of the heap memory that is used."),
+		JvmMemHeapCommittedBytes:    descHelper.NewDescWithHelp("jvm_mem_heap_committed_bytes", "Amount of heap memory in bytes that is committed for the Java virtual machine to use."),
+		JvmMemHeapMaxBytes:          descHelper.NewDescWithHelp("jvm_mem_heap_max_bytes", "Maximum amount of heap memory in bytes that can be used for memory management."),
+		JvmMemHeapUsedBytes:         descHelper.NewDescWithHelp("jvm_mem_heap_used_bytes", "Amount of used heap memory in bytes."),
+		JvmMemNonHeapCommittedBytes: descHelper.NewDescWithHelp("jvm_mem_non_heap_committed_bytes", "Amount of non-heap memory in bytes that is committed for the Java virtual machine to use."),
 
-		JvmMemPoolPeakUsedInBytes:  descHelper.NewDescWithLabels("jvm_mem_pool_peak_used_bytes", []string{"pool"}),
-		JvmMemPoolUsedInBytes:      descHelper.NewDescWithLabels("jvm_mem_pool_used_bytes", []string{"pool"}),
-		JvmMemPoolPeakMaxInBytes:   descHelper.NewDescWithLabels("jvm_mem_pool_peak_max_bytes", []string{"pool"}),
-		JvmMemPoolMaxInBytes:       descHelper.NewDescWithLabels("jvm_mem_pool_max_bytes", []string{"pool"}),
-		JvmMemPoolCommittedInBytes: descHelper.NewDescWithLabels("jvm_mem_pool_committed_bytes", []string{"pool"}),
+		JvmMemPoolPeakUsedInBytes: descHelper.NewDescWithHelpAndLabel(
+			"jvm_mem_pool_peak_used_bytes", "Peak used bytes of a given JVM memory pool.", "pool"),
+		JvmMemPoolUsedInBytes: descHelper.NewDescWithHelpAndLabel(
+			"jvm_mem_pool_used_bytes", "Currently used bytes of a given JVM memory pool.", "pool"),
+		JvmMemPoolPeakMaxInBytes: descHelper.NewDescWithHelpAndLabel(
+			"jvm_mem_pool_peak_max_bytes", "Highest value of bytes that were used in a given JVM memory pool.", "pool"),
+		JvmMemPoolMaxInBytes: descHelper.NewDescWithHelpAndLabel(
+			"jvm_mem_pool_max_bytes", "Maximum amount of bytes that can be used in a given JVM memory pool.", "pool"),
+		JvmMemPoolCommittedInBytes: descHelper.NewDescWithHelpAndLabel(
+			"jvm_mem_pool_committed_bytes", "Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool.", "pool"),
 
-		JvmUptimeMillis: descHelper.NewDesc("jvm_uptime_millis"),
+		JvmUptimeMillis: descHelper.NewDescWithHelp("jvm_uptime_millis", "Uptime of the JVM in milliseconds."),
 
-		ProcessOpenFileDescriptors: descHelper.NewDesc("process_open_file_descriptors"),
-		ProcessMaxFileDescriptors:  descHelper.NewDesc("process_max_file_descriptors"),
-		ProcessCpuPercent:          descHelper.NewDesc("process_cpu_percent"),
-		ProcessCpuTotalMillis:      descHelper.NewDesc("process_cpu_total_millis"),
-		ProcessMemTotalVirtual:     descHelper.NewDesc("process_mem_total_virtual"),
+		ProcessOpenFileDescriptors: descHelper.NewDescWithHelp("process_open_file_descriptors", "Number of currently open file descriptors."),
+		ProcessMaxFileDescriptors:  descHelper.NewDescWithHelp("process_max_file_descriptors", "Limit of open file descriptors."),
+		ProcessCpuPercent:          descHelper.NewDescWithHelp("process_cpu_percent", "CPU usage of the process."),
+		ProcessCpuTotalMillis:      descHelper.NewDescWithHelp("process_cpu_total_millis", "Total CPU time used by the process."),
+		ProcessMemTotalVirtual:     descHelper.NewDescWithHelp("process_mem_total_virtual", "Total virtual memory used by the process."),
 
-		ReloadSuccesses: descHelper.NewDesc("reload_successes"),
-		ReloadFailures:  descHelper.NewDesc("reload_failures"),
+		ReloadSuccesses: descHelper.NewDescWithHelp("reload_successes", "Number of successful reloads."),
+		ReloadFailures:  descHelper.NewDescWithHelp("reload_failures", "Number of failed reloads."),
 
-		QueueEventsCount: descHelper.NewDesc("queue_events_count"),
+		QueueEventsCount: descHelper.NewDescWithHelp("queue_events_count", "Number of events in the queue."),
 	}
 }
 
@@ -134,14 +140,31 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 
 	ch <- prometheus.MustNewConstMetric(c.QueueEventsCount, prometheus.GaugeValue, float64(nodeStats.Queue.EventsCount))
 
+	pipelineErrors := make(map[string]error)
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
-		err = c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
+		pipeErr := c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
 		if err != nil {
 			log.Printf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
+			pipelineErrors[pipelineId] = pipeErr
 		}
-		// we don't want to stop collecting other pipelines if one of them fails
 	}
 
-	// last error is returned
+	err = parseSubcollectorErrors(pipelineErrors)
 	return err
+}
+
+func parseSubcollectorErrors(pipelineErrors map[string]error) error {
+	if len(pipelineErrors) == 1 {
+		for pipelineId, err := range pipelineErrors {
+			return fmt.Errorf("error collecting pipeline %s, stats: %s", pipelineId, err.Error())
+		}
+	}
+
+	if len(pipelineErrors) > 1 {
+		errorMessage := fmt.Sprintf("error collecting %d pipelines:\n", len(pipelineErrors))
+		for pipelineId, err := range pipelineErrors {
+			errorMessage += fmt.Sprintf("pipeline %s: %s\n", pipelineId, err.Error())
+		}
+	}
+	return nil
 }
