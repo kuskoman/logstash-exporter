@@ -40,6 +40,7 @@ func TestCollectNotNil(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
+		close(ch)
 	}()
 
 	expectedMetrics := []string{
@@ -53,8 +54,7 @@ func TestCollectNotNil(t *testing.T) {
 	}
 
 	var foundMetrics []string
-	for i := 0; i < len(expectedMetrics); i++ {
-		metric := <-ch
+	for metric := range ch {
 		if metric == nil {
 			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
 		}
