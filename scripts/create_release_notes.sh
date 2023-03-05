@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function is_head_tagged() {
-  git describe --exact-match --tags HEAD 2>/dev/null
+  git describe --exact-match --tags HEAD 2>/dev/null 1>&2
 }
 
 if is_head_tagged; then
