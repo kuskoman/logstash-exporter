@@ -227,19 +227,19 @@ Table of exported metrics:
 | logstash_info_pipeline_workers | counter | Number of worker threads that will process pipeline events. |
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
 | logstash_info_up | gauge | A metric that returns 1 if the node is up, 0 otherwise. |
-| logstash_stats_jvm_mem_heap_committed_bytes | gauge | jvm_mem_heap_committed_bytes |
-| logstash_stats_jvm_mem_heap_max_bytes | gauge | jvm_mem_heap_max_bytes |
-| logstash_stats_jvm_mem_heap_used_bytes | gauge | jvm_mem_heap_used_bytes |
-| logstash_stats_jvm_mem_heap_used_percent | gauge | jvm_mem_heap_used_percent |
-| logstash_stats_jvm_mem_non_heap_committed_bytes | gauge | jvm_mem_non_heap_committed_bytes |
+| logstash_stats_jvm_mem_heap_committed_bytes | gauge | Amount of heap memory in bytes that is committed for the Java virtual machine to use. |
+| logstash_stats_jvm_mem_heap_max_bytes | gauge | Maximum amount of heap memory in bytes that can be used for memory management. |
+| logstash_stats_jvm_mem_heap_used_bytes | gauge | Amount of used heap memory in bytes. |
+| logstash_stats_jvm_mem_heap_used_percent | gauge | Percentage of the heap memory that is used. |
+| logstash_stats_jvm_mem_non_heap_committed_bytes | gauge | Amount of non-heap memory in bytes that is committed for the Java virtual machine to use. |
 | logstash_stats_jvm_mem_pool_committed_bytes | gauge | jvm_mem_pool_committed_bytes |
 | logstash_stats_jvm_mem_pool_max_bytes | gauge | jvm_mem_pool_max_bytes |
 | logstash_stats_jvm_mem_pool_peak_max_bytes | gauge | jvm_mem_pool_peak_max_bytes |
 | logstash_stats_jvm_mem_pool_peak_used_bytes | gauge | jvm_mem_pool_peak_used_bytes |
 | logstash_stats_jvm_mem_pool_used_bytes | gauge | jvm_mem_pool_used_bytes |
-| logstash_stats_jvm_threads_count | gauge | jvm_threads_count |
-| logstash_stats_jvm_threads_peak_count | gauge | jvm_threads_peak_count |
-| logstash_stats_jvm_uptime_millis | gauge | jvm_uptime_millis |
+| logstash_stats_jvm_threads_count | gauge | Number of live threads including both daemon and non-daemon threads. |
+| logstash_stats_jvm_threads_peak_count | gauge | Peak live thread count since the Java virtual machine started or peak was reset. |
+| logstash_stats_jvm_uptime_millis | gauge | Uptime of the JVM in milliseconds. |
 | logstash_stats_pipeline_events_duration | counter | pipeline_events_duration |
 | logstash_stats_pipeline_events_filtered | counter | pipeline_events_filtered |
 | logstash_stats_pipeline_events_in | counter | pipeline_events_in |
@@ -250,13 +250,13 @@ Table of exported metrics:
 | logstash_stats_pipeline_queue_max_size_in_bytes | counter | pipeline_queue_max_size_in_bytes |
 | logstash_stats_pipeline_reloads_failures | counter | pipeline_reloads_failures |
 | logstash_stats_pipeline_reloads_successes | counter | pipeline_reloads_successes |
-| logstash_stats_process_cpu_percent | gauge | process_cpu_percent |
-| logstash_stats_process_cpu_total_millis | gauge | process_cpu_total_millis |
-| logstash_stats_process_max_file_descriptors | gauge | process_max_file_descriptors |
-| logstash_stats_process_mem_total_virtual | gauge | process_mem_total_virtual |
-| logstash_stats_process_open_file_descriptors | gauge | process_open_file_descriptors |
-| logstash_stats_queue_events_count | gauge | queue_events_count |
-| logstash_stats_reload_failures | gauge | reload_failures |
-| logstash_stats_reload_successes | gauge | reload_successes |
+| logstash_stats_process_cpu_percent | gauge | CPU usage of the process. |
+| logstash_stats_process_cpu_total_millis | gauge | Total CPU time used by the process. |
+| logstash_stats_process_max_file_descriptors | gauge | Limit of open file descriptors. |
+| logstash_stats_process_mem_total_virtual | gauge | Total virtual memory used by the process. |
+| logstash_stats_process_open_file_descriptors | gauge | Number of currently open file descriptors. |
+| logstash_stats_queue_events_count | gauge | Number of events in the queue. |
+| logstash_stats_reload_failures | gauge | Number of failed reloads. |
+| logstash_stats_reload_successes | gauge | Number of successful reloads. |
 
 <!-- METRICS_TABLE_END -->

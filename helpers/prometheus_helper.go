@@ -21,9 +21,8 @@ func (h *SimpleDescHelper) NewDescWithHelp(name string, help string) *prometheus
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, nil, nil)
 }
 
-func (h *SimpleDescHelper) NewDescWithLabels(name string, labels []string) *prometheus.Desc {
-	help := name
-	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, labels, nil)
+func (h *SimpleDescHelper) NewDescWithHelpAndLabel(name, help, label string) *prometheus.Desc {
+	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, []string{label}, nil)
 }
 
 func ExtractFqName(metric string) (string, error) {
