@@ -29,6 +29,12 @@ type NodestatsCollector struct {
 	JvmMemHeapUsedBytes         *prometheus.Desc
 	JvmMemNonHeapCommittedBytes *prometheus.Desc
 
+	JvmMemPoolPeakUsedInBytes  *prometheus.Desc
+	JvmMemPoolUsedInBytes      *prometheus.Desc
+	JvmMemPoolPeakMaxInBytes   *prometheus.Desc
+	JvmMemPoolMaxInBytes       *prometheus.Desc
+	JvmMemPoolCommittedInBytes *prometheus.Desc
+
 	JvmUptimeMillis *prometheus.Desc
 
 	ProcessOpenFileDescriptors *prometheus.Desc
@@ -59,6 +65,12 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 		JvmMemHeapUsedBytes:         descHelper.NewDesc("jvm_mem_heap_used_bytes"),
 		JvmMemNonHeapCommittedBytes: descHelper.NewDesc("jvm_mem_non_heap_committed_bytes"),
 
+		JvmMemPoolPeakUsedInBytes:  descHelper.NewDescWithLabels("jvm_mem_pool_peak_used_bytes", []string{"pool"}),
+		JvmMemPoolUsedInBytes:      descHelper.NewDescWithLabels("jvm_mem_pool_used_bytes", []string{"pool"}),
+		JvmMemPoolPeakMaxInBytes:   descHelper.NewDescWithLabels("jvm_mem_pool_peak_max_bytes", []string{"pool"}),
+		JvmMemPoolMaxInBytes:       descHelper.NewDescWithLabels("jvm_mem_pool_max_bytes", []string{"pool"}),
+		JvmMemPoolCommittedInBytes: descHelper.NewDescWithLabels("jvm_mem_pool_committed_bytes", []string{"pool"}),
+
 		JvmUptimeMillis: descHelper.NewDesc("jvm_uptime_millis"),
 
 		ProcessOpenFileDescriptors: descHelper.NewDesc("process_open_file_descriptors"),
@@ -88,6 +100,26 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 	ch <- prometheus.MustNewConstMetric(c.JvmMemHeapMaxBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.HeapMaxInBytes))
 	ch <- prometheus.MustNewConstMetric(c.JvmMemHeapUsedBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.HeapUsedInBytes))
 	ch <- prometheus.MustNewConstMetric(c.JvmMemNonHeapCommittedBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.NonHeapCommittedInBytes))
+
+	// POOLS
+	// young
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Young.PeakUsedInBytes), "young")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolUsedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Young.UsedInBytes), "young")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Young.PeakMaxInBytes), "young")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Young.MaxInBytes), "young")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Young.CommittedInBytes), "young")
+	// old
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Old.PeakUsedInBytes), "old")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolUsedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Old.UsedInBytes), "old")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Old.PeakMaxInBytes), "old")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Old.MaxInBytes), "old")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Old.CommittedInBytes), "old")
+	// survivor
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.PeakUsedInBytes), "survivor")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolUsedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.UsedInBytes), "survivor")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.PeakMaxInBytes), "survivor")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.MaxInBytes), "survivor")
+	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.CommittedInBytes), "survivor")
 
 	ch <- prometheus.MustNewConstMetric(c.JvmUptimeMillis, prometheus.GaugeValue, float64(nodeStats.Jvm.UptimeInMillis))
 

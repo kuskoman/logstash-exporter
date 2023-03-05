@@ -203,7 +203,7 @@ Then you can run the tests:
 
 These are the features that are planned to be implemented in the future:
 
-- [ ] Parse missing metrics
+- [x] Parse missing metrics (if you find any useful missing metrics, please create an issue)
 - [ ] Add description to all metrics
 - [x] Improve test coverage
 - [ ] Build Helm chart
@@ -219,7 +219,7 @@ Table of exported metrics:
 
 | Name | Type | Description |
 | ----------- | ----------- | ----------- |
-| logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, and goversion from which logstash_exporter was built. |
+| logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, goversion from which logstash_exporter was built, and the goos and goarch for the build. |
 | logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot. |
 | logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id. |
 | logstash_info_pipeline_batch_delay | counter | pipeline_batch_delay |
@@ -232,6 +232,11 @@ Table of exported metrics:
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | jvm_mem_heap_used_bytes |
 | logstash_stats_jvm_mem_heap_used_percent | gauge | jvm_mem_heap_used_percent |
 | logstash_stats_jvm_mem_non_heap_committed_bytes | gauge | jvm_mem_non_heap_committed_bytes |
+| logstash_stats_jvm_mem_pool_committed_bytes | gauge | jvm_mem_pool_committed_bytes |
+| logstash_stats_jvm_mem_pool_max_bytes | gauge | jvm_mem_pool_max_bytes |
+| logstash_stats_jvm_mem_pool_peak_max_bytes | gauge | jvm_mem_pool_peak_max_bytes |
+| logstash_stats_jvm_mem_pool_peak_used_bytes | gauge | jvm_mem_pool_peak_used_bytes |
+| logstash_stats_jvm_mem_pool_used_bytes | gauge | jvm_mem_pool_used_bytes |
 | logstash_stats_jvm_threads_count | gauge | jvm_threads_count |
 | logstash_stats_jvm_threads_peak_count | gauge | jvm_threads_peak_count |
 | logstash_stats_jvm_uptime_millis | gauge | jvm_uptime_millis |
