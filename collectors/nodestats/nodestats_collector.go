@@ -1,6 +1,7 @@
 package nodestats
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/kuskoman/logstash-exporter/config"
@@ -139,14 +140,26 @@ func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
 
 	ch <- prometheus.MustNewConstMetric(c.QueueEventsCount, prometheus.GaugeValue, float64(nodeStats.Queue.EventsCount))
 
+	pipelineErrors := make(map[string]error)
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
 		err = c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
 		if err != nil {
 			log.Printf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
+			pipelineErrors[pipelineId] = err
 		}
-		// we don't want to stop collecting other pipelines if one of them fails
 	}
 
-	// last error is returned
+	if len(pipelineErrors) == 1 {
+		for pipelineId, err := range pipelineErrors {
+			return fmt.Errorf("error collecting pipeline %s, stats: %s", pipelineId, err.Error())
+		}
+	}
+
+	if len(pipelineErrors) > 1 {
+		errorMessage := fmt.Sprintf("error collecting %d pipelines:\n", len(pipelineErrors))
+		for pipelineId, err := range pipelineErrors {
+			errorMessage += fmt.Sprintf("pipeline %s: %s\n", pipelineId, err.Error())
+		}
+	}
 	return err
 }
