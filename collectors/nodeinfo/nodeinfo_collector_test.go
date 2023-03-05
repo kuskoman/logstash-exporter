@@ -3,10 +3,10 @@ package nodeinfo
 import (
 	"encoding/json"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -59,14 +59,19 @@ func TestCollectNotNil(t *testing.T) {
 			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
 		}
 
-		foundMetrics = append(foundMetrics, metric.Desc().String())
+		foundMetricDesc := metric.Desc().String()
+		foundMetricFqName, err := helpers.ExtractFqName(foundMetricDesc)
+		if err != nil {
+			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
+		}
+
+		foundMetrics = append(foundMetrics, foundMetricFqName)
 	}
 
 	for _, expectedMetric := range expectedMetrics {
 		found := false
 		for _, foundMetric := range foundMetrics {
-			// todo: find a better way to compare metrics, unfortunetely Prometheus doesn't provide easy way to extract fqdn
-			if strings.Contains(foundMetric, expectedMetric) {
+			if foundMetric == expectedMetric {
 				found = true
 				break
 			}

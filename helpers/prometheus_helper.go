@@ -1,6 +1,11 @@
 package helpers
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"errors"
+	"regexp"
+
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 type SimpleDescHelper struct {
 	Namespace string
@@ -15,4 +20,13 @@ func (h *SimpleDescHelper) NewDesc(name string) *prometheus.Desc {
 func (h *SimpleDescHelper) NewDescWithLabels(name string, labels []string) *prometheus.Desc {
 	help := name
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, labels, nil)
+}
+
+func ExtractFqName(metric string) (string, error) {
+	regex := regexp.MustCompile(`fqName:\s*"([a-zA-Z_-]+)"`)
+	matches := regex.FindStringSubmatch(metric)
+	if len(matches) < 2 {
+		return "", errors.New("failed to extract fqName from metric string")
+	}
+	return matches[1], nil
 }
