@@ -222,9 +222,9 @@ Table of exported metrics:
 | logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, goversion from which logstash_exporter was built, and the goos and goarch for the build. |
 | logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot. |
 | logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id. |
-| logstash_info_pipeline_batch_delay | counter | pipeline_batch_delay |
-| logstash_info_pipeline_batch_size | counter | pipeline_batch_size |
-| logstash_info_pipeline_workers | counter | pipeline_workers |
+| logstash_info_pipeline_batch_delay | counter | Amount of time to wait for events to fill the batch before sending to the filter and output stages. |
+| logstash_info_pipeline_batch_size | counter | Number of events to retrieve from the input queue before sending to the filter and output stages. |
+| logstash_info_pipeline_workers | counter | Number of worker threads that will process pipeline events. |
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
 | logstash_info_up | gauge | A metric that returns 1 if the node is up, 0 otherwise. |
 | logstash_stats_jvm_mem_heap_committed_bytes | gauge | jvm_mem_heap_committed_bytes |

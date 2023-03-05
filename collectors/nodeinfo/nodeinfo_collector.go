@@ -54,9 +54,15 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 			nil,
 		),
 
-		PipelineWorkers:    descHelper.NewDesc("pipeline_workers"),
-		PipelineBatchSize:  descHelper.NewDesc("pipeline_batch_size"),
-		PipelineBatchDelay: descHelper.NewDesc("pipeline_batch_delay"),
+		PipelineWorkers: descHelper.NewDescWithHelp("pipeline_workers",
+			"Number of worker threads that will process pipeline events.",
+		),
+		PipelineBatchSize: descHelper.NewDescWithHelp("pipeline_batch_size",
+			"Number of events to retrieve from the input queue before sending to the filter and output stages.",
+		),
+		PipelineBatchDelay: descHelper.NewDescWithHelp("pipeline_batch_delay",
+			"Amount of time to wait for events to fill the batch before sending to the filter and output stages.",
+		),
 
 		Status: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "status"),
