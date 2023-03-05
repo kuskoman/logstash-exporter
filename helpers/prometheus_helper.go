@@ -17,6 +17,10 @@ func (h *SimpleDescHelper) NewDesc(name string) *prometheus.Desc {
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, nil, nil)
 }
 
+func (h *SimpleDescHelper) NewDescWithHelp(name string, help string) *prometheus.Desc {
+	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, nil, nil)
+}
+
 func (h *SimpleDescHelper) NewDescWithLabels(name string, labels []string) *prometheus.Desc {
 	help := name
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, labels, nil)

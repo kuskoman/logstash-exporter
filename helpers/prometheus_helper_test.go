@@ -11,11 +11,29 @@ func TestSimpleDescHelper(t *testing.T) {
 		Subsystem: "test",
 	}
 
-	desc := helper.NewDesc("metric")
-	expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"metric\", constLabels: {}, variableLabels: []}"
-	if desc.String() != expectedDesc {
-		t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
-	}
+	t.Run("NewDesc", func(t *testing.T) {
+		desc := helper.NewDesc("metric")
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"metric\", constLabels: {}, variableLabels: []}"
+		if desc.String() != expectedDesc {
+			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
+		}
+	})
+
+	t.Run("NewDescWithHelp", func(t *testing.T) {
+		desc := helper.NewDescWithHelp("metric", "help")
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: []}"
+		if desc.String() != expectedDesc {
+			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
+		}
+	})
+
+	t.Run("NewDescWithLabels", func(t *testing.T) {
+		desc := helper.NewDescWithLabels("metric", []string{"label1", "label2"})
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"metric\", constLabels: {}, variableLabels: [label1 label2]}"
+		if desc.String() != expectedDesc {
+			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
+		}
+	})
 }
 
 func TestExtractFqdnName(t *testing.T) {
