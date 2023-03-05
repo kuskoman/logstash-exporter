@@ -42,7 +42,7 @@ func TestCollectNotNil(t *testing.T) {
 		}
 	}()
 
-	expectedMetrics := []string{
+	expectedBaseMetrics := []string{
 		"logstash_stats_jvm_mem_heap_committed_bytes",
 		"logstash_stats_jvm_mem_heap_max_bytes",
 		"logstash_stats_jvm_mem_heap_used_bytes",
@@ -71,8 +71,22 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_reload_successes",
 	}
 
+	expectedPoolMetrics := []string{
+		"logstash_stats_jvm_mem_pool_peak_used_bytes",
+		"logstash_stats_jvm_mem_pool_used_bytes",
+		"logstash_stats_jvm_mem_pool_peak_max_bytes",
+		"logstash_stats_jvm_mem_pool_max_bytes",
+		"logstash_stats_jvm_mem_pool_committed_bytes",
+	}
+	expectedPoolMetricLabels := []string{
+		"young",
+		"survivor",
+		"old",
+	}
+	eventsCount := len(expectedBaseMetrics) + len(expectedPoolMetrics)*len(expectedPoolMetricLabels)
+
 	var foundMetrics []string
-	for i := 0; i < len(expectedMetrics); i++ {
+	for i := 0; i < eventsCount; i++ {
 		metric := <-ch
 		if metric == nil {
 			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
@@ -87,7 +101,7 @@ func TestCollectNotNil(t *testing.T) {
 		foundMetrics = append(foundMetrics, foundMetricFqName)
 	}
 
-	for _, expectedMetric := range expectedMetrics {
+	for _, expectedMetric := range expectedBaseMetrics {
 		found := false
 		for _, foundMetric := range foundMetrics {
 			if foundMetric == expectedMetric {
@@ -98,6 +112,23 @@ func TestCollectNotNil(t *testing.T) {
 
 		if !found {
 			t.Errorf("Expected metric %s to be found", expectedMetric)
+		}
+	}
+
+	for _, expectedPoolMetric := range expectedPoolMetrics {
+		for _, expectedPoolMetricLabel := range expectedPoolMetricLabels {
+			found := false
+			for _, foundMetric := range foundMetrics {
+				// todo: consider verifying label values as well
+				if foundMetric == expectedPoolMetric {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				t.Errorf("Expected metric %s with label pool=%s to be found", expectedPoolMetric, expectedPoolMetricLabel)
+			}
 		}
 	}
 }
