@@ -203,7 +203,7 @@ Then you can run the tests:
 
 These are the features that are planned to be implemented in the future:
 
-- [ ] Parse missing metrics
+- [x] Parse missing metrics (if you find any useful missing metrics, please create an issue)
 - [ ] Add description to all metrics
 - [x] Improve test coverage
 - [ ] Build Helm chart
