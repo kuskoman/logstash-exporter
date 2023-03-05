@@ -6,8 +6,6 @@ The project was created as rewrite of existing awesome application
 which was also written in Go, but it was not maintained for a long time.
 A lot of code was reused from the original project.
 
-**This project is currently under development it is not recommended to use it in production (yet).**
-
 ## Usage
 
 ### Running the app
