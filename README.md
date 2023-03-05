@@ -232,24 +232,24 @@ Table of exported metrics:
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | Amount of used heap memory in bytes. |
 | logstash_stats_jvm_mem_heap_used_percent | gauge | Percentage of the heap memory that is used. |
 | logstash_stats_jvm_mem_non_heap_committed_bytes | gauge | Amount of non-heap memory in bytes that is committed for the Java virtual machine to use. |
-| logstash_stats_jvm_mem_pool_committed_bytes | gauge | jvm_mem_pool_committed_bytes |
-| logstash_stats_jvm_mem_pool_max_bytes | gauge | jvm_mem_pool_max_bytes |
-| logstash_stats_jvm_mem_pool_peak_max_bytes | gauge | jvm_mem_pool_peak_max_bytes |
-| logstash_stats_jvm_mem_pool_peak_used_bytes | gauge | jvm_mem_pool_peak_used_bytes |
-| logstash_stats_jvm_mem_pool_used_bytes | gauge | jvm_mem_pool_used_bytes |
+| logstash_stats_jvm_mem_pool_committed_bytes | gauge | Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool. |
+| logstash_stats_jvm_mem_pool_max_bytes | gauge | Maximum amount of bytes that can be used in a given JVM memory pool. |
+| logstash_stats_jvm_mem_pool_peak_max_bytes | gauge | Highest value of bytes that were used in a given JVM memory pool. |
+| logstash_stats_jvm_mem_pool_peak_used_bytes | gauge | Peak used bytes of a given JVM memory pool. |
+| logstash_stats_jvm_mem_pool_used_bytes | gauge | Currently used bytes of a given JVM memory pool. |
 | logstash_stats_jvm_threads_count | gauge | Number of live threads including both daemon and non-daemon threads. |
 | logstash_stats_jvm_threads_peak_count | gauge | Peak live thread count since the Java virtual machine started or peak was reset. |
 | logstash_stats_jvm_uptime_millis | gauge | Uptime of the JVM in milliseconds. |
-| logstash_stats_pipeline_events_duration | counter | pipeline_events_duration |
-| logstash_stats_pipeline_events_filtered | counter | pipeline_events_filtered |
-| logstash_stats_pipeline_events_in | counter | pipeline_events_in |
-| logstash_stats_pipeline_events_out | counter | pipeline_events_out |
-| logstash_stats_pipeline_events_queue_push_duration | counter | pipeline_events_queue_push_duration |
-| logstash_stats_pipeline_queue_events_count | counter | pipeline_queue_events_count |
-| logstash_stats_pipeline_queue_events_queue_size | counter | pipeline_queue_events_queue_size |
-| logstash_stats_pipeline_queue_max_size_in_bytes | counter | pipeline_queue_max_size_in_bytes |
-| logstash_stats_pipeline_reloads_failures | counter | pipeline_reloads_failures |
-| logstash_stats_pipeline_reloads_successes | counter | pipeline_reloads_successes |
+| logstash_stats_pipeline_events_duration | counter | Time needed to process event. |
+| logstash_stats_pipeline_events_filtered | counter | Number of events that have been filtered out by this pipeline. |
+| logstash_stats_pipeline_events_in | counter | Number of events that have been inputted into this pipeline. |
+| logstash_stats_pipeline_events_out | counter | Number of events that have been processed by this pipeline. |
+| logstash_stats_pipeline_events_queue_push_duration | counter | Time needed to push event to queue. |
+| logstash_stats_pipeline_queue_events_count | counter | Number of events in the queue. |
+| logstash_stats_pipeline_queue_events_queue_size | counter | Number of events that the queue can accommodate |
+| logstash_stats_pipeline_queue_max_size_in_bytes | counter | Maximum size of given queue in bytes. |
+| logstash_stats_pipeline_reloads_failures | counter | Number of failed pipeline reloads. |
+| logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
 | logstash_stats_process_cpu_percent | gauge | CPU usage of the process. |
 | logstash_stats_process_cpu_total_millis | gauge | Total CPU time used by the process. |
 | logstash_stats_process_max_file_descriptors | gauge | Limit of open file descriptors. |

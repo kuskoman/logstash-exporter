@@ -13,8 +13,7 @@ import (
 const subsystem = "stats"
 
 var (
-	namespace  = config.PrometheusNamespace
-	descHelper = helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
+	namespace = config.PrometheusNamespace
 )
 
 type NodestatsCollector struct {
@@ -51,6 +50,7 @@ type NodestatsCollector struct {
 }
 
 func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
+	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodestatsCollector{
 		client: client,
