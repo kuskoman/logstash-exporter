@@ -2,7 +2,6 @@ package nodeinfo
 
 import (
 	"context"
-	"log"
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -80,7 +79,6 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	if err != nil {
 		ch <- c.getUpStatus(nodeInfo, err)
 
-		log.Printf("Error while fetching node info: %s", err)
 		return err
 	}
 
