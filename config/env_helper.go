@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// InitializeEnv loads the environment variables from the .env file
 func InitializeEnv() error {
 	return godotenv.Load()
 }

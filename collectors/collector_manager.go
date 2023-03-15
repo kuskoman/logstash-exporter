@@ -18,6 +18,7 @@ type Collector interface {
 	Collect(context.Context, chan<- prometheus.Metric) (err error)
 }
 
+// CollectorManager is a collector that executes all other collectors
 type CollectorManager struct {
 	collectors      map[string]Collector
 	scrapeDurations *prometheus.SummaryVec
@@ -41,6 +42,8 @@ func getCollectors(client logstashclient.Client) map[string]Collector {
 	return collectors
 }
 
+// Collect executes all collectors and sends the collected metrics to the provided channel.
+// It also sends the duration of the collection to the scrapeDurations collector.
 func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), config.HttpTimeout)
 

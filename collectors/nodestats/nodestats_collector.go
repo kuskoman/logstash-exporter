@@ -18,6 +18,7 @@ var (
 	namespace = config.PrometheusNamespace
 )
 
+// NodestatsCollector is a custom collector for the /_node/stats endpoint
 type NodestatsCollector struct {
 	client               logstashclient.Client
 	pipelineSubcollector *PipelineSubcollector

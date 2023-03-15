@@ -8,6 +8,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// NewAppServer creates a new http server with the given host and port
+// and registers the prometheus handler and the healthcheck handler
+// to the server's mux. The prometheus handler is managed under the
+// hood by the prometheus client library.
 func NewAppServer(host, port string) *http.Server {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
