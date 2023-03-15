@@ -1,8 +1,6 @@
 package config
 
-import "github.com/kuskoman/logstash-exporter/helpers"
-
 var (
-	Port = helpers.GetEnvWithDefault("PORT", "9198")
-	Host = helpers.GetEnvWithDefault("HOST", "")
+	Port = getEnvWithDefault("PORT", "9198")
+	Host = getEnvWithDefault("HOST", "")
 )

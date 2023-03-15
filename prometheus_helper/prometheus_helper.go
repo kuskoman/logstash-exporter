@@ -1,4 +1,4 @@
-package helpers
+package prometheus_helper
 
 import (
 	"errors"

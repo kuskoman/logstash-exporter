@@ -5,9 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
-	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
 type PipelineSubcollector struct {
@@ -28,7 +29,7 @@ type PipelineSubcollector struct {
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
-	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
+	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
 	return &PipelineSubcollector{
 		EventsOut:               descHelper.NewDescWithHelpAndLabel("events_out", "Number of events that have been processed by this pipeline.", "pipeline_id"),
 		EventsFiltered:          descHelper.NewDescWithHelpAndLabel("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline_id"),

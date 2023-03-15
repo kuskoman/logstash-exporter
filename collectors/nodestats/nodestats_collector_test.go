@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
-	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
 type mockClient struct{}
@@ -84,7 +85,7 @@ func TestCollectNotNil(t *testing.T) {
 		}
 
 		foundMetricDesc := metric.Desc().String()
-		foundMetricFqName, err := helpers.ExtractFqName(foundMetricDesc)
+		foundMetricFqName, err := prometheus_helper.ExtractFqName(foundMetricDesc)
 		if err != nil {
 			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
 		}
