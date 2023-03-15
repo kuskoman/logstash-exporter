@@ -1,6 +1,7 @@
-package logstashclient
+package logstash_client
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -8,34 +9,35 @@ import (
 )
 
 type Client interface {
-	GetNodeInfo() (*responses.NodeInfoResponse, error)
-	GetNodeStats() (*responses.NodeStatsResponse, error)
-}
-
-type httpClient interface {
-	Get(url string) (*http.Response, error)
+	GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error)
+	GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error)
 }
 
 type DefaultClient struct {
-	httpClient httpClient
+	httpClient *http.Client
 	endpoint   string
 }
 
 const defaultLogstashEndpoint = "http://localhost:9600"
 
 func NewClient(endpoint string) Client {
-	client := &DefaultClient{endpoint: endpoint}
-	client.httpClient = &http.Client{}
-
 	if endpoint == "" {
-		client.endpoint = defaultLogstashEndpoint
+		endpoint = defaultLogstashEndpoint
 	}
 
-	return client
+	return &DefaultClient{
+		httpClient: &http.Client{},
+		endpoint:   endpoint,
+	}
 }
 
-func getMetrics[T any](client httpClient, endpoint string) (*T, error) {
-	resp, err := client.Get(endpoint)
+func getMetrics[T any](ctx context.Context, client *http.Client, endpoint string) (*T, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

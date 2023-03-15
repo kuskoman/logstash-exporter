@@ -1,6 +1,7 @@
 package nodestats
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"testing"
@@ -13,7 +14,7 @@ import (
 
 type mockClient struct{}
 
-func (m *mockClient) GetNodeStats() (*responses.NodeStatsResponse, error) {
+func (m *mockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error) {
 	b, err := os.ReadFile("../../fixtures/node_stats.json")
 	if err != nil {
 		return nil, err
@@ -28,16 +29,17 @@ func (m *mockClient) GetNodeStats() (*responses.NodeStatsResponse, error) {
 	return &nodestats, nil
 }
 
-func (m *mockClient) GetNodeInfo() (*responses.NodeInfoResponse, error) {
+func (m *mockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
 	return nil, nil
 }
 
 func TestCollectNotNil(t *testing.T) {
 	collector := NewNodestatsCollector(&mockClient{})
 	ch := make(chan prometheus.Metric)
+	ctx := context.Background()
 
 	go func() {
-		err := collector.Collect(ch)
+		err := collector.Collect(ctx, ch)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
