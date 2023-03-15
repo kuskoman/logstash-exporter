@@ -13,6 +13,7 @@ import (
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
+// NodestatsCollector is a custom collector for the /_node/stats endpoint
 type NodestatsCollector struct {
 	client logstashclient.Client
 

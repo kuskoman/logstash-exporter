@@ -11,6 +11,9 @@ import (
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
+// PipelineSubcollector is a subcollector that collects metrics about the
+// pipelines of a logstash node.
+// The collector is created once for each pipeline of the node.
 type PipelineSubcollector struct {
 	EventsOut               *prometheus.Desc
 	EventsFiltered          *prometheus.Desc
