@@ -1,6 +1,7 @@
 package nodeinfo
 
 import (
+	"context"
 	"log"
 	"strconv"
 
@@ -73,8 +74,8 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 	}
 }
 
-func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
-	nodeInfo, err := c.client.GetNodeInfo()
+func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
+	nodeInfo, err := c.client.GetNodeInfo(ctx)
 	if err != nil {
 		ch <- c.getUpStatus(nodeInfo, err)
 

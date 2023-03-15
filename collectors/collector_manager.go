@@ -1,6 +1,7 @@
 package collectors
 
 import (
+	"context"
 	"log"
 	"sync"
 	"time"
@@ -14,7 +15,7 @@ import (
 )
 
 type Collector interface {
-	Collect(ch chan<- prometheus.Metric) (err error)
+	Collect(context.Context, chan<- prometheus.Metric) (err error)
 }
 
 type CollectorManager struct {
@@ -41,12 +42,16 @@ func getCollectors(client logstashclient.Client) map[string]Collector {
 }
 
 func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
+	ctx, cancel := context.WithTimeout(context.Background(), config.HttpTimeout)
+
+	defer cancel()
+
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(len(manager.collectors))
 	for name, collector := range manager.collectors {
 		go func(name string, collector Collector) {
 			log.Printf("executing collector %s", name)
-			manager.executeCollector(name, collector, ch)
+			manager.executeCollector(name, ctx, collector, ch)
 			log.Printf("collector %s finished", name)
 			waitGroup.Done()
 		}(name, collector)
@@ -58,9 +63,9 @@ func (manager *CollectorManager) Describe(ch chan<- *prometheus.Desc) {
 	manager.scrapeDurations.Describe(ch)
 }
 
-func (manager *CollectorManager) executeCollector(name string, collector Collector, ch chan<- prometheus.Metric) {
+func (manager *CollectorManager) executeCollector(name string, ctx context.Context, collector Collector, ch chan<- prometheus.Metric) {
 	executionStart := time.Now()
-	err := collector.Collect(ch)
+	err := collector.Collect(ctx, ch)
 	executionDuration := time.Since(executionStart)
 	var executionStatus string
 

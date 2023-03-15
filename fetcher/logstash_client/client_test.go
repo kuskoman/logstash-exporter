@@ -1,4 +1,4 @@
-package logstashclient
+package logstash_client
 
 import (
 	"testing"

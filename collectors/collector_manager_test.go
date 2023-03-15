@@ -1,6 +1,7 @@
 package collectors
 
 import (
+	"context"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -8,7 +9,7 @@ import (
 
 type mockCollector struct{}
 
-func (m *mockCollector) Collect(ch chan<- prometheus.Metric) error {
+func (m *mockCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
 	ch <- prometheus.MustNewConstMetric(
 		prometheus.NewDesc("mock_metric", "mock metric description", nil, nil),
 		prometheus.GaugeValue,

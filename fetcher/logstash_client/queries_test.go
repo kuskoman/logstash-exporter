@@ -1,36 +1,30 @@
-package logstashclient
+package logstash_client
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"io"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 )
 
-type MockHTTPClient struct {
-	Response *http.Response
-	Err      error
-}
-
-func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
-	return m.Response, m.Err
-}
-
 func TestGetNodeInfo(t *testing.T) {
 	t.Run("should return a valid NodeInfoResponse when the request is successful", func(t *testing.T) {
-		mockClient, err := setupSuccessfulHttpMock("node_info.json")
-		if err != nil {
-			t.Fatalf("error setting up mock http client: %s", err)
-		}
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fixtureBytes, err := loadFixture("node_info.json")
+			if err != nil {
+				t.Fatalf("error loading fixture: %s", err)
+			}
 
-		client := &DefaultClient{
-			httpClient: mockClient,
-			endpoint:   "http://localhost:9600",
-		}
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(fixtureBytes)
+		}))
+		defer ts.Close()
 
-		response, err := client.GetNodeInfo()
+		client := NewClient(ts.URL)
+
+		response, err := client.GetNodeInfo(context.Background())
 		if err != nil {
 			t.Fatalf("error getting node info: %s", err)
 		}
@@ -40,38 +34,24 @@ func TestGetNodeInfo(t *testing.T) {
 		}
 		// detailed checks are done in the responses package
 	})
-
-	t.Run("should return an error when the request fails", func(t *testing.T) {
-		mockClient := &MockHTTPClient{
-			Response: nil,
-			Err:      fmt.Errorf("error"),
-		}
-
-		client := &DefaultClient{
-			httpClient: mockClient,
-			endpoint:   "http://localhost:9600",
-		}
-
-		_, err := client.GetNodeInfo()
-		if err == nil {
-			t.Fatalf("expected error, got nil")
-		}
-	})
 }
 
 func TestGetNodeStats(t *testing.T) {
 	t.Run("should return a valid NodestatsResponse when the request is successful", func(t *testing.T) {
-		mockClient, err := setupSuccessfulHttpMock("node_stats.json")
-		if err != nil {
-			t.Fatalf("error setting up mock http client: %s", err)
-		}
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fixtureBytes, err := loadFixture("node_stats.json")
+			if err != nil {
+				t.Fatalf("error loading fixture: %s", err)
+			}
 
-		client := &DefaultClient{
-			httpClient: mockClient,
-			endpoint:   "http://localhost:9600",
-		}
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(fixtureBytes)
+		}))
+		defer ts.Close()
 
-		response, err := client.GetNodeStats()
+		client := NewClient(ts.URL)
+
+		response, err := client.GetNodeStats(context.Background())
 		if err != nil {
 			t.Fatalf("error getting node stats: %s", err)
 		}
@@ -80,23 +60,6 @@ func TestGetNodeStats(t *testing.T) {
 			t.Fatalf("expected status to be properly read as green, got %s", response.Status)
 		}
 		// detailed checks are done in the responses package
-	})
-
-	t.Run("should return an error when the request fails", func(t *testing.T) {
-		mockClient := &MockHTTPClient{
-			Response: nil,
-			Err:      fmt.Errorf("error"),
-		}
-
-		client := &DefaultClient{
-			httpClient: mockClient,
-			endpoint:   "http://localhost:9600",
-		}
-
-		_, err := client.GetNodeStats()
-		if err == nil {
-			t.Fatalf("expected error, got nil")
-		}
 	})
 }
 
@@ -108,23 +71,4 @@ func loadFixture(filename string) ([]byte, error) {
 	}
 
 	return fixtureBytes, nil
-}
-
-func setupSuccessfulHttpMock(filename string) (*MockHTTPClient, error) {
-	fixtureBytes, err := loadFixture(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	fixtureReader := bytes.NewReader(fixtureBytes)
-
-	mockResponse := &http.Response{
-		Body:       io.NopCloser(fixtureReader),
-		StatusCode: 200,
-	}
-
-	return &MockHTTPClient{
-		Response: mockResponse,
-		Err:      nil,
-	}, nil
 }

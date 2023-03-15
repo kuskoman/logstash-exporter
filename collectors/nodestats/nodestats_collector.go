@@ -1,6 +1,7 @@
 package nodestats
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -93,8 +94,8 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 	}
 }
 
-func (c *NodestatsCollector) Collect(ch chan<- prometheus.Metric) error {
-	nodeStats, err := c.client.GetNodeStats()
+func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
+	nodeStats, err := c.client.GetNodeStats(ctx)
 	if err != nil {
 		return err
 	}
