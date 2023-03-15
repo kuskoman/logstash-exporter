@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
-	"github.com/kuskoman/logstash-exporter/helpers"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
 const subsystem = "stats"
@@ -50,7 +51,7 @@ type NodestatsCollector struct {
 }
 
 func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
-	descHelper := helpers.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
+	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodestatsCollector{
 		client: client,

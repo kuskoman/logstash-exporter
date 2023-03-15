@@ -5,13 +5,12 @@ import (
 
 	"github.com/kuskoman/logstash-exporter/collectors"
 	"github.com/kuskoman/logstash-exporter/config"
-	"github.com/kuskoman/logstash-exporter/helpers"
 	"github.com/kuskoman/logstash-exporter/server"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 func main() {
-	warn := helpers.InitializeEnv()
+	warn := config.InitializeEnv()
 	if warn != nil {
 		log.Println(warn)
 	}
