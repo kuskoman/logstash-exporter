@@ -38,4 +38,19 @@ func TestHealthCheck(t *testing.T) {
 	t.Run("404 status", func(t *testing.T) {
 		runTest(http.StatusNotFound, http.StatusInternalServerError)
 	})
+
+	t.Run("no response", func(t *testing.T) {
+		handler := getHealthCheck("http://localhost:12345")
+		req, err := http.NewRequest(http.MethodGet, "/", nil)
+		if err != nil {
+			t.Fatalf("Error creating request: %v", err)
+		}
+		rr := httptest.NewRecorder()
+
+		handler(rr, req)
+
+		if status := rr.Code; status != http.StatusInternalServerError {
+			t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
+		}
+	})
 }
