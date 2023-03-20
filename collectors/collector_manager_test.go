@@ -7,6 +7,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+func TestNewCollectorManager(t *testing.T) {
+	mockEndpoint := "http://localhost:9600"
+	cm := NewCollectorManager(mockEndpoint)
+
+	if cm == nil {
+		t.Error("Expected collector manager to be initialized")
+	}
+}
+
 type mockCollector struct{}
 
 func (m *mockCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
