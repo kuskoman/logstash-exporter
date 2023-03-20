@@ -37,7 +37,10 @@ func TestGetMetrics(t *testing.T) {
 	t.Run("should return a valid response", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"foo": "bar"}`))
+			_, err := w.Write([]byte(`{"foo": "bar"}`))
+			if err != nil {
+				t.Errorf("error writing response: %s", err)
+			}
 		}))
 		defer server.Close()
 
@@ -58,7 +61,10 @@ func TestGetMetrics(t *testing.T) {
 	t.Run("should return an error if the response is invalid", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"foo": "bar"`))
+			_, err := w.Write([]byte(`{"foo": "bar"`))
+			if err != nil {
+				t.Errorf("error writing response: %s", err)
+			}
 		}))
 		defer server.Close()
 
