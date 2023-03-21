@@ -64,3 +64,47 @@ func TestExtractFqdnName(t *testing.T) {
 		}
 	})
 }
+
+func TestExtractValueFromMetric(t *testing.T) {
+	t.Run("should extract value from a metric", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metricValue := 42.0
+		metric := prometheus.MustNewConstMetric(metricDesc, prometheus.GaugeValue, metricValue)
+
+		extractedValue, err := ExtractValueFromMetric(metric)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+
+		if extractedValue != metricValue {
+			t.Errorf("Expected extracted value to be %f, got %f", metricValue, extractedValue)
+		}
+	})
+
+	t.Run("should return an error when unable to write metric", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		exampleErr := fmt.Errorf("example error")
+		invalidMetric := prometheus.NewInvalidMetric(metricDesc, exampleErr)
+
+		customCollector := &CustomCollector{
+			metric: invalidMetric,
+		}
+
+		registry := prometheus.NewRegistry()
+		err := registry.Register(customCollector)
+
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+
+		extractedValue, err := ExtractValueFromMetric(invalidMetric)
+
+		if err == nil {
+			t.Errorf("Expected error but got nil")
+		}
+
+		if extractedValue != 0 {
+			t.Errorf("Expected extracted value to be 0, got %f", extractedValue)
+		}
+	})
+}

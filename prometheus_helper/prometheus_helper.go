@@ -2,9 +2,11 @@ package prometheus_helper
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 type SimpleDescHelper struct {
@@ -38,4 +40,58 @@ func ExtractFqName(metric string) (string, error) {
 		return "", errors.New("failed to extract fqName from metric string")
 	}
 	return matches[1], nil
+}
+
+// CustomCollector is a custom prometheus.Collector that collects only the given metric.
+type CustomCollector struct {
+	metric prometheus.Metric
+}
+
+// Describe implements the prometheus.Collector interface.
+func (c *CustomCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.metric.Desc()
+}
+
+// Collect implements the prometheus.Collector interface.
+func (c *CustomCollector) Collect(ch chan<- prometheus.Metric) {
+	ch <- c.metric
+}
+
+// ExtractValueFromMetric extracts the value from a prometheus.Metric object.
+// It creates a custom collector and registry, registers the given metric, and then collects
+// the metric value using the registry.
+// Returns the extracted float64 value from the metric's Gauge.
+func ExtractValueFromMetric(metric prometheus.Metric) (float64, error) {
+	// Custom collector that collects only the given metric.
+	collector := &CustomCollector{
+		metric: metric,
+	}
+
+	// Create a custom registry and register the collector.
+	registry := prometheus.NewRegistry()
+	err := registry.Register(collector)
+	if err != nil {
+		return 0, err
+	}
+
+	var metricValue float64
+	metricChannel := make(chan prometheus.Metric)
+	go func() {
+		registry.Collect(metricChannel)
+		close(metricChannel)
+	}()
+
+	for collectedMetric := range metricChannel {
+		if collectedMetric.Desc().String() == metric.Desc().String() {
+			var dtoMetric dto.Metric
+			err = collectedMetric.Write(&dtoMetric)
+			if err != nil {
+				return 0, fmt.Errorf("error writing metric: %v", err)
+			}
+			metricValue = dtoMetric.GetGauge().GetValue()
+			break
+		}
+	}
+
+	return metricValue, nil
 }
