@@ -3,6 +3,7 @@ package nodeinfo
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"testing"
 
@@ -83,5 +84,56 @@ func TestCollectNotNil(t *testing.T) {
 		if !found {
 			t.Errorf("Expected metric %s to be found", expectedMetric)
 		}
+	}
+}
+
+func TestGetUpStatus(t *testing.T) {
+	collector := NewNodestatsCollector(&mockClient{})
+
+	tests := []struct {
+		name     string
+		nodeInfo *responses.NodeInfoResponse
+		err      error
+		expected float64
+	}{
+		{
+			name:     "nil error and green status",
+			nodeInfo: &responses.NodeInfoResponse{Status: "green"},
+			err:      nil,
+			expected: 1,
+		},
+		{
+			name:     "nil error and yellow status",
+			nodeInfo: &responses.NodeInfoResponse{Status: "yellow"},
+			err:      nil,
+			expected: 1,
+		},
+		{
+			name:     "nil error and red status",
+			nodeInfo: &responses.NodeInfoResponse{Status: "red"},
+			err:      nil,
+			expected: 0,
+		},
+		{
+			name:     "error",
+			nodeInfo: nil,
+			err:      errors.New("test error"),
+			expected: 0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			metric := collector.getUpStatus(test.nodeInfo, test.err)
+			metricValue, err := prometheus_helper.ExtractValueFromMetric(metric)
+
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+
+			if metricValue != test.expected {
+				t.Errorf("Expected metric value to be %v, got %v", test.expected, metricValue)
+			}
+		})
 	}
 }
