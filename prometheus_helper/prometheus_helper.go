@@ -49,7 +49,7 @@ type CustomCollector struct {
 
 // Describe implements the prometheus.Collector interface.
 func (c *CustomCollector) Describe(ch chan<- *prometheus.Desc) {
-	c.metric.Desc()
+	ch <- c.metric.Desc()
 }
 
 // Collect implements the prometheus.Collector interface.
