@@ -12,8 +12,8 @@ import (
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
-// NodestatsCollector is a custom collector for the /_node/stats endpoint
-type NodestatsCollector struct {
+// NodeinfoCollector is a custom collector for the /_node/stats endpoint
+type NodeinfoCollector struct {
 	client logstashclient.Client
 
 	NodeInfos  *prometheus.Desc
@@ -28,12 +28,12 @@ type NodestatsCollector struct {
 	Status *prometheus.Desc
 }
 
-func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
+func NewNodeinfoCollector(client logstashclient.Client) *NodeinfoCollector {
 	const subsystem = "info"
 	namespace := config.PrometheusNamespace
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
-	return &NodestatsCollector{
+	return &NodeinfoCollector{
 		client: client,
 		NodeInfos: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "node"),
@@ -74,7 +74,7 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 	}
 }
 
-func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
+func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
 	nodeInfo, err := c.client.GetNodeInfo(ctx)
 	if err != nil {
 		ch <- c.getUpStatus(nodeInfo, err)
@@ -136,7 +136,7 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	return nil
 }
 
-func (c *NodestatsCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) prometheus.Metric {
+func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) prometheus.Metric {
 	status := 1
 	if err != nil {
 		status = 0

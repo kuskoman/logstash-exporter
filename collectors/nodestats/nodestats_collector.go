@@ -2,9 +2,6 @@ package nodestats
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -144,32 +141,9 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 
 	ch <- prometheus.MustNewConstMetric(c.QueueEventsCount, prometheus.GaugeValue, float64(nodeStats.Queue.EventsCount))
 
-	pipelineErrors := make(map[string]error)
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
-		pipeErr := c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
-		if err != nil {
-			log.Printf("Error collecting pipeline %s, stats: %s", pipelineId, err.Error())
-			pipelineErrors[pipelineId] = pipeErr
-		}
+		c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
 	}
 
-	err = parseSubcollectorErrors(pipelineErrors)
-	return err
-}
-
-func parseSubcollectorErrors(pipelineErrors map[string]error) error {
-	if len(pipelineErrors) == 1 {
-		for pipelineId, err := range pipelineErrors {
-			return fmt.Errorf("error collecting pipeline %s, stats: %s", pipelineId, err.Error())
-		}
-	}
-
-	if len(pipelineErrors) > 1 {
-		errorMessage := fmt.Sprintf("error collecting %d pipelines:\n", len(pipelineErrors))
-		for pipelineId, err := range pipelineErrors {
-			errorMessage += fmt.Sprintf("pipeline %s: %s\n", pipelineId, err.Error())
-		}
-		return errors.New(errorMessage)
-	}
 	return nil
 }

@@ -49,7 +49,7 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 	}
 }
 
-func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric) error {
+func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric) {
 	collectingStart := time.Now()
 	log.Printf("collecting pipeline stats for pipeline %s", pipelineID)
 
@@ -70,5 +70,4 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 
 	collectingEnd := time.Now()
 	log.Printf("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
-	return nil
 }
