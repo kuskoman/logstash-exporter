@@ -37,7 +37,7 @@ func NewCollectorManager(endpoint string) *CollectorManager {
 
 func getCollectors(client logstashclient.Client) map[string]Collector {
 	collectors := make(map[string]Collector)
-	collectors["nodeinfo"] = nodeinfo.NewNodestatsCollector(client)
+	collectors["nodeinfo"] = nodeinfo.NewNodeinfoCollector(client)
 	collectors["nodestats"] = nodestats.NewNodestatsCollector(client)
 	return collectors
 }

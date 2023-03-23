@@ -3,8 +3,10 @@ package nodestats
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -31,6 +33,16 @@ func (m *mockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResp
 
 func (m *mockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
 	return nil, nil
+}
+
+type errorMockClient struct{}
+
+func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
+	return nil, nil
+}
+
+func (m *errorMockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error) {
+	return nil, errors.New("could not connect to instance")
 }
 
 func TestCollectNotNil(t *testing.T) {
@@ -107,5 +119,26 @@ func TestCollectNotNil(t *testing.T) {
 		if !found {
 			t.Errorf("Expected metric %s to be found", expectedMetric)
 		}
+	}
+}
+
+func TestCollectError(t *testing.T) {
+	collector := NewNodestatsCollector(&errorMockClient{})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	ch := make(chan prometheus.Metric)
+
+	go func() {
+		for range ch {
+			// simulate reading from the channel
+		}
+	}()
+
+	err := collector.Collect(ctx, ch)
+	close(ch)
+
+	if err == nil {
+		t.Error("Expected err not to be nil")
 	}
 }

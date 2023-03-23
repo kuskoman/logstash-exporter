@@ -34,6 +34,24 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestGetMetrics(t *testing.T) {
+	t.Run("should return an error if the URL is invalid", func(t *testing.T) {
+		httpClient := &http.Client{}
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		// Pass an invalid URL
+		invalidURL := "http://localhost:96010:invalidurl"
+		result, err := getMetrics[TestResponse](ctx, httpClient, invalidURL)
+
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+
+		if result != nil {
+			t.Errorf("expected result to be nil, got %v", result)
+		}
+	})
+
 	t.Run("should return a valid response", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
