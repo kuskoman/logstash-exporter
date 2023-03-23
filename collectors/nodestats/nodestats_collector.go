@@ -2,6 +2,7 @@ package nodestats
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -168,6 +169,7 @@ func parseSubcollectorErrors(pipelineErrors map[string]error) error {
 		for pipelineId, err := range pipelineErrors {
 			errorMessage += fmt.Sprintf("pipeline %s: %s\n", pipelineId, err.Error())
 		}
+		return errors.New(errorMessage)
 	}
 	return nil
 }

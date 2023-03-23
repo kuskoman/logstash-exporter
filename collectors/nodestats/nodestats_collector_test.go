@@ -3,6 +3,7 @@ package nodestats
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"testing"
 
@@ -108,4 +109,37 @@ func TestCollectNotNil(t *testing.T) {
 			t.Errorf("Expected metric %s to be found", expectedMetric)
 		}
 	}
+}
+
+func TestParseSubcollectorErrors(t *testing.T) {
+	t.Run("should return nil for 0 errors", func(t *testing.T) {
+		errs := make(map[string]error)
+		parsedErrors := parseSubcollectorErrors(errs)
+		if parsedErrors != nil {
+			t.Errorf("Expected parsedErrors to be nil, received %s", parsedErrors)
+		}
+	})
+
+	t.Run("should return error when exactly 1 error is provided", func(t *testing.T) {
+		errs := make(map[string]error)
+		exampleErr := errors.New("test error")
+		errs["pipe"] = exampleErr
+
+		parsedErr := parseSubcollectorErrors(errs)
+		if parsedErr == nil {
+			t.Error("Expected parsedErr to contain an error, received nil")
+		}
+	})
+
+	t.Run("should return error when more than 1 error is provided", func(t *testing.T) {
+		errs := make(map[string]error)
+		errs["pipe"] = errors.New("test error")
+		errs["pipe2"] = errors.New("test error2")
+
+		// todo: check for an exact error
+		parsedErr := parseSubcollectorErrors(errs)
+		if parsedErr == nil {
+			t.Error("Expected parsedErr to contain an error, received nil")
+		}
+	})
 }
