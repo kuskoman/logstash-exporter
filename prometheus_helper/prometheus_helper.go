@@ -14,12 +14,6 @@ type SimpleDescHelper struct {
 	Subsystem string
 }
 
-// NewDesc creates a new prometheus.Desc with the namespace and subsystem. The help text is set to the name.
-func (h *SimpleDescHelper) NewDesc(name string) *prometheus.Desc {
-	help := name
-	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, nil, nil)
-}
-
 // NewDescWithHelp creates a new prometheus.Desc with the namespace and subsystem.
 func (h *SimpleDescHelper) NewDescWithHelp(name string, help string) *prometheus.Desc {
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, nil, nil)
