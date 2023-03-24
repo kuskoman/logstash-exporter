@@ -9,6 +9,7 @@ import (
 	dto "github.com/prometheus/client_model/go"
 )
 
+// SimpleDescHelper is a helper struct that can be used to create prometheus.Desc objects
 type SimpleDescHelper struct {
 	Namespace string
 	Subsystem string
