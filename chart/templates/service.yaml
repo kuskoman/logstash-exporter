@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "logstash-exporter.fullname" . }}
+  labels:
+    app: {{ template "logstash-exporter.name" . }}
+    release: {{ .Release.Name }}
+    {{- if .Values.service.annotations }}
+    annotations:
+    {{ toYaml .Values.service.annotations | indent 6 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.service.port }}
+    protocol: TCP
+  selector:
+    app: {{ template "logstash-exporter.name" . }}
+    release: {{ .Release.Name }}

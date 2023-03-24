@@ -28,3 +28,14 @@ tmp/
 
 # Release notes temporary file
 release_notes.txt
+
+# Helm artifacts
+charts/
+*.tgz
+tmpcharts/
+tmp-charts/
+_debug.yml
+_debug*.yml
+_debug/
+_debug.yaml
+_debug*.yaml

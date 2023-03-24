@@ -1,0 +1,54 @@
+logstash:
+  url: "http://logstash:9600"
+
+image:
+  repository: "kuskoman/logstash-exporter"
+  tag: "v1.0.2"
+  pullPolicy: IfNotPresent
+
+deployment:
+  replicas: 1
+  restartPolicy: Always
+  annotations: {}
+  labels: {}
+  pullSecret: []
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  podAnnotations: {}
+  podLabels: {}
+  affinity: {}
+  env: {}
+  envFrom: []
+  priorityClassName: ""
+  dnsConfig: {}
+  securityContext: {}
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+service:
+  type: ClusterIP
+  port: 9198
+  annotations: {}
+  labels: {}
+
+serviceAccount:
+  enabled: false
+  create: false
+  name: ""
+  annotations: {}
