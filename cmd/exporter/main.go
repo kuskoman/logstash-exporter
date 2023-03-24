@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/collectors"
 	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/kuskoman/logstash-exporter/server"
@@ -10,7 +11,7 @@ import (
 )
 
 func main() {
-	warn := config.InitializeEnv()
+	warn := godotenv.Load()
 	if warn != nil {
 		log.Println(warn)
 	}

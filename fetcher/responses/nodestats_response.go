@@ -250,6 +250,7 @@ type QueueResponse struct {
 	EventsCount int `json:"events_count"`
 }
 
+// NodeStatsResponse is the response from the _node/stats API.
 type NodeStatsResponse struct {
 	Host        string           `json:"host"`
 	Version     string           `json:"version"`

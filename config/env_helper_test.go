@@ -24,12 +24,3 @@ func TestGetEnvWithDefault(t *testing.T) {
 		}
 	})
 }
-
-func TestInitializeEnv(t *testing.T) {
-	t.Run("should throw an error if .env file is not found", func(t *testing.T) {
-		err := InitializeEnv()
-		if err == nil {
-			t.Errorf("expected error but got nil")
-		}
-	})
-}

@@ -1,5 +1,6 @@
 package responses
 
+// NodeInfoResponse is the response from the "/" endpoint of the Logstash API
 type NodeInfoResponse struct {
 	Host        string `json:"host"`
 	Version     string `json:"version"`
