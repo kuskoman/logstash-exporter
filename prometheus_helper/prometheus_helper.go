@@ -42,56 +42,21 @@ func ExtractFqName(metric string) (string, error) {
 	return matches[1], nil
 }
 
-// CustomCollector is a custom prometheus.Collector that collects only the given metric.
-type CustomCollector struct {
-	metric prometheus.Metric
-}
-
-// Describe implements the prometheus.Collector interface.
-func (c *CustomCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.metric.Desc()
-}
-
-// Collect implements the prometheus.Collector interface.
-func (c *CustomCollector) Collect(ch chan<- prometheus.Metric) {
-	ch <- c.metric
-}
-
 // ExtractValueFromMetric extracts the value from a prometheus.Metric object.
 // It creates a custom collector and registry, registers the given metric, and then collects
 // the metric value using the registry.
 // Returns the extracted float64 value from the metric's Gauge.
 func ExtractValueFromMetric(metric prometheus.Metric) (float64, error) {
-	// Custom collector that collects only the given metric.
-	collector := &CustomCollector{
-		metric: metric,
-	}
-
-	// Create a custom registry and register the collector.
-	registry := prometheus.NewRegistry()
-	err := registry.Register(collector)
+	var dtoMetric dto.Metric
+	err := metric.Write(&dtoMetric)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error writing metric: %v", err)
 	}
 
-	var metricValue float64
-	metricChannel := make(chan prometheus.Metric)
-	go func() {
-		registry.Collect(metricChannel)
-		close(metricChannel)
-	}()
-
-	for collectedMetric := range metricChannel {
-		if collectedMetric.Desc().String() == metric.Desc().String() {
-			var dtoMetric dto.Metric
-			err = collectedMetric.Write(&dtoMetric)
-			if err != nil {
-				return 0, fmt.Errorf("error writing metric: %v", err)
-			}
-			metricValue = dtoMetric.GetGauge().GetValue()
-			break
-		}
+	gauge := dtoMetric.GetGauge()
+	if gauge == nil {
+		return 0, errors.New("the metric is not a Gauge")
 	}
 
-	return metricValue, nil
+	return gauge.GetValue(), nil
 }

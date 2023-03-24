@@ -1,10 +1,12 @@
 package prometheus_helper
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 func TestSimpleDescHelper(t *testing.T) {
@@ -65,6 +67,16 @@ func TestExtractFqdnName(t *testing.T) {
 	})
 }
 
+type badMetricStub struct{}
+
+func (m *badMetricStub) Desc() *prometheus.Desc {
+	return nil
+}
+
+func (m *badMetricStub) Write(*dto.Metric) error {
+	return errors.New("writing metric failed")
+}
+
 func TestExtractValueFromMetric(t *testing.T) {
 	t.Run("should extract value from a metric", func(t *testing.T) {
 		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
@@ -81,30 +93,31 @@ func TestExtractValueFromMetric(t *testing.T) {
 		}
 	})
 
-	t.Run("should return an error when unable to write metric", func(t *testing.T) {
-		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
-		exampleErr := fmt.Errorf("example error")
-		invalidMetric := prometheus.NewInvalidMetric(metricDesc, exampleErr)
-
-		customCollector := &CustomCollector{
-			metric: invalidMetric,
-		}
-
-		registry := prometheus.NewRegistry()
-		err := registry.Register(customCollector)
-
-		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
-		}
-
-		extractedValue, err := ExtractValueFromMetric(invalidMetric)
+	t.Run("should return error if writing metric fails", func(t *testing.T) {
+		badMetric := &badMetricStub{}
+		val, err := ExtractValueFromMetric(badMetric)
 
 		if err == nil {
-			t.Errorf("Expected error but got nil")
+			t.Errorf("Expected error, but got nil")
 		}
 
-		if extractedValue != 0 {
-			t.Errorf("Expected extracted value to be 0, got %f", extractedValue)
+		if val != 0 {
+			t.Errorf("Expected value to be 0, got %f", val)
+		}
+	})
+
+	t.Run("should return error if the metric is not a Gauge", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_counter_metric", "test counter metric help", nil, nil)
+		metricValue := 42.0
+		metric := prometheus.MustNewConstMetric(metricDesc, prometheus.CounterValue, metricValue)
+
+		val, err := ExtractValueFromMetric(metric)
+		if err == nil {
+			t.Errorf("Expected error, but got nil")
+		}
+
+		if val != 0 {
+			t.Errorf("Expected value to be 0, got %f", val)
 		}
 	})
 }
