@@ -8,11 +8,13 @@ import (
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 )
 
+// Client is an interface for the Logstash client able to fetch data from the Logstash API
 type Client interface {
 	GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error)
 	GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error)
 }
 
+// DefaultClient is the default implementation of the Client interface
 type DefaultClient struct {
 	httpClient *http.Client
 	endpoint   string
@@ -20,6 +22,7 @@ type DefaultClient struct {
 
 const defaultLogstashEndpoint = "http://localhost:9600"
 
+// NewClient returns a new instance of the DefaultClient configured with the given endpoint
 func NewClient(endpoint string) Client {
 	if endpoint == "" {
 		endpoint = defaultLogstashEndpoint
