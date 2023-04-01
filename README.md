@@ -1,5 +1,7 @@
 # Logstash-exporter
 
+[![codecov](https://codecov.io/gh/kuskoman/logstash-exporter/branch/master/graph/badge.svg?token=ISIVB93OC6)](https://codecov.io/gh/kuskoman/logstash-exporter)
+
 Export metrics from Logstash to Prometheus.
 The project was created as rewrite of existing awesome application
 [logstash_exporter](https://github.com/BonnierNews/logstash_exporter),
