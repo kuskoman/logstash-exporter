@@ -219,6 +219,12 @@ Then you can run the tests:
 
     make verify-metrics
 
+## Additional Information
+
+This projects code was reviewed by [Boldly Go](https://www.youtube.com/@boldlygo)
+in an awesome [video](https://www.youtube.com/watch?v=Oe6L5ZmqCDE), which in
+a huge way helped me to improve the code quality.
+
 ## Roadmap
 
 These are the features that are planned to be implemented in the future:
@@ -226,7 +232,7 @@ These are the features that are planned to be implemented in the future:
 - [x] Parse missing metrics (if you find any useful missing metrics, please create an issue)
 - [x] Add description to all metrics
 - [x] Improve test coverage
-- [ ] Build Helm chart
+- [ ] Build Helm chart (see #66)
 - [x] Automatically add release notes to GitHub release
 
 Feel free to create an issue if you have any suggestions, ideas or questions.
