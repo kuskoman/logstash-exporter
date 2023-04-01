@@ -174,17 +174,25 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: docker tag logstash-exporter:latest ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:master
 
-      - name: Tag Docker image with tag
+      - name: Tag Docker image with tag to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
         run: docker tag logstash-exporter:latest ${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
+
+      - name: Tag Docker image with tag to ghcr.io
+        if: startsWith(github.ref, 'refs/tags/')
+        run: docker tag logstash-exporter:latest ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
 
       - name: Push Docker image to GitHub registry
         if: github.ref == 'refs/heads/master'
         run: docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:master
 
-      - name: Push Docker image to Docker Hub
+      - name: Push Docker image with tag to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
         run: docker push ${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
+
+      - name: Push Docker image with tag to ghcr.io
+        if: startsWith(github.ref, 'refs/tags/')
+        run: docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
 
   create-release:
     name: Create GitHub release
