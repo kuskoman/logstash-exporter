@@ -95,6 +95,7 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make run`: Runs the Go Exporter application.
 - `make build-<OS>`: Builds a binary executable for the specified OS (`<OS>` can be linux, darwin, or windows).
 - `make build-docker`: Builds a Docker image for the Go Exporter application.
+- `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the Go Exporter application.
 - `make clean`: Deletes all binary executables in the out directory.
 - `make test`: Runs all tests.
 - `make compose`: Starts a Docker-compose configuration.
