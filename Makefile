@@ -17,6 +17,10 @@ build-windows: out/main-windows
 build-docker:
 	docker build -t logstash-exporter .
 
+# Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
+build-docker-multi:
+	docker buildx build --platform linux/amd64,linux/arm64 -t logstash-exporter .
+
 clean:
 	rm -f $(GOOS_EXES)
 
