@@ -6,6 +6,8 @@ image:
   tag: "v1.0.2"
   pullPolicy: IfNotPresent
 
+fullnameOverride: ""
+
 deployment:
   replicas: 1
   restartPolicy: Always
@@ -24,19 +26,15 @@ deployment:
   dnsConfig: {}
   securityContext: {}
   livenessProbe:
-    enabled: true
+    httpGet:
+      path: /health
+      port: 9198
     initialDelaySeconds: 30
     periodSeconds: 10
     timeoutSeconds: 5
     successThreshold: 1
     failureThreshold: 3
-  readinessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 5
-    successThreshold: 1
-    failureThreshold: 3
+  readinessProbe: {}
   rollingUpdate:
     maxSurge: 1
     maxUnavailable: 0
