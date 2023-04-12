@@ -7,7 +7,7 @@ services:
       - logstash-data:/usr/share/logstash/data
       - ./.docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
-      - elasticsearch
+      - elasticsearchMock
     healthcheck:
       test:
         - "CMD"
@@ -39,28 +39,21 @@ services:
       interval: 30s
       timeout: 10s
       retries: 8
-  elasticsearch:
-    image: elasticsearch:8.6.1
+  elasticsearchMock:
+    image: httpd:2.4
     restart: unless-stopped
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-      - elasticsearch-logs:/usr/share/elasticsearch/logs
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.http.ssl.enabled=false
-      - xpack.security.transport.ssl.enabled=false
+    ports:
+      - ${ELASTICSEARCH_PORT:-9200}:9200
+    command: ["httpd-foreground"]
     healthcheck:
       test:
         - "CMD"
         - "curl"
         - "-f"
-        - "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s"
+        - "http://localhost:9200"
       interval: 30s
       timeout: 10s
       retries: 8
-    ports:
-      - ${ELASTICSEARCH_PORT:-9200}:9200
   exporter:
     build:
       context: .
