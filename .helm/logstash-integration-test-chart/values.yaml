@@ -23,6 +23,8 @@ logstash:
 
 prometheus:
   enabled: true
+  service:
+    type: ClusterIP
   config: |
     global:
       scrape_interval: 5s
