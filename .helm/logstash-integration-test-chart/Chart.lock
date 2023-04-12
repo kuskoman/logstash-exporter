@@ -1,0 +1,15 @@
+dependencies:
+- name: logstash
+  repository: https://helm.elastic.co
+  version: 8.5.1
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 8.5.1
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 20.2.0
+- name: logstash-exporter
+  repository: file://../../chart/
+  version: v1.0.2
+digest: sha256:0d966a53b3f0eff8f8008de0473ebfbd7c279267a3fb0bde601fece4404539db
+generated: "2023-04-12T10:08:39.085004988+02:00"
