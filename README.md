@@ -17,6 +17,8 @@ The application can be run in two ways:
 - using the binary executable
 - using the Docker image
 
+Additionally [Helm chart](./chart/) is provided for easy deployment to Kubernetes.
+
 #### Binary Executable
 
 The binary executable can be downloaded from the [releases page](https://github.com/kuskoman/logstash-exporter/releases).
@@ -70,6 +72,10 @@ To pull the image from command line simply use:
 
         docker pull ghcr.io/kuskoman/logstash-exporter:master
 
+#### Helm Chart
+
+The Helm chart has its own [README](./chart/README.md).
+
 ### Endpoints
 
 - `/metrics`: Exposes metrics in Prometheus format.
@@ -97,6 +103,7 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make run`: Runs the Go Exporter application.
 - `make build-<OS>`: Builds a binary executable for the specified OS (`<OS>` can be linux, darwin, or windows).
 - `make build-docker`: Builds a Docker image for the Go Exporter application.
+- `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the Go Exporter application.
 - `make clean`: Deletes all binary executables in the out directory.
 - `make test`: Runs all tests.
 - `make compose`: Starts a Docker-compose configuration.
@@ -190,12 +197,12 @@ Usage:
 This [script](./scripts/create_release_notes.sh) is used to create release notes for the GitHub release.
 Used primarily by the [CI workflow](./.github/workflows/go-application.yml).
 
-### verify-metrics.sh
+### verify_metrics.sh
 
-This [script](./scripts/verify-metrics.sh) is used to verify the metrics from the Go Exporter application.
+This [script](./scripts/verify_metrics.sh) is used to verify the metrics from the Go Exporter application.
 Can be used both locally and in the CI workflow.
 
-    ./scripts/verify-metrics.sh
+    ./scripts/verify_metrics.sh
 
 ## Testing process
 

@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "logstash-exporter.fullname" . }}
+  labels:
+    app: {{ include "logstash-exporter.name" . }}
+    release: {{ .Release.Name }}
+    {{- with .Values.deployment.labels }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ required "deployment.replicas is required" .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "logstash-exporter.name" . }}
+      release: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ required "deployment.rollingUpdate.maxSurge is required" .Values.deployment.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ required "deployment.rollingUpdate.maxUnavailable is required" .Values.deployment.rollingUpdate.maxUnavailable }}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ include "logstash-exporter.name" . }}
+        release: {{ .Release.Name }}
+        {{- with .Values.deployment.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.deployment.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.deployment.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range $pullSecret := .Values.deployment.pullSecret }}
+      - name: {{ $pullSecret }}
+      {{- end }}
+      {{- end }}
+
+      {{- if .Values.serviceAccount.enabled }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "logstash-exporter.serviceAccountName" . }}
+      {{- else }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+      {{- end }}
+
+      {{- if .Values.deployment.priorityClassName }}
+      priorityClassName: {{ .Values.deployment.priorityClassName }}
+      {{- end }}
+
+      restartPolicy: {{ required "deployment.restartPolicy is required" .Values.deployment.restartPolicy }}
+
+      {{- if .Values.deployment.tolerations }}
+      tolerations:
+      {{- toYaml .Values.deployment.tolerations | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.deployment.affinity }}
+      affinity:
+      {{- toYaml .Values.deployment.affinity | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.deployment.nodeSelector }}
+      nodeSelector:
+      {{- toYaml .Values.deployment.nodeSelector | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.deployment.securityContext }}
+      securityContext:
+      {{- toYaml .Values.deployment.securityContext | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.deployment.dnsConfig }}
+      dnsConfig:
+      {{- toYaml .Values.deployment.dnsConfig | nindent 8 }}
+      {{- end }}
+
+      containers:
+      - name: exporter
+        env:
+        - name: LOGSTASH_URL
+          value: {{ required "logstash.url is required" .Values.logstash.url | quote }}
+        - name: PORT
+          value: {{ required "service.port is required" .Values.service.port | quote }}
+        {{- range $key, $value := .Values.deployment.env }}
+        - name: {{ $key | quote }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- range $key, $value := .Values.deployment.envFrom }}
+        - name: {{ $key | quote }}
+          valueFrom:
+            {{- toYaml $value | nindent 14 }}
+        {{- end }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        {{- if .Values.deployment.resources }}
+        resources:
+          {{- toYaml .Values.deployment.resources | nindent 12 }}
+        {{- end }}
+
+        {{- if .Values.deployment.livenessProbe }}
+        livenessProbe:
+          {{- toYaml .Values.deployment.livenessProbe | nindent 12 }}
+        {{- end }}
+
+        {{- if .Values.deployment.readinessProbe }}
+        readinessProbe:
+          {{- toYaml .Values.deployment.readinessProbe | nindent 12 }}
+        {{- end }}
+
+        {{- with .Values.deployment.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ required "service.port is required" .Values.service.port }}
+

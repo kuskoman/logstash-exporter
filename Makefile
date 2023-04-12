@@ -17,6 +17,10 @@ build-windows: out/main-windows
 build-docker:
 	docker build -t logstash-exporter .
 
+# Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
+build-docker-multi:
+	docker buildx build --platform linux/amd64,linux/arm64 -t logstash-exporter .
+
 clean:
 	rm -f $(GOOS_EXES)
 
@@ -37,7 +41,7 @@ compose-down:
 	docker-compose down
 
 verify-metrics:
-	./scripts/verify-metrics.sh
+	./scripts/verify_metrics.sh
 
 pull:
 	docker-compose pull
@@ -47,5 +51,11 @@ logs:
 
 minify:
 	upx -9 $(GOOS_EXES)
+
+install-helm-readme:
+	./scripts/install_helm_readme_generator.sh
+
+helm-readme:
+	./scripts/generate_helm_readme.sh
 
 .DEFAULT_GOAL := run
