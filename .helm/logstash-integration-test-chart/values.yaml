@@ -17,7 +17,7 @@ logstash:
 
     output {
         elasticsearch {
-            hosts => ["http://elasticsearch:9200"]
+            hosts => ["http://logstash-integration-test-chart:9200"]
         }
     }
 
@@ -38,11 +38,11 @@ prometheus:
         static_configs:
           - targets: ["exporter:9198"]
 
-elasticsearch:
+apache:
   enabled: true
-  replicas: 1
-  minimumMasterNodes: 1
-  esJavaOpts: "-Xms512m -Xmx512m"
+  service:
+    type: ClusterIP
 
 logstash-exporter:
   enabled: true
+  fullnameOverride: logstash-exporter
