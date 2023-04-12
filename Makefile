@@ -41,7 +41,7 @@ compose-down:
 	docker-compose down
 
 verify-metrics:
-	./scripts/verify-metrics.sh
+	./scripts/verify_metrics.sh
 
 pull:
 	docker-compose pull

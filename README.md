@@ -197,12 +197,12 @@ Usage:
 This [script](./scripts/create_release_notes.sh) is used to create release notes for the GitHub release.
 Used primarily by the [CI workflow](./.github/workflows/go-application.yml).
 
-### verify-metrics.sh
+### verify_metrics.sh
 
-This [script](./scripts/verify-metrics.sh) is used to verify the metrics from the Go Exporter application.
+This [script](./scripts/verify_metrics.sh) is used to verify the metrics from the Go Exporter application.
 Can be used both locally and in the CI workflow.
 
-    ./scripts/verify-metrics.sh
+    ./scripts/verify_metrics.sh
 
 ## Testing process
 
