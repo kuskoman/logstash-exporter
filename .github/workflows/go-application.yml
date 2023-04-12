@@ -73,6 +73,22 @@ jobs:
       - name: Verify that there are no changes
         run: git diff --exit-code || echo "README.md is not up to date. Please use helm-readme and commit the changes."
 
+  lint-helm-chart:
+    name: Lint Helm chart
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 3.11.0
+
+      - name: Lint Helm chart
+        working-directory: ./chart
+        run: helm lint .
+
   test-integration:
     name: Test integration with Prometheus
     runs-on: ubuntu-20.04
