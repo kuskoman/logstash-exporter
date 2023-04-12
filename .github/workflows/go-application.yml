@@ -52,6 +52,27 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
 
+  verify-helm-readme:
+    name: Verify that Helm README is up to date
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install README generator
+        run: make install-helm-readme
+
+      - name: Generate README
+        run: make helm-readme
+
+      - name: Verify that there are no changes
+        run: git diff --exit-code || echo "README.md is not up to date. Please use helm-readme and commit the changes."
+
   test-integration:
     name: Test integration with Prometheus
     runs-on: ubuntu-20.04
