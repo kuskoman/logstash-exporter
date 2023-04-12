@@ -89,6 +89,22 @@ jobs:
         working-directory: ./chart
         run: helm lint .
 
+  template-helm-chart:
+    name: Verify templating chart with default values
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 3.11.0
+
+      - name: Template Helm chart
+        working-directory: ./chart
+        run: helm template . > /dev/null
+
   test-integration:
     name: Test integration with Prometheus
     runs-on: ubuntu-20.04
