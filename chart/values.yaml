@@ -1,52 +1,154 @@
+## @section Logstash configuration
+##
 logstash:
+  ## @param logstash.url Logstash instance URL
+  ##
   url: "http://logstash:9600"
 
+## @section Image settings
+##
 image:
+  ## @param image.repository Image repository
+  ##
   repository: "kuskoman/logstash-exporter"
+  ## @param image.tag Image tag
+  ##
   tag: "v1.0.2"
+  ## @param image.pullPolicy Image pull policy
+  ## Options: Always, Never, IfNotPresent
+  ##
   pullPolicy: IfNotPresent
 
+## @param fullnameOverride Override the fullname of the chart
+##
 fullnameOverride: ""
 
+## @section Deployment settings
+##
 deployment:
+  ## @param deployment.replicas Number of replicas for the deployment
+  ##
   replicas: 1
+  ## @param deployment.restartPolicy Restart policy for the deployment.
+  ## Options: Always, OnFailure, Never
+  ##
   restartPolicy: Always
+  ## @param deployment.annotations Additional deployment annotations
+  ##
+  ## Example:
+  ## annotations:
+  ##   kubernetes.io/foo: bar
+  ##
   annotations: {}
+  ## @param deployment.labels Additional deployment labels
+  ##
+  ## Example:
+  ## labels:
+  ##   foo: bar
+  ##
   labels: {}
+  ## @param deployment.pullSecret Kubernetes secret for pulling the image
+  ##
   pullSecret: []
+  ## @param deployment.resources Resource requests and limits
+  ##
   resources: {}
+  ## @param deployment.nodeSelector Node selector for the deployment
+  ##
   nodeSelector: {}
+  ## @param deployment.tolerations Tolerations for the deployment
+  ##
   tolerations: []
+  ## @param deployment.podAnnotations Additional pod annotations
+  ##
   podAnnotations: {}
+  ## @param deployment.podLabels Additional pod labels
+  ##
   podLabels: {}
+  ## @param deployment.affinity Affinity for the deployment
+  ##
   affinity: {}
+  ## @param deployment.env Additional environment variables
+  ##
   env: {}
+  ## @param deployment.envFrom Additional environment variables from config maps or secrets
+  ##
   envFrom: []
+  ## @param deployment.priorityClassName Priority class name for the deployment
+  ##
   priorityClassName: ""
+  ## @param deployment.dnsConfig DNS configuration for the deployment
+  ##
   dnsConfig: {}
+  ## @param deployment.securityContext Security context for the deployment
+  ##
   securityContext: {}
+  ## @section Liveness probe settings
+  ##
   livenessProbe:
     httpGet:
+      ## @param deployment.livenessProbe.httpGet.path Path for liveness probe
+      ##
       path: /health
+      ## @param deployment.livenessProbe.httpGet.port Port for liveness probe
+      ##
       port: 9198
+    ## @param deployment.livenessProbe.initialDelaySeconds Initial delay for liveness probe
+    ##
     initialDelaySeconds: 30
+    ## @param deployment.livenessProbe.periodSeconds Period for liveness probe
+    ##
     periodSeconds: 10
+    ## @param deployment.livenessProbe.timeoutSeconds Timeout for liveness probe
+    ##
     timeoutSeconds: 5
+    ## @param deployment.livenessProbe.successThreshold Success threshold for liveness probe
+    ##
     successThreshold: 1
+    ## @param deployment.livenessProbe.failureThreshold Failure threshold for liveness probe
+    ##
     failureThreshold: 3
+  ## @param deployment.readinessProbe Readiness probe configuration
+  ##
   readinessProbe: {}
+  ## @section Rolling update settings
+  ##
   rollingUpdate:
+    ## @param deployment.rollingUpdate.maxSurge Maximum surge for rolling update
+    ##
     maxSurge: 1
+    ## @param deployment.rollingUpdate.maxUnavailable Maximum unavailable for rolling update
+    ##
     maxUnavailable: 0
 
+## @section Service settings
+##
 service:
+  ## @param service.type Service type
+  ##
   type: ClusterIP
+  ## @param service.port Service port
+  ##
   port: 9198
+  ## @param service.annotations Additional service annotations
+  ##
   annotations: {}
+  ## @param service.labels Additional service labels
+  ##
   labels: {}
 
+## @section ServiceAccount settings
+##
 serviceAccount:
+  ## @param serviceAccount.enabled Enable service account creation
+  ##
   enabled: false
+  ## @param serviceAccount.create Create service account
+  ##
   create: false
+  ## @param serviceAccount.name Service account name
+  ##
   name: ""
+  ## @param serviceAccount.annotations Additional service account annotations
+  ##
   annotations: {}

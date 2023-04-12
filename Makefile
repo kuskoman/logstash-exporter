@@ -52,4 +52,10 @@ logs:
 minify:
 	upx -9 $(GOOS_EXES)
 
+install-helm-readme:
+	./scripts/install_helm_readme_generator.sh
+
+helm-readme:
+	./scripts/generate_helm_readme.sh
+
 .DEFAULT_GOAL := run

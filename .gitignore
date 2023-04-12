@@ -39,3 +39,6 @@ _debug*.yml
 _debug/
 _debug.yaml
 _debug*.yaml
+
+# Readme generator files
+helm-generator/

@@ -17,6 +17,8 @@ The application can be run in two ways:
 - using the binary executable
 - using the Docker image
 
+Additionally [Helm chart](./chart/) is provided for easy deployment to Kubernetes.
+
 #### Binary Executable
 
 The binary executable can be downloaded from the [releases page](https://github.com/kuskoman/logstash-exporter/releases).
@@ -69,6 +71,10 @@ The unstable version of the Docker image can be downloaded from the
 To pull the image from command line simply use:
 
         docker pull ghcr.io/kuskoman/logstash-exporter:master
+
+#### Helm Chart
+
+The Helm chart has its own [README](./chart/README.md).
 
 ### Endpoints
 
