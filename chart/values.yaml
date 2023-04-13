@@ -11,9 +11,9 @@ image:
   ## @param image.repository Image repository
   ##
   repository: "kuskoman/logstash-exporter"
-  ## @param image.tag Image tag
+  ## @param image.tag Image tag, if not set the appVersion is used
   ##
-  tag: "v1.0.2"
+  tag: ""
   ## @param image.pullPolicy Image pull policy
   ## Options: Always, Never, IfNotPresent
   ##
