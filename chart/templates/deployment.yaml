@@ -98,7 +98,7 @@ spec:
           valueFrom:
             {{- toYaml $value | nindent 14 }}
         {{- end }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ include "logstash-exporter.imageTag" $ }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
 
         {{- if .Values.deployment.resources }}

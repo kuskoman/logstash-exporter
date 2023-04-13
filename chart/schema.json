@@ -22,8 +22,8 @@
                 },
                 "tag": {
                     "type": "string",
-                    "description": "Image tag",
-                    "default": "v1.0.2"
+                    "description": "Image tag, if not set the appVersion is used",
+                    "default": ""
                 },
                 "pullPolicy": {
                     "type": "string",

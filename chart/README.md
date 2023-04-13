@@ -10,12 +10,12 @@
 
 ### Image settings
 
-| Name               | Description                        | Value                        |
-| ------------------ | ---------------------------------- | ---------------------------- |
-| `image.repository` | Image repository                   | `kuskoman/logstash-exporter` |
-| `image.tag`        | Image tag                          | `v1.0.2`                     |
-| `image.pullPolicy` | Image pull policy                  | `IfNotPresent`               |
-| `fullnameOverride` | Override the fullname of the chart | `""`                         |
+| Name               | Description                                  | Value                        |
+| ------------------ | -------------------------------------------- | ---------------------------- |
+| `image.repository` | Image repository                             | `kuskoman/logstash-exporter` |
+| `image.tag`        | Image tag, if not set the appVersion is used | `""`                         |
+| `image.pullPolicy` | Image pull policy                            | `IfNotPresent`               |
+| `fullnameOverride` | Override the fullname of the chart           | `""`                         |
 
 ### Deployment settings
 
