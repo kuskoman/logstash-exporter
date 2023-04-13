@@ -85,8 +85,21 @@ spec:
       containers:
       - name: exporter
         env:
+        {{- if or (and .Values.logstash.url .Values.logstash.kubernetes) (and (empty .Values.logstash.url) (empty .Values.logstash.kubernetes)) }}
+          {{ fail "Use only one of logstash.url (single/remote instance) or logstash.kubernetes (service with replicas) in values.yaml" }}
+        {{- end }}
+        {{- if .Values.logstash.url }}
         - name: LOGSTASH_URL
-          value: {{ required "logstash.url is required" .Values.logstash.url | quote }}
+          value: {{ .Values.logstash.url | quote }}
+        {{- end }}
+        {{- if .Values.logstash.kubernetes }}
+        - name: LOGSTASH_KUBERNETES_NAMESPACE
+          value: {{ required "logstash.kubernetes.namespace is required" .Values.logstash.kubernetes.namespace | quote }}
+        - name: LOGSTASH_KUBERNETES_SERVICE
+          value: {{ required "logstash.kubernetes.service is required" .Values.logstash.kubernetes.service | quote }}
+        - name: LOGSTASH_API_PORT
+          value: {{ required "logstash.kubernetes.apiPort is required" .Values.logstash.kubernetes.apiPort | quote }}
+        {{- end }}
         - name: PORT
           value: {{ required "service.port is required" .Values.service.port | quote }}
         {{- range $key, $value := .Values.deployment.env }}

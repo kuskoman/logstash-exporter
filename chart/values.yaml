@@ -1,9 +1,25 @@
 ## @section Logstash configuration
 ##
 logstash:
-  ## @param logstash.url Logstash instance URL
+  ## @param logstash.url Logstash single-instance or remote URL
+  ## logstash.url is mutually exclusive with logstash.kubernetes.
   ##
   url: "http://logstash:9600"
+
+  ## @section logstash.kubernetes Logstash service information
+  ## Use instead of logstash.url to fetch metrics across all Logstash replicas.
+  ## Logstash must run in the same Kubernetes cluster.
+  ## 
+  kubernetes:
+    ## @param logstash.kubernetes.namespace Logstash service's namespace
+    ##
+    namespace: monitoring
+    ## @param logstash.kubernetes.service Logstash service name
+    ##
+    service: logstash
+    ## @param logstash.kubernetes.apiPort Logstash internal API port
+    ##
+    apiPort: 9600
 
 ## @section Image settings
 ##
