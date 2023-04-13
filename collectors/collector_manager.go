@@ -24,10 +24,8 @@ type CollectorManager struct {
 	scrapeDurations *prometheus.SummaryVec
 }
 
-func NewCollectorManager(endpoint string) *CollectorManager {
-	client := logstashclient.NewClient(endpoint)
-
-	collectors := getCollectors(client)
+func NewCollectorManager(endpoints []string) *CollectorManager {
+	collectors := getCollectors(endpoints)
 
 	scrapeDurations := getScrapeDurationsCollector()
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
@@ -35,10 +33,16 @@ func NewCollectorManager(endpoint string) *CollectorManager {
 	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations}
 }
 
-func getCollectors(client logstashclient.Client) map[string]Collector {
+func getCollectors(endpoints []string) map[string]Collector {
 	collectors := make(map[string]Collector)
-	collectors["nodeinfo"] = nodeinfo.NewNodeinfoCollector(client)
-	collectors["nodestats"] = nodestats.NewNodestatsCollector(client)
+	for _, endpoint := range endpoints {
+		client := logstashclient.NewClient(endpoint)
+
+		// NOTE: This could be structured better, but this avoids adding another level of map depth
+		collectors[endpoint + "_nodeinfo"] = nodeinfo.NewNodeinfoCollector(client)
+		collectors[endpoint + "_nodestats"] = nodestats.NewNodestatsCollector(client)
+	}
+	
 	return collectors
 }
 

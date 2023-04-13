@@ -10,8 +10,8 @@ import (
 )
 
 func TestNewCollectorManager(t *testing.T) {
-	mockEndpoint := "http://localhost:9600"
-	cm := NewCollectorManager(mockEndpoint)
+	mockEndpoints := []string{"http://localhost:9600"}
+	cm := NewCollectorManager(mockEndpoints)
 
 	if cm == nil {
 		t.Error("Expected collector manager to be initialized")
