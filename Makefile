@@ -25,7 +25,7 @@ build-darwin: out/main-darwin
 build-windows: out/main-windows
 
 build-docker:
-	docker build -t logstash-exporter .
+	docker build -t logstash-exporter --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
 
 # Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
 build-docker-multi:
