@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -18,11 +19,28 @@ func main() {
 
 	port := config.Port
 	host := config.Host
-	logstashUrl := config.LogstashUrl
+	var logstashApiUrls []string
 
 	log.Println("Application starting...")
+	if config.UseKubernetesEndpoints() {
+		log.Println("Using Kubernetes Service API to locate Logstash Replicas...")
+		logstashEndpoints, err := config.GetKubernetesLogstashApiEndpoints()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(logstashEndpoints) < 1 {
+			log.Fatal("No Logstash Kubernetes services with API endpoints were found. Exiting.")
+		}
+		for _, logstash := range logstashEndpoints {
+			logstashUrl := fmt.Sprintf("%s:%d", logstash.Ip, logstash.Port)
+			logstashApiUrls = append(logstashApiUrls, logstashUrl)
+		}
+	} else {
+		log.Println("Using single-instance Logstash URL.")
+		logstashApiUrls = append(logstashApiUrls, config.LogstashUrl)
+	}
+	collectorManager := collectors.NewCollectorManager(logstashApiUrls)
 
-	collectorManager := collectors.NewCollectorManager(logstashUrl)
 	server := server.NewAppServer(host, port)
 	prometheus.MustRegister(collectorManager)
 
