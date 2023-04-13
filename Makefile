@@ -2,10 +2,20 @@ GOOS_VALUES := linux darwin windows
 GOOS_BINARIES := $(foreach goos,$(GOOS_VALUES),out/main-$(goos))
 GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/main-$(goos),out/main-$(goos)))
 
+GITHUB_REPO := github.com/kuskoman/logstash-exporter
+VERSION := $(shell git symbolic-ref --short HEAD)
+GIT_COMMIT := $(shell git rev-parse HEAD)
+
 all: $(GOOS_BINARIES)
 
+VERSIONINFO_PKG := config
+ldflags := -s -w \
+	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).Version=$(VERSION)' \
+	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).GitCommit=$(GIT_COMMIT)' \
+	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).BuildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S%Z)'
+
 out/main-%:
-	CGO_ENABLED=0 GOOS=$* go build -a -installsuffix cgo -ldflags="-w -s" -o out/main-$* cmd/exporter/main.go
+	CGO_ENABLED=0 GOOS=$* go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/main-$* cmd/exporter/main.go
 
 run:
 	go run cmd/exporter/main.go
@@ -15,7 +25,7 @@ build-darwin: out/main-darwin
 build-windows: out/main-windows
 
 build-docker:
-	docker build -t logstash-exporter .
+	docker build -t logstash-exporter --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
 
 # Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
 build-docker-multi:
