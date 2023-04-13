@@ -43,7 +43,7 @@ func TestVersionInfoString(t *testing.T) {
 		BuildDate: "test-date",
 	}
 
-	expectedString := "{Version:test-version GitCommit:test-commit GoVersion:test-go-version BuildArch:test-arch BuildOS:test-os BuildDate:test-date}"
+	expectedString := "Version: test-version, GitCommit: test-commit, GoVersion: test-go-version, BuildArch: test-arch, BuildOS: test-os, BuildDate: test-date"
 	versionInfoString := versionInfo.String()
 
 	if versionInfoString != expectedString {

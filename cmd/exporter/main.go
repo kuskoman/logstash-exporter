@@ -21,6 +21,8 @@ func main() {
 	logstashUrl := config.LogstashUrl
 
 	log.Println("Application starting...")
+	versionInfo := config.GetBuildInfo()
+	log.Println(versionInfo.String())
 
 	collectorManager := collectors.NewCollectorManager(logstashUrl)
 	server := server.NewAppServer(host, port)

@@ -40,5 +40,5 @@ type VersionInfo struct {
 
 // String returns a string representation of the VersionInfo struct.
 func (v *VersionInfo) String() string {
-	return fmt.Sprintf("%+v", *v)
+	return fmt.Sprintf("Version: %s, GitCommit: %s, GoVersion: %s, BuildArch: %s, BuildOS: %s, BuildDate: %s", v.Version, v.GitCommit, v.GoVersion, v.BuildArch, v.BuildOS, v.BuildDate)
 }
