@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetBuildInfo(t *testing.T) {
-	versionInfo := GetBuildInfo()
+	versionInfo := GetVersionInfo()
 
 	if versionInfo.Version == "" {
 		t.Error("Expected Version to be set")

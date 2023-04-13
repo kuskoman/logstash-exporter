@@ -34,7 +34,7 @@ func TestHandleVersionInfo(t *testing.T) {
 	t.Parallel()
 	t.Run("normal case", func(t *testing.T) {
 		t.Parallel()
-		ts := httptest.NewServer(http.HandlerFunc(getVersionInfoHandler(config.GetBuildInfo())))
+		ts := httptest.NewServer(http.HandlerFunc(getVersionInfoHandler(config.GetVersionInfo())))
 		defer ts.Close()
 
 		resp, err := http.Get(ts.URL)
@@ -54,7 +54,7 @@ func TestHandleVersionInfo(t *testing.T) {
 			t.Fatalf("failed to decode JSON: %v", err)
 		}
 
-		expectedVersionInfo := config.GetBuildInfo()
+		expectedVersionInfo := config.GetVersionInfo()
 		if versionInfo != *expectedVersionInfo {
 			t.Errorf("expected version info: %+v, but got: %+v", *expectedVersionInfo, versionInfo)
 		}

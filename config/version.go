@@ -16,8 +16,8 @@ var (
 	BuildDate = "unknown"
 )
 
-// GetBuildInfo returns a VersionInfo struct with the current build information.
-func GetBuildInfo() *VersionInfo {
+// GetVersionInfo returns a VersionInfo struct with the current build information.
+func GetVersionInfo() *VersionInfo {
 	return &VersionInfo{
 		Version:   Version,
 		GitCommit: GitCommit,
