@@ -24,8 +24,8 @@ func TestSimpleDescHelper(t *testing.T) {
 	})
 
 	t.Run("NewDescWithHelpAndLabel", func(t *testing.T) {
-		desc := helper.NewDescWithHelpAndLabel("metric", "help", "label")
-		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: [label]}"
+		desc := helper.NewDescWithHelpAndLabel("metric", "help", "customLabel")
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: [{customLabel <nil>}]}"
 		if desc.String() != expectedDesc {
 			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
 		}

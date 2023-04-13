@@ -107,7 +107,7 @@ func TestDescribe(t *testing.T) {
 	cm.Describe(ch)
 
 	desc := <-ch
-	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: [collector result]}"
+	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: [{collector <nil>} {result <nil>}]}"
 	if desc.String() != expectedDesc {
 		t.Errorf("Expected metric description to be '%s', got %s", expectedDesc, desc.String())
 	}
