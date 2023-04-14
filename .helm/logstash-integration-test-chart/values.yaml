@@ -50,3 +50,5 @@ logstash-exporter:
     repository: logstash-exporter
     tag: latest
     pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
