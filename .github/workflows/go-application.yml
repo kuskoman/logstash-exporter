@@ -297,7 +297,44 @@ jobs:
 
       - name: Install Helm chart
         working-directory: .helm/logstash-integration-test-chart
-        run: helm install --atomic --wait --timeout 15m --debug logstash-integration-test-chart .
+        run: helm install --atomic --wait --timeout 15m --debug logstash-integration-test-chart . 2>&1 | tee debug.log
+
+      - name: Save debug log as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: logstash-integration-test-chart-debug-log
+          path: .helm/logstash-integration-test-chart/debug.log
+          retention-days: 7
+
+      - name: Show services in default namespace
+        run: kubectl get svc
+
+      - name: Forward exporter port in background and save PID
+        run: |
+          set -euxo pipefail
+          SVC_NAME="logstash-integration-test-chart-prometheus-server"
+          kubectl get svc/$SVC_NAME >/dev/null 2>&1
+          kubectl port-forward svc/$SVC_NAME 9090:80 &
+          echo $! > port-forward.pid
+
+      - name: Wait for Prometheus to expose logstash_exporter metrics
+        timeout-minutes: 2
+        run: |
+          set -euxo pipefail
+          metricsUrl="http://localhost:9090/api/v1/label/__name__/values"
+          while true; do
+            echo "Waiting for Prometheus to expose logstash_exporter metrics..."
+            if curl -s "$metricsUrl" | grep -q logstash_exporter; then
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Verify that all metrics are present
+        run: make verify-metrics
+
+      - name: Kill port-forward process
+        run: kill $(cat port-forward.pid)
 
   create-release:
     name: Create GitHub release

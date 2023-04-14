@@ -1,6 +1,10 @@
 #! /usr/bin/env bash
 
-prometheus_response=$(curl -s -X GET http://localhost:9090/api/v1/label/__name__/values)
+set -euxo pipefail
+
+url="http://localhost:9090/api/v1/label/__name__/values"
+echo "Performing GET request to $url"
+prometheus_response=$(curl -s -X GET "$url")
 status=$(echo $prometheus_response | jq -r '.status')
 if [ "$status" != "success" ]; then
     echo "Prometheus API returned an error: $prometheus_response"
@@ -12,6 +16,7 @@ script_location=$(dirname "$0")
 snapshot_dir="$script_location/snapshots"
 snapshot_file="$snapshot_dir/metric_names.txt"
 
+echo "Creating snapshot directory $snapshot_dir"
 mkdir -p "$snapshot_dir"
 
 if [ ! -f "$snapshot_file" ]; then
