@@ -38,11 +38,14 @@ type NodestatsCollector struct {
 
 	JvmUptimeMillis *prometheus.Desc
 
-	ProcessOpenFileDescriptors *prometheus.Desc
-	ProcessMaxFileDescriptors  *prometheus.Desc
-	ProcessCpuPercent          *prometheus.Desc
-	ProcessCpuTotalMillis      *prometheus.Desc
-	ProcessMemTotalVirtual     *prometheus.Desc
+	ProcessOpenFileDescriptors    *prometheus.Desc
+	ProcessMaxFileDescriptors     *prometheus.Desc
+	ProcessCpuPercent             *prometheus.Desc
+	ProcessCpuTotalMillis         *prometheus.Desc
+	ProcessCpuLoadAverageOneM     *prometheus.Desc
+	ProcessCpuLoadAverageFiveM    *prometheus.Desc
+	ProcessCpuLoadAverageFifteenM *prometheus.Desc
+	ProcessMemTotalVirtual        *prometheus.Desc
 
 	ReloadSuccesses *prometheus.Desc
 	ReloadFailures  *prometheus.Desc
@@ -84,6 +87,10 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 		ProcessMaxFileDescriptors:  descHelper.NewDescWithHelp("process_max_file_descriptors", "Limit of open file descriptors."),
 		ProcessCpuPercent:          descHelper.NewDescWithHelp("process_cpu_percent", "CPU usage of the process."),
 		ProcessCpuTotalMillis:      descHelper.NewDescWithHelp("process_cpu_total_millis", "Total CPU time used by the process."),
+		ProcessCpuLoadAverageOneM: descHelper.NewDescWithHelp("process_cpu_load_average_1m", "Total 1m system load average."),
+		ProcessCpuLoadAverageFiveM: descHelper.NewDescWithHelp("process_cpu_load_average_5m", "Total 5m system load average."),
+		ProcessCpuLoadAverageFifteenM: descHelper.NewDescWithHelp("process_cpu_load_average_15m", "Total 15m system load average."),
+
 		ProcessMemTotalVirtual:     descHelper.NewDescWithHelp("process_mem_total_virtual", "Total virtual memory used by the process."),
 
 		ReloadSuccesses: descHelper.NewDescWithHelp("reload_successes", "Number of successful reloads."),
@@ -134,6 +141,9 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(c.ProcessMaxFileDescriptors, prometheus.GaugeValue, float64(nodeStats.Process.MaxFileDescriptors))
 	ch <- prometheus.MustNewConstMetric(c.ProcessCpuPercent, prometheus.GaugeValue, float64(nodeStats.Process.CPU.Percent))
 	ch <- prometheus.MustNewConstMetric(c.ProcessCpuTotalMillis, prometheus.GaugeValue, float64(nodeStats.Process.CPU.TotalInMillis))
+	ch <- prometheus.MustNewConstMetric(c.ProcessCpuLoadAverageOneM, prometheus.GaugeValue, float64(nodeStats.Process.CPU.LoadAverage.OneM))
+	ch <- prometheus.MustNewConstMetric(c.ProcessCpuLoadAverageFiveM, prometheus.GaugeValue, float64(nodeStats.Process.CPU.LoadAverage.FiveM))
+	ch <- prometheus.MustNewConstMetric(c.ProcessCpuLoadAverageFifteenM, prometheus.GaugeValue, float64(nodeStats.Process.CPU.LoadAverage.FifteenM))
 	ch <- prometheus.MustNewConstMetric(c.ProcessMemTotalVirtual, prometheus.GaugeValue, float64(nodeStats.Process.Mem.TotalVirtualInBytes))
 
 	ch <- prometheus.MustNewConstMetric(c.ReloadSuccesses, prometheus.GaugeValue, float64(nodeStats.Reloads.Successes))
