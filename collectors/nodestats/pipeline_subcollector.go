@@ -16,6 +16,7 @@ import (
 // pipelines of a logstash node.
 // The collector is created once for each pipeline of the node.
 type PipelineSubcollector struct {
+	Up                      *prometheus.Desc
 	EventsOut               *prometheus.Desc
 	EventsFiltered          *prometheus.Desc
 	EventsIn                *prometheus.Desc
@@ -40,6 +41,7 @@ type PipelineSubcollector struct {
 func NewPipelineSubcollector() *PipelineSubcollector {
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
 	return &PipelineSubcollector{
+		Up:                      descHelper.NewDescWithHelpAndLabels("up", "Whether the pipeline is up or not.", "pipeline"),
 		EventsOut:               descHelper.NewDescWithHelpAndLabels("events_out", "Number of events that have been processed by this pipeline.", "pipeline"),
 		EventsFiltered:          descHelper.NewDescWithHelpAndLabels("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline"),
 		EventsIn:                descHelper.NewDescWithHelpAndLabels("events_in", "Number of events that have been inputted into this pipeline.", "pipeline"),
@@ -127,6 +129,24 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 
 	collectingEnd := time.Now()
 	log.Printf("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
+}
+
+func (collector *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
+	// 1. If both timestamps are nil, the pipeline is healthy
+	if pipeReloadStats.LastSuccessTimestamp == nil && pipeReloadStats.LastFailureTimestamp == nil {
+		return 1
+	// 2. If last_failure_timestamp is set and last success timestamp is nil, the pipeline is unhealthy
+	} else if pipeReloadStats.LastFailureTimestamp != nil && pipeReloadStats.LastSuccessTimestamp == nil {
+		return 0
+	// 3. If last_success_timestamp < last_failure_timestamp, the pipeline is unhealthy
+	} else if pipeReloadStats.LastSuccessTimestamp.Before(*pipeReloadStats.LastFailureTimestamp) {
+		return 0
+	// 4. If last_success_timestamp > last_failure_timestamp, the pipeline is healthy
+	} else if pipeReloadStats.LastSuccessTimestamp.After(*pipeReloadStats.LastFailureTimestamp) {
+		return 1
+	}
+	// Missing field, likely due to version incompatibility - lacking information, assume healthy
+	return 1
 }
 
 // Plugins have non-unique names, so use both name and id as labels
