@@ -67,6 +67,7 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_threads_count",
 		"logstash_stats_jvm_threads_peak_count",
 		"logstash_stats_jvm_uptime_millis",
+		"logstash_stats_pipeline_up",
 		"logstash_stats_pipeline_events_duration",
 		"logstash_stats_pipeline_events_filtered",
 		"logstash_stats_pipeline_events_in",

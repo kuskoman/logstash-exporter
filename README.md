@@ -305,9 +305,10 @@ Table of exported metrics:
 | logstash_stats_pipeline_queue_max_size_in_bytes | counter | Maximum size of given queue in bytes. |
 | logstash_stats_pipeline_reloads_failures | counter | Number of failed pipeline reloads. |
 | logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
-| logstash_stats_process_cpu_load_average_15m | gauge | Total 15m system load average. |
+| logstash_stats_pipeline_up | gauge | Whether the pipeline is up or not. |
 | logstash_stats_process_cpu_load_average_1m | gauge | Total 1m system load average. |
 | logstash_stats_process_cpu_load_average_5m | gauge | Total 5m system load average. |
+| logstash_stats_process_cpu_load_average_15m | gauge | Total 15m system load average. |
 | logstash_stats_process_cpu_percent | gauge | CPU usage of the process. |
 | logstash_stats_process_cpu_total_millis | gauge | Total CPU time used by the process. |
 | logstash_stats_process_max_file_descriptors | gauge | Limit of open file descriptors. |

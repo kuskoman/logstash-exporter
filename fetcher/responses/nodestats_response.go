@@ -159,13 +159,7 @@ type SinglePipelineResponse struct {
 			} `json:"events"`
 		} `json:"outputs"`
 	} `json:"plugins"`
-	Reloads struct {
-		LastFailureTimestamp interface{} `json:"last_failure_timestamp"`
-		Successes            int         `json:"successes"`
-		Failures             int         `json:"failures"`
-		LastSuccessTimestamp interface{} `json:"last_success_timestamp"`
-		LastError            interface{} `json:"last_error"`
-	} `json:"reloads"`
+	Reloads PipelineReloadResponse `json:"reloads"`
 	Queue struct {
 		Type                string `json:"type"`
 		EventsCount         int    `json:"events_count"`
@@ -212,14 +206,16 @@ type PipelineLogstashMonitoringResponse struct {
 		Filters []interface{} `json:"filters"`
 		Outputs []interface{} `json:"outputs"`
 	} `json:"plugins"`
-	Reloads struct {
-		LastFailureTimestamp *time.Time `json:"last_failure_timestamp,omitempty"`
-		Successes            int        `json:"successes"`
-		Failures             int        `json:"failures"`
-		LastSuccessTimestamp *time.Time `json:"last_success_timestamp,omitempty"`
-		LastError            string     `json:"last_error,omitempty"`
-	} `json:"reloads"`
+	Reloads PipelineReloadResponse `json:"reloads"`
 	Queue interface{} `json:"queue,omitempty"`
+}
+
+type PipelineReloadResponse struct {
+	LastFailureTimestamp *time.Time `json:"last_failure_timestamp,omitempty"`
+	Successes            int        `json:"successes"`
+	Failures             int        `json:"failures"`
+	LastSuccessTimestamp *time.Time `json:"last_success_timestamp,omitempty"`
+	LastError            string     `json:"last_error,omitempty"`
 }
 
 type ReloadResponse struct {

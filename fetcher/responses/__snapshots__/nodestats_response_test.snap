@@ -73,7 +73,7 @@ responses.NodeStatsResponse{
                 Outputs: {
                 },
             },
-            Reloads:     struct { LastFailureTimestamp interface {} "json:\"last_failure_timestamp\""; Successes int "json:\"successes\""; Failures int "json:\"failures\""; LastSuccessTimestamp interface {} "json:\"last_success_timestamp\""; LastError interface {} "json:\"last_error\"" }{},
+            Reloads:     responses.PipelineReloadResponse{},
             Queue:       struct { Type string "json:\"type\""; EventsCount int "json:\"events_count\""; QueueSizeInBytes int "json:\"queue_size_in_bytes\""; MaxQueueSizeInBytes int "json:\"max_queue_size_in_bytes\"" }{},
             Hash:        "",
             EphemeralID: "",
@@ -125,7 +125,7 @@ responses.NodeStatsResponse{
                     },
                 },
             },
-            Reloads:     struct { LastFailureTimestamp interface {} "json:\"last_failure_timestamp\""; Successes int "json:\"successes\""; Failures int "json:\"failures\""; LastSuccessTimestamp interface {} "json:\"last_success_timestamp\""; LastError interface {} "json:\"last_error\"" }{},
+            Reloads:     responses.PipelineReloadResponse{},
             Queue:       struct { Type string "json:\"type\""; EventsCount int "json:\"events_count\""; QueueSizeInBytes int "json:\"queue_size_in_bytes\""; MaxQueueSizeInBytes int "json:\"max_queue_size_in_bytes\"" }{Type:"memory", EventsCount:0, QueueSizeInBytes:0, MaxQueueSizeInBytes:0},
             Hash:        "a73729cc9c29203931db21553c5edba063820a7e40d16cb5053be75cc3811a17",
             EphemeralID: "a5c63d09-1ba6-4d67-90a5-075f468a7ab0",
