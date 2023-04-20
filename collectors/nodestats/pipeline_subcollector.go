@@ -15,7 +15,7 @@ import (
 // pipelines of a logstash node.
 // The collector is created once for each pipeline of the node.
 type PipelineSubcollector struct {
-	Up 						*prometheus.Desc
+	Up                      *prometheus.Desc
 	EventsOut               *prometheus.Desc
 	EventsFiltered          *prometheus.Desc
 	EventsIn                *prometheus.Desc
@@ -35,7 +35,7 @@ type PipelineSubcollector struct {
 func NewPipelineSubcollector() *PipelineSubcollector {
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
 	return &PipelineSubcollector{
-		Up: 					 descHelper.NewDescWithHelpAndLabel("up", "Whether the pipeline is up or not.", "pipeline_id"),
+		Up:                      descHelper.NewDescWithHelpAndLabel("up", "Whether the pipeline is up or not.", "pipeline_id"),
 		EventsOut:               descHelper.NewDescWithHelpAndLabel("events_out", "Number of events that have been processed by this pipeline.", "pipeline_id"),
 		EventsFiltered:          descHelper.NewDescWithHelpAndLabel("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline_id"),
 		EventsIn:                descHelper.NewDescWithHelpAndLabel("events_in", "Number of events that have been inputted into this pipeline.", "pipeline_id"),
