@@ -83,15 +83,15 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 
 		JvmUptimeMillis: descHelper.NewDescWithHelp("jvm_uptime_millis", "Uptime of the JVM in milliseconds."),
 
-		ProcessOpenFileDescriptors: descHelper.NewDescWithHelp("process_open_file_descriptors", "Number of currently open file descriptors."),
-		ProcessMaxFileDescriptors:  descHelper.NewDescWithHelp("process_max_file_descriptors", "Limit of open file descriptors."),
-		ProcessCpuPercent:          descHelper.NewDescWithHelp("process_cpu_percent", "CPU usage of the process."),
-		ProcessCpuTotalMillis:      descHelper.NewDescWithHelp("process_cpu_total_millis", "Total CPU time used by the process."),
-		ProcessCpuLoadAverageOneM: descHelper.NewDescWithHelp("process_cpu_load_average_1m", "Total 1m system load average."),
-		ProcessCpuLoadAverageFiveM: descHelper.NewDescWithHelp("process_cpu_load_average_5m", "Total 5m system load average."),
+		ProcessOpenFileDescriptors:    descHelper.NewDescWithHelp("process_open_file_descriptors", "Number of currently open file descriptors."),
+		ProcessMaxFileDescriptors:     descHelper.NewDescWithHelp("process_max_file_descriptors", "Limit of open file descriptors."),
+		ProcessCpuPercent:             descHelper.NewDescWithHelp("process_cpu_percent", "CPU usage of the process."),
+		ProcessCpuTotalMillis:         descHelper.NewDescWithHelp("process_cpu_total_millis", "Total CPU time used by the process."),
+		ProcessCpuLoadAverageOneM:     descHelper.NewDescWithHelp("process_cpu_load_average_1m", "Total 1m system load average."),
+		ProcessCpuLoadAverageFiveM:    descHelper.NewDescWithHelp("process_cpu_load_average_5m", "Total 5m system load average."),
 		ProcessCpuLoadAverageFifteenM: descHelper.NewDescWithHelp("process_cpu_load_average_15m", "Total 15m system load average."),
 
-		ProcessMemTotalVirtual:     descHelper.NewDescWithHelp("process_mem_total_virtual", "Total virtual memory used by the process."),
+		ProcessMemTotalVirtual: descHelper.NewDescWithHelp("process_mem_total_virtual", "Total virtual memory used by the process."),
 
 		ReloadSuccesses: descHelper.NewDescWithHelp("reload_successes", "Number of successful reloads."),
 		ReloadFailures:  descHelper.NewDescWithHelp("reload_failures", "Number of failed reloads."),
