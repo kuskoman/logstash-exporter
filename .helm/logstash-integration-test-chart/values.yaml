@@ -46,3 +46,7 @@ apache:
 logstash-exporter:
   enabled: true
   fullnameOverride: logstash-exporter
+  image:
+    repository: logstash-exporter
+    tag: latest
+    pullPolicy: IfNotPresent
