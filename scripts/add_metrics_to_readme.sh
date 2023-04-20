@@ -10,7 +10,7 @@ function getMetrics() {
 }
 
 FILE=README.md
-mapfile -t LINES < $FILE
+while IFS= read -r line; do LINES+=("$line"); done < $FILE
 
 startLine=$(grep -n "^<!-- METRICS_TABLE_START -->" $FILE | awk -F: '{print $1}')
 endLine=$(grep -n "^<!-- METRICS_TABLE_END -->" $FILE | awk -F: '{print $1}')
