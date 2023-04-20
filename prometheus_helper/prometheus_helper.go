@@ -29,7 +29,7 @@ func (h *SimpleDescHelper) NewDescWithHelpAndLabel(name, help, label string) *pr
 // ExtractFqName extracts the fqName from a prometheus.Desc string.
 // This is useful for testing collectors.
 func ExtractFqName(metric string) (string, error) {
-	regex := regexp.MustCompile(`fqName:\s*"([a-zA-Z_-]+)"`)
+	regex := regexp.MustCompile(`fqName:\s*"([a-zA-Z0-9_-]+)"`)
 	matches := regex.FindStringSubmatch(metric)
 	if len(matches) < 2 {
 		return "", errors.New("failed to extract fqName from metric string")
