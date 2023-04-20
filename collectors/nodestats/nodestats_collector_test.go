@@ -146,3 +146,62 @@ func TestCollectError(t *testing.T) {
 		t.Error("Expected err not to be nil")
 	}
 }
+
+func TestIsPipelineHealthy(t *testing.T) {
+	collector := NewPipelineSubcollector()
+	tests := []struct {
+		name     string
+		stats    responses.PipelineReloadResponse
+		expected float64
+	}{
+		{
+			name: "Both timestamps nil",
+			stats: responses.PipelineReloadResponse{
+				LastFailureTimestamp:  nil,
+				LastSuccessTimestamp: nil,
+			},
+			expected: 1,
+		},
+		{
+			name: "Failure timestamp set",
+			stats: responses.PipelineReloadResponse{
+				LastFailureTimestamp:  &time.Time{},
+				LastSuccessTimestamp: nil,
+			},
+			expected: 0,
+		},
+		{
+			name: "Success timestamp earlier than failure timestamp",
+			stats: responses.PipelineReloadResponse{
+				LastFailureTimestamp:  &time.Time{},
+				LastSuccessTimestamp: func() *time.Time { t := time.Time{}.Add(-1 * time.Hour); return &t }(),
+			},
+			expected: 0,
+		},
+		{
+			name: "Success timestamp later than failure timestamp",
+			stats: responses.PipelineReloadResponse{
+				LastFailureTimestamp:  &time.Time{},
+				LastSuccessTimestamp: func() *time.Time { t := time.Time{}.Add(1 * time.Hour); return &t }(),
+			},
+			expected: 1,
+		},
+		{
+			name: "Missing fields, assume healthy",
+			stats: responses.PipelineReloadResponse{},
+			expected: 1,
+		},
+	}
+
+	// Run test cases
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := collector.isPipelineHealthy(tt.stats)
+			if result != tt.expected {
+				t.Errorf("Expected %v, but got %v", tt.expected, result)
+				return
+			}
+		})
+	}
+
+}
