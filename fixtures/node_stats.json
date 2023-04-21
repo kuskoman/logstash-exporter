@@ -202,11 +202,18 @@
         ]
       },
       "reloads": {
-        "last_failure_timestamp": null,
-        "successes": 0,
-        "failures": 0,
-        "last_success_timestamp": null,
-        "last_error": null
+        "last_failure_timestamp":  "2023-04-20T20:00:32.437218256Z",
+        "successes": 3,
+        "failures": 1,
+        "last_success_timestamp": "2023-04-20T22:30:32.437218256Z",
+        "last_error": {
+          "message": "No configuration found in the configured sources.",
+          "backtrace": [
+            "org/logstash/execution/AbstractPipelineExt.java:151:in `reload_pipeline'",
+            "/usr/share/logstash/logstash-core/lib/logstash/java_pipeline.rb:181:in `block in reload_pipeline'",
+            "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/stud-0.0.23/lib/stud/task.rb:24:in `block in initialize'"
+          ]
+        }
       },
       "queue": {
         "type": "memory",
