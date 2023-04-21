@@ -1,7 +1,5 @@
-FROM golang:1.20.3-alpine3.17 as build
-
-RUN apk add bash curl && curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b /usr/local/bin
+FROM cosmtrek/air:v1.43.0
 
 WORKDIR /app
 
-ENTRYPOINT "/usr/local/bin/air"
+ENTRYPOINT ["/go/bin/air", "-c", ".air.toml"]
