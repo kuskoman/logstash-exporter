@@ -215,7 +215,12 @@ type PipelineReloadResponse struct {
 	Successes            int        `json:"successes"`
 	Failures             int        `json:"failures"`
 	LastSuccessTimestamp *time.Time `json:"last_success_timestamp,omitempty"`
-	LastError            string     `json:"last_error,omitempty"`
+	LastError            LastError  `json:"last_error,omitempty"`
+}
+
+type LastError struct {
+	Message string `json:"message"`
+	Backtrace []string `json:"backtrace"`
 }
 
 type ReloadResponse struct {

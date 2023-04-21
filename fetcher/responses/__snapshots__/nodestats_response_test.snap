@@ -125,7 +125,16 @@ responses.NodeStatsResponse{
                     },
                 },
             },
-            Reloads:     responses.PipelineReloadResponse{},
+            Reloads: responses.PipelineReloadResponse{
+                LastFailureTimestamp: time.Date(2023, time.April, 20, 20, 0, 32, 437218256, time.UTC),
+                Successes:            3,
+                Failures:             1,
+                LastSuccessTimestamp: time.Date(2023, time.April, 20, 22, 30, 32, 437218256, time.UTC),
+                LastError:            responses.LastError{
+                    Message:   "No configuration found in the configured sources.",
+                    Backtrace: {"org/logstash/execution/AbstractPipelineExt.java:151:in `reload_pipeline'", "/usr/share/logstash/logstash-core/lib/logstash/java_pipeline.rb:181:in `block in reload_pipeline'", "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/stud-0.0.23/lib/stud/task.rb:24:in `block in initialize'"},
+                },
+            },
             Queue:       struct { Type string "json:\"type\""; EventsCount int "json:\"events_count\""; QueueSizeInBytes int "json:\"queue_size_in_bytes\""; MaxQueueSizeInBytes int "json:\"max_queue_size_in_bytes\"" }{Type:"memory", EventsCount:0, QueueSizeInBytes:0, MaxQueueSizeInBytes:0},
             Hash:        "a73729cc9c29203931db21553c5edba063820a7e40d16cb5053be75cc3811a17",
             EphemeralID: "a5c63d09-1ba6-4d67-90a5-075f468a7ab0",
