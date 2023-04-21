@@ -78,6 +78,8 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_queue_max_size_in_bytes",
 		"logstash_stats_pipeline_reloads_failures",
 		"logstash_stats_pipeline_reloads_successes",
+		"logstash_stats_pipeline_reloads_last_success_timestamp",
+		"logstash_stats_pipeline_reloads_last_failure_timestamp",
 		"logstash_stats_process_cpu_percent",
 		"logstash_stats_process_cpu_total_millis",
 		"logstash_stats_process_cpu_load_average_1m",
