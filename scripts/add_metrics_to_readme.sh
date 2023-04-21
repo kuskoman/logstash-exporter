@@ -17,7 +17,7 @@ endLine=$(grep -n "^<!-- METRICS_TABLE_END -->" $FILE | awk -F: '{print $1}')
 
 metricsTable=$(echo "| Name | Type | Description |
 | ----------- | ----------- | ----------- |
-$(getMetrics | sort)")
+$(getMetrics | sort --version-sort)")
 
 for ((i=0; i<${#LINES[@]}; i++)); do
     if [ $i -eq $startLine ]; then
