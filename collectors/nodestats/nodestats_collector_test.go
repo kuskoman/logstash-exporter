@@ -95,6 +95,15 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_mem_pool_peak_max_bytes",
 		"logstash_stats_jvm_mem_pool_max_bytes",
 		"logstash_stats_jvm_mem_pool_committed_bytes",
+		"logstash_stats_pipeline_filters_events_duration",
+		"logstash_stats_pipeline_filters_events_in",
+		"logstash_stats_pipeline_filters_events_out",
+		"logstash_stats_pipeline_inputs_events_duration",
+		"logstash_stats_pipeline_inputs_events_out",
+		"logstash_stats_pipeline_outputs_events_duration",
+		"logstash_stats_pipeline_outputs_events_in",
+		"logstash_stats_pipeline_outputs_events_out",
+
 	}
 
 	var foundMetrics []string
