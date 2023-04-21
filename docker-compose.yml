@@ -17,7 +17,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 8
-    command: logstash --config.reload.automatic
+    command: /usr/local/bin/docker-entrypoint --config.reload.automatic
     ports:
       - ${LOGSTASH_PORT:-5044}:5044
       - ${LOGSTASH_STATS_PORT:-9600}:9600
