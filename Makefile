@@ -5,6 +5,7 @@ GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/ma
 GITHUB_REPO := github.com/kuskoman/logstash-exporter
 VERSION := $(shell git symbolic-ref --short HEAD)
 GIT_COMMIT := $(shell git rev-parse HEAD)
+DOCKER_IMG ?= "logstash-exporter"
 
 all: $(GOOS_BINARIES)
 
@@ -25,11 +26,11 @@ build-darwin: out/main-darwin
 build-windows: out/main-windows
 
 build-docker:
-	docker build -t logstash-exporter --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
+	docker build -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
 
 # Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
 build-docker-multi:
-	docker buildx build --platform linux/amd64,linux/arm64 -t logstash-exporter .
+	docker buildx build --platform linux/amd64,linux/arm64 -t $(DOCKER_IMG) --push .
 
 clean:
 	rm -f $(GOOS_EXES)
