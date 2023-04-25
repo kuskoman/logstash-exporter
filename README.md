@@ -309,6 +309,8 @@ Table of exported metrics:
 | logstash_stats_pipeline_queue_max_size_in_bytes | counter | Maximum size of given queue in bytes. |
 | logstash_stats_pipeline_reloads_failures | counter | Number of failed pipeline reloads. |
 | logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
+| logstash_stats_pipeline_reloads_last_failure_timestamp | gauge | Timestamp of last failed pipeline reload. |
+| logstash_stats_pipeline_reloads_last_success_timestamp | gauge | Timestamp of last successful pipeline reload. |
 | logstash_stats_process_cpu_load_average_1m | gauge | Total 1m system load average. |
 | logstash_stats_process_cpu_load_average_5m | gauge | Total 5m system load average. |
 | logstash_stats_process_cpu_load_average_15m | gauge | Total 15m system load average. |
