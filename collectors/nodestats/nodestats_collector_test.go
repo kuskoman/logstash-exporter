@@ -79,6 +79,10 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_reloads_successes",
 		"logstash_stats_pipeline_reloads_last_success_timestamp",
 		"logstash_stats_pipeline_reloads_last_failure_timestamp",
+		"logstash_stats_pipeline_plugin_events_in",
+		"logstash_stats_pipeline_plugin_events_out",
+		"logstash_stats_pipeline_plugin_events_duration",
+		"logstash_stats_pipeline_plugin_events_queue_push_duration",
 		"logstash_stats_process_cpu_percent",
 		"logstash_stats_process_cpu_total_millis",
 		"logstash_stats_process_cpu_load_average_1m",
@@ -95,10 +99,6 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_mem_pool_peak_max_bytes",
 		"logstash_stats_jvm_mem_pool_max_bytes",
 		"logstash_stats_jvm_mem_pool_committed_bytes",
-		"logstash_stats_pipeline_pipeline_plugin_events_in",
-		"logstash_stats_pipeline_pipeline_plugin_events_out",
-		"logstash_stats_pipeline_pipeline_plugin_events_duration",
-		"logstash_stats_pipeline_pipeline_plugin_events_queue_push_duration",
 	}
 
 	var foundMetrics []string

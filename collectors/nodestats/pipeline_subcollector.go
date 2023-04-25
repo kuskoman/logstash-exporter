@@ -56,10 +56,10 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		QueueEventsQueueSize:     descHelper.NewDescWithHelpAndLabels("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline"),
 		QueueMaxQueueSizeInBytes: descHelper.NewDescWithHelpAndLabels("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline"),
 
-		PipelinePluginEventsIn:	descHelper.NewDescWithHelpAndLabels("pipeline_plugin_events_in", "Number of events received this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsOut:	descHelper.NewDescWithHelpAndLabels("pipeline_plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsDuration:	descHelper.NewDescWithHelpAndLabels("pipeline_plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsQueuePushDuration:	descHelper.NewDescWithHelpAndLabels("pipeline_plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsIn:	descHelper.NewDescWithHelpAndLabels("plugin_events_in", "Number of events received this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsOut:	descHelper.NewDescWithHelpAndLabels("plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsDuration:	descHelper.NewDescWithHelpAndLabels("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsQueuePushDuration:	descHelper.NewDescWithHelpAndLabels("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 
 	}
 }
