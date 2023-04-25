@@ -95,15 +95,10 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_mem_pool_peak_max_bytes",
 		"logstash_stats_jvm_mem_pool_max_bytes",
 		"logstash_stats_jvm_mem_pool_committed_bytes",
-		"logstash_stats_pipeline_filters_events_duration",
-		"logstash_stats_pipeline_filters_events_in",
-		"logstash_stats_pipeline_filters_events_out",
-		"logstash_stats_pipeline_inputs_events_duration",
-		"logstash_stats_pipeline_inputs_events_out",
-		"logstash_stats_pipeline_outputs_events_duration",
-		"logstash_stats_pipeline_outputs_events_in",
-		"logstash_stats_pipeline_outputs_events_out",
-
+		"logstash_stats_pipeline_pipeline_plugin_events_in",
+		"logstash_stats_pipeline_pipeline_plugin_events_out",
+		"logstash_stats_pipeline_pipeline_plugin_events_duration",
+		"logstash_stats_pipeline_pipeline_plugin_events_queue_push_duration",
 	}
 
 	var foundMetrics []string
@@ -154,5 +149,24 @@ func TestCollectError(t *testing.T) {
 
 	if err == nil {
 		t.Error("Expected err not to be nil")
+	}
+}
+
+func TestTruncatePluginId(t *testing.T) {
+	testCases := []struct {
+		input  string
+		output string
+	}{
+		{"plain_2c897236-b1fd-42e6-ab7a-f468-b6e6-e404", "b6e6e404"},
+		{"552b7810244be6259a4cc88fe34833088a23437c5ee9b4c788b2ec4e502c819f", "502c819f"},
+		{"pipeline_custom_filter_foobar", "pipeline_custom_filter_foobar"},
+		{"filter_0001", "filter_0001"},
+	}
+
+	for _, tc := range testCases {
+		got := TruncatePluginId(tc.input)
+		if got != tc.output {
+			t.Errorf("TruncatePluginId(%v) = %v; want %v", tc.input, got, tc.output)
+		}
 	}
 }
