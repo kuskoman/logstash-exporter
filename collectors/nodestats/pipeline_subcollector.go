@@ -88,6 +88,13 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 		ch <- prometheus.NewMetricWithTimestamp(*pipeStats.Reloads.LastFailureTimestamp, prometheus.MustNewConstMetric(collector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, 1, pipelineID))
 	}
 
+	if pipeStats.Reloads.LastSuccessTimestamp != nil {
+		ch <- prometheus.NewMetricWithTimestamp(*pipeStats.Reloads.LastSuccessTimestamp, prometheus.MustNewConstMetric(collector.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, 1, pipelineID))
+	}
+	if pipeStats.Reloads.LastFailureTimestamp != nil {
+		ch <- prometheus.NewMetricWithTimestamp(*pipeStats.Reloads.LastFailureTimestamp, prometheus.MustNewConstMetric(collector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, 1, pipelineID))
+	}
+
 	ch <- prometheus.MustNewConstMetric(collector.QueueEventsCount, prometheus.CounterValue, float64(pipeStats.Queue.EventsCount), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.QueueEventsQueueSize, prometheus.CounterValue, float64(pipeStats.Queue.QueueSizeInBytes), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, float64(pipeStats.Queue.MaxQueueSizeInBytes), pipelineID)
@@ -134,8 +141,8 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 }
 
 func (collector *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
-	// 1. If both timestamps are nil, the pipeline is healthy
-	if pipeReloadStats.LastSuccessTimestamp == nil && pipeReloadStats.LastFailureTimestamp == nil {
+	// 1. If last failure timestamp (or both) are nil, the pipeline is healthy
+	if pipeReloadStats.LastFailureTimestamp == nil {
 		return 1
 	// 2. If last_failure_timestamp is set and last success timestamp is nil, the pipeline is unhealthy
 	} else if pipeReloadStats.LastFailureTimestamp != nil && pipeReloadStats.LastSuccessTimestamp == nil {
