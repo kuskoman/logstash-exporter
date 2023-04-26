@@ -187,6 +187,24 @@
               "in": 2000,
               "duration_in_millis": 716
             }
+          },
+          {
+            "id": "drop_b8ed8ea8c0ace91d6b617f6c8a5153141183c35a330de014182825dbceeade00",
+            "name": "drop",
+            "events": {
+              "out": 300,
+              "in": 330,
+              "duration_in_millis": 333
+            }
+          },
+          {
+            "id": "drop_e2e0f559b7292f788693f9f318185d5c1d30127870ca8f0e608b11d9dc560079",
+            "name": "drop",
+            "events": {
+              "out": 800,
+              "in": 880,
+              "duration_in_millis": 888
+            }
           }
         ],
         "outputs": [

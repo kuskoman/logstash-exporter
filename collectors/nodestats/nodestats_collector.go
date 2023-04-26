@@ -70,15 +70,15 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 		JvmMemHeapUsedBytes:         descHelper.NewDescWithHelp("jvm_mem_heap_used_bytes", "Amount of used heap memory in bytes."),
 		JvmMemNonHeapCommittedBytes: descHelper.NewDescWithHelp("jvm_mem_non_heap_committed_bytes", "Amount of non-heap memory in bytes that is committed for the Java virtual machine to use."),
 
-		JvmMemPoolPeakUsedInBytes: descHelper.NewDescWithHelpAndLabel(
+		JvmMemPoolPeakUsedInBytes: descHelper.NewDescWithHelpAndLabels(
 			"jvm_mem_pool_peak_used_bytes", "Peak used bytes of a given JVM memory pool.", "pool"),
-		JvmMemPoolUsedInBytes: descHelper.NewDescWithHelpAndLabel(
+		JvmMemPoolUsedInBytes: descHelper.NewDescWithHelpAndLabels(
 			"jvm_mem_pool_used_bytes", "Currently used bytes of a given JVM memory pool.", "pool"),
-		JvmMemPoolPeakMaxInBytes: descHelper.NewDescWithHelpAndLabel(
+		JvmMemPoolPeakMaxInBytes: descHelper.NewDescWithHelpAndLabels(
 			"jvm_mem_pool_peak_max_bytes", "Highest value of bytes that were used in a given JVM memory pool.", "pool"),
-		JvmMemPoolMaxInBytes: descHelper.NewDescWithHelpAndLabel(
+		JvmMemPoolMaxInBytes: descHelper.NewDescWithHelpAndLabels(
 			"jvm_mem_pool_max_bytes", "Maximum amount of bytes that can be used in a given JVM memory pool.", "pool"),
-		JvmMemPoolCommittedInBytes: descHelper.NewDescWithHelpAndLabel(
+		JvmMemPoolCommittedInBytes: descHelper.NewDescWithHelpAndLabels(
 			"jvm_mem_pool_committed_bytes", "Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool.", "pool"),
 
 		JvmUptimeMillis: descHelper.NewDescWithHelp("jvm_uptime_millis", "Uptime of the JVM in milliseconds."),

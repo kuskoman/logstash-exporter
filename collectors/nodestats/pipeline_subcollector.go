@@ -3,6 +3,7 @@ package nodestats
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,26 +30,37 @@ type PipelineSubcollector struct {
 	QueueEventsCount         *prometheus.Desc
 	QueueEventsQueueSize     *prometheus.Desc
 	QueueMaxQueueSizeInBytes *prometheus.Desc
+
+	PipelinePluginEventsIn  *prometheus.Desc
+	PipelinePluginEventsOut *prometheus.Desc
+	PipelinePluginEventsDuration *prometheus.Desc
+	PipelinePluginEventsQueuePushDuration *prometheus.Desc
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
 	return &PipelineSubcollector{
-		EventsOut:               descHelper.NewDescWithHelpAndLabel("events_out", "Number of events that have been processed by this pipeline.", "pipeline_id"),
-		EventsFiltered:          descHelper.NewDescWithHelpAndLabel("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline_id"),
-		EventsIn:                descHelper.NewDescWithHelpAndLabel("events_in", "Number of events that have been inputted into this pipeline.", "pipeline_id"),
-		EventsDuration:          descHelper.NewDescWithHelpAndLabel("events_duration", "Time needed to process event.", "pipeline_id"),
-		EventsQueuePushDuration: descHelper.NewDescWithHelpAndLabel("events_queue_push_duration", "Time needed to push event to queue.", "pipeline_id"),
+		EventsOut:               descHelper.NewDescWithHelpAndLabels("events_out", "Number of events that have been processed by this pipeline.", "pipeline"),
+		EventsFiltered:          descHelper.NewDescWithHelpAndLabels("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline"),
+		EventsIn:                descHelper.NewDescWithHelpAndLabels("events_in", "Number of events that have been inputted into this pipeline.", "pipeline"),
+		EventsDuration:          descHelper.NewDescWithHelpAndLabels("events_duration", "Time needed to process event.", "pipeline"),
+		EventsQueuePushDuration: descHelper.NewDescWithHelpAndLabels("events_queue_push_duration", "Time needed to push event to queue.", "pipeline"),
 
-		ReloadsSuccesses: descHelper.NewDescWithHelpAndLabel("reloads_successes", "Number of successful pipeline reloads.", "pipeline_id"),
-		ReloadsFailures:  descHelper.NewDescWithHelpAndLabel("reloads_failures", "Number of failed pipeline reloads.", "pipeline_id"),
+		ReloadsSuccesses: descHelper.NewDescWithHelpAndLabels("reloads_successes", "Number of successful pipeline reloads.", "pipeline"),
+		ReloadsFailures:  descHelper.NewDescWithHelpAndLabels("reloads_failures", "Number of failed pipeline reloads.", "pipeline"),
 
-		ReloadsLastSuccessTimestamp: descHelper.NewDescWithHelpAndLabel("reloads_last_success_timestamp", "Timestamp of last successful pipeline reload.", "pipeline_id"),
-		ReloadsLastFailureTimestamp: descHelper.NewDescWithHelpAndLabel("reloads_last_failure_timestamp", "Timestamp of last failed pipeline reload.", "pipeline_id"),
+		ReloadsLastSuccessTimestamp: descHelper.NewDescWithHelpAndLabels("reloads_last_success_timestamp", "Timestamp of last successful pipeline reload.", "pipeline"),
+		ReloadsLastFailureTimestamp: descHelper.NewDescWithHelpAndLabels("reloads_last_failure_timestamp", "Timestamp of last failed pipeline reload.", "pipeline"),
 
-		QueueEventsCount:         descHelper.NewDescWithHelpAndLabel("queue_events_count", "Number of events in the queue.", "pipeline_id"),
-		QueueEventsQueueSize:     descHelper.NewDescWithHelpAndLabel("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline_id"),
-		QueueMaxQueueSizeInBytes: descHelper.NewDescWithHelpAndLabel("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline_id"),
+		QueueEventsCount:         descHelper.NewDescWithHelpAndLabels("queue_events_count", "Number of events in the queue.", "pipeline"),
+		QueueEventsQueueSize:     descHelper.NewDescWithHelpAndLabels("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline"),
+		QueueMaxQueueSizeInBytes: descHelper.NewDescWithHelpAndLabels("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline"),
+
+		PipelinePluginEventsIn:	descHelper.NewDescWithHelpAndLabels("plugin_events_in", "Number of events received this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsOut:	descHelper.NewDescWithHelpAndLabels("plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsDuration:	descHelper.NewDescWithHelpAndLabels("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsQueuePushDuration:	descHelper.NewDescWithHelpAndLabels("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+
 	}
 }
 
@@ -76,6 +88,55 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.QueueEventsQueueSize, prometheus.CounterValue, float64(pipeStats.Queue.QueueSizeInBytes), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, float64(pipeStats.Queue.MaxQueueSizeInBytes), pipelineID)
 
+	// Pipeline plugins metrics
+	for _, plugin := range pipeStats.Plugins.Inputs {
+		pluginID := TruncatePluginId(plugin.ID)
+		pluginType := "input"
+		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, float64(plugin.Events.QueuePushDurationInMillis), pipelineID, pluginType, plugin.Name, pluginID)
+	}
+
+	for _, plugin := range pipeStats.Plugins.Codecs {
+		pluginID := TruncatePluginId(plugin.ID)
+		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, "codec", plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Encode.WritesIn), pipelineID, "codec:encode", plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Decode.WritesIn), pipelineID, "codec:decode", plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Decode.Out), pipelineID, "codec:decode", plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Encode.DurationInMillis), pipelineID, "codec:encode", plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Decode.DurationInMillis), pipelineID, "codec:decode", plugin.Name, pluginID)
+	}
+
+	for _, plugin := range pipeStats.Plugins.Filters {
+		pluginID := TruncatePluginId(plugin.ID)
+		pluginType := "filter"
+		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Events.DurationInMillis), pipelineID, pluginType, plugin.Name, pluginID)
+	}
+
+	for _, plugin := range pipeStats.Plugins.Outputs {
+		pluginID := TruncatePluginId(plugin.ID)
+		pluginType := "output"
+		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Events.In), pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Events.DurationInMillis), pipelineID, pluginType, plugin.Name, pluginID)
+	}
+
 	collectingEnd := time.Now()
 	log.Printf("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
+}
+
+// Plugins have non-unique names, so use both name and id as labels
+// By default ids are a 36-char UUID, optionally prefixed the a plugin type, or a 64-char SHA256 hash
+// If the id is set by the user, keep it. If it's a UUID, truncate it to the last 8 chars (1% chance of collision per 9291)
+func TruncatePluginId(pluginID string) string {
+	// If the pluginId is < 32 chars, it's likely a user-defined id.
+	if len(pluginID) < 32 {
+		return pluginID
+	}
+	noDashes := strings.Replace(pluginID, "-", "", -1)
+	return noDashes[len(noDashes)-8:]
 }

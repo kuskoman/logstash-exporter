@@ -116,6 +116,16 @@ responses.NodeStatsResponse{
                         Name:   "json",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:2000, In:2000, DurationInMillis:716},
                     },
+                    {
+                        ID:     "drop_b8ed8ea8c0ace91d6b617f6c8a5153141183c35a330de014182825dbceeade00",
+                        Name:   "drop",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:300, In:330, DurationInMillis:333},
+                    },
+                    {
+                        ID:     "drop_e2e0f559b7292f788693f9f318185d5c1d30127870ca8f0e608b11d9dc560079",
+                        Name:   "drop",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:800, In:880, DurationInMillis:888},
+                    },
                 },
                 Outputs: {
                     {
