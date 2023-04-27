@@ -12,10 +12,16 @@ import (
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
+const (
+	CollectorUnhealthy = 0
+	CollectorHealthy   = 1
+)
+
 // PipelineSubcollector is a subcollector that collects metrics about the
 // pipelines of a logstash node.
 // The collector is created once for each pipeline of the node.
 type PipelineSubcollector struct {
+	Up                      *prometheus.Desc
 	EventsOut               *prometheus.Desc
 	EventsFiltered          *prometheus.Desc
 	EventsIn                *prometheus.Desc
@@ -31,15 +37,16 @@ type PipelineSubcollector struct {
 	QueueEventsQueueSize     *prometheus.Desc
 	QueueMaxQueueSizeInBytes *prometheus.Desc
 
-	PipelinePluginEventsIn  *prometheus.Desc
-	PipelinePluginEventsOut *prometheus.Desc
-	PipelinePluginEventsDuration *prometheus.Desc
+	PipelinePluginEventsIn                *prometheus.Desc
+	PipelinePluginEventsOut               *prometheus.Desc
+	PipelinePluginEventsDuration          *prometheus.Desc
 	PipelinePluginEventsQueuePushDuration *prometheus.Desc
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: fmt.Sprintf("%s_pipeline", subsystem)}
 	return &PipelineSubcollector{
+		Up:                      descHelper.NewDescWithHelpAndLabels("up", "Whether the pipeline is up or not.", "pipeline"),
 		EventsOut:               descHelper.NewDescWithHelpAndLabels("events_out", "Number of events that have been processed by this pipeline.", "pipeline"),
 		EventsFiltered:          descHelper.NewDescWithHelpAndLabels("events_filtered", "Number of events that have been filtered out by this pipeline.", "pipeline"),
 		EventsIn:                descHelper.NewDescWithHelpAndLabels("events_in", "Number of events that have been inputted into this pipeline.", "pipeline"),
@@ -56,11 +63,10 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		QueueEventsQueueSize:     descHelper.NewDescWithHelpAndLabels("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline"),
 		QueueMaxQueueSizeInBytes: descHelper.NewDescWithHelpAndLabels("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline"),
 
-		PipelinePluginEventsIn:	descHelper.NewDescWithHelpAndLabels("plugin_events_in", "Number of events received this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsOut:	descHelper.NewDescWithHelpAndLabels("plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsDuration:	descHelper.NewDescWithHelpAndLabels("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsQueuePushDuration:	descHelper.NewDescWithHelpAndLabels("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-
+		PipelinePluginEventsIn:                descHelper.NewDescWithHelpAndLabels("plugin_events_in", "Number of events received this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsOut:               descHelper.NewDescWithHelpAndLabels("plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsDuration:          descHelper.NewDescWithHelpAndLabels("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsQueuePushDuration: descHelper.NewDescWithHelpAndLabels("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 	}
 }
 
@@ -73,6 +79,8 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.EventsIn, prometheus.CounterValue, float64(pipeStats.Events.In), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.EventsDuration, prometheus.CounterValue, float64(pipeStats.Events.DurationInMillis), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.EventsQueuePushDuration, prometheus.CounterValue, float64(pipeStats.Events.QueuePushDurationInMillis), pipelineID)
+
+	ch <- prometheus.MustNewConstMetric(collector.Up, prometheus.GaugeValue, float64(collector.isPipelineHealthy(pipeStats.Reloads)), pipelineID)
 
 	ch <- prometheus.MustNewConstMetric(collector.ReloadsSuccesses, prometheus.CounterValue, float64(pipeStats.Reloads.Successes), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.ReloadsFailures, prometheus.CounterValue, float64(pipeStats.Reloads.Failures), pipelineID)
@@ -127,6 +135,37 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 
 	collectingEnd := time.Now()
 	log.Printf("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
+}
+
+// isPipelineHealthy returns 1 if the pipeline is healthy, 0 if it is not
+// A pipeline is considered healthy if:
+//  1. last_failure_timestamp is nil
+//  2. last_success_timestamp > last_failure_timestamp
+//  3. last_failure_timestamp and last_success_timestamp are either missing (likely due to version incompatibility)
+//     or set to the same value (likely due to a bug in the pipeline):
+//     lacking information, assume healthy
+//
+// A pipeline is considered unhealthy if:
+//  1. last_failure_timestamp is not nil and last_success_timestamp is nil
+//  2. last_failure_timestamp > last_success_timestamp
+func (collector *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
+	if pipeReloadStats.LastFailureTimestamp == nil {
+		return CollectorHealthy
+	}
+
+	if pipeReloadStats.LastFailureTimestamp != nil && pipeReloadStats.LastSuccessTimestamp == nil {
+		return CollectorUnhealthy
+	}
+
+	if pipeReloadStats.LastSuccessTimestamp.Before(*pipeReloadStats.LastFailureTimestamp) {
+		return CollectorUnhealthy
+	}
+
+	if pipeReloadStats.LastSuccessTimestamp.After(*pipeReloadStats.LastFailureTimestamp) {
+		return CollectorHealthy
+	}
+
+	return CollectorHealthy
 }
 
 // Plugins have non-unique names, so use both name and id as labels

@@ -67,6 +67,7 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_threads_count",
 		"logstash_stats_jvm_threads_peak_count",
 		"logstash_stats_jvm_uptime_millis",
+		"logstash_stats_pipeline_up",
 		"logstash_stats_pipeline_events_duration",
 		"logstash_stats_pipeline_events_filtered",
 		"logstash_stats_pipeline_events_in",
@@ -149,24 +150,5 @@ func TestCollectError(t *testing.T) {
 
 	if err == nil {
 		t.Error("Expected err not to be nil")
-	}
-}
-
-func TestTruncatePluginId(t *testing.T) {
-	testCases := []struct {
-		input  string
-		output string
-	}{
-		{"plain_2c897236-b1fd-42e6-ab7a-f468-b6e6-e404", "b6e6e404"},
-		{"552b7810244be6259a4cc88fe34833088a23437c5ee9b4c788b2ec4e502c819f", "502c819f"},
-		{"pipeline_custom_filter_foobar", "pipeline_custom_filter_foobar"},
-		{"filter_0001", "filter_0001"},
-	}
-
-	for _, tc := range testCases {
-		got := TruncatePluginId(tc.input)
-		if got != tc.output {
-			t.Errorf("TruncatePluginId(%v) = %v; want %v", tc.input, got, tc.output)
-		}
 	}
 }
