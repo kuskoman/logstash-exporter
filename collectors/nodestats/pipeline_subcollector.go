@@ -147,12 +147,14 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 // isPipelineHealthy returns 1 if the pipeline is healthy, 0 if it is not
 // A pipeline is considered healthy if:
 //  1. last_failure_timestamp is nil
-//  2. last_failure_timestamp is set and last_success_timestamp is nil
-//  3. last_success_timestamp < last_failure_timestamp
-//  4. last_success_timestamp > last_failure_timestamp
-//  5. last_failure_timestamp and last_success_timestamp are either missing (likely due to version incompatibility)
+//  2. last_success_timestamp > last_failure_timestamp
+//  3. last_failure_timestamp and last_success_timestamp are either missing (likely due to version incompatibility)
 //     or set to the same value (likely due to a bug in the pipeline):
 //     lacking information, assume healthy
+//
+// A pipeline is considered unhealthy if:
+//  1. last_failure_timestamp is not nil and last_success_timestamp is nil
+//  2. last_failure_timestamp > last_success_timestamp
 func (collector *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
 	if pipeReloadStats.LastFailureTimestamp == nil {
 		return CollectorHealthy
