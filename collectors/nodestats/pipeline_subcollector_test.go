@@ -26,7 +26,7 @@ func TestIsPipelineHealthy(t *testing.T) {
 				LastFailureTimestamp: nil,
 				LastSuccessTimestamp: nil,
 			},
-			expected: 1,
+			expected: CollectorHealthy,
 		},
 		{
 			name: "Failure timestamp set",
@@ -34,7 +34,7 @@ func TestIsPipelineHealthy(t *testing.T) {
 				LastFailureTimestamp: &now,
 				LastSuccessTimestamp: nil,
 			},
-			expected: 0,
+			expected: CollectorUnhealthy,
 		},
 		{
 			name: "Success timestamp earlier than failure timestamp",
@@ -42,7 +42,7 @@ func TestIsPipelineHealthy(t *testing.T) {
 				LastFailureTimestamp: &now,
 				LastSuccessTimestamp: &oneHourBefore,
 			},
-			expected: 0,
+			expected: CollectorUnhealthy,
 		},
 		{
 			name: "Success timestamp later than failure timestamp",
@@ -50,12 +50,12 @@ func TestIsPipelineHealthy(t *testing.T) {
 				LastFailureTimestamp: &now,
 				LastSuccessTimestamp: &oneHourAfter,
 			},
-			expected: 1,
+			expected: CollectorHealthy,
 		},
 		{
 			name:     "Missing fields, assume healthy",
 			stats:    responses.PipelineReloadResponse{},
-			expected: 1,
+			expected: CollectorHealthy,
 		},
 		{
 			name: "Success timestamp equal to failure timestamp",
@@ -63,7 +63,7 @@ func TestIsPipelineHealthy(t *testing.T) {
 				LastFailureTimestamp: &now,
 				LastSuccessTimestamp: &now,
 			},
-			expected: 1,
+			expected: CollectorHealthy,
 		},
 	}
 
