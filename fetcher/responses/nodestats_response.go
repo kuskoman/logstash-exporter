@@ -157,6 +157,14 @@ type SinglePipelineResponse struct {
 				In               int `json:"in"`
 				DurationInMillis int `json:"duration_in_millis"`
 			} `json:"events"`
+			Documents struct {
+				Successes 		 	 int `json:"successes"`
+				NonRetryableFailures int `json:"non_retryable_failures"`
+			} `json:"documents"`
+			BulkRequests struct {
+				WithErrors int `json:"with_errors"`
+				Responses map[string]int `json:"responses"`
+			} `json:"bulk_requests,omitempty"`
 		} `json:"outputs"`
 	} `json:"plugins"`
 	Reloads PipelineReloadResponse `json:"reloads"`

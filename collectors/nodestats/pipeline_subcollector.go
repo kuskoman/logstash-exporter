@@ -41,6 +41,11 @@ type PipelineSubcollector struct {
 	PipelinePluginEventsOut               *prometheus.Desc
 	PipelinePluginEventsDuration          *prometheus.Desc
 	PipelinePluginEventsQueuePushDuration *prometheus.Desc
+
+	PipelinePluginDocumentsSuccesses    *prometheus.Desc
+	PipelinePluginDocumentsNonRetryableFailures *prometheus.Desc
+	PipelinePluginBulkRequestErrors    *prometheus.Desc
+	PipelinePluginBulkRequestResponses *prometheus.Desc
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
@@ -67,6 +72,11 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		PipelinePluginEventsOut:               descHelper.NewDescWithHelpAndLabels("plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 		PipelinePluginEventsDuration:          descHelper.NewDescWithHelpAndLabels("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 		PipelinePluginEventsQueuePushDuration: descHelper.NewDescWithHelpAndLabels("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+
+		PipelinePluginDocumentsSuccesses: descHelper.NewDescWithHelpAndLabels("plugin_documents_successes", "Number of successful bulk requests.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginDocumentsNonRetryableFailures: descHelper.NewDescWithHelpAndLabels("plugin_documents_non_retryable_failures", "Number of output events with non-retryable failures.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginBulkRequestErrors:    descHelper.NewDescWithHelpAndLabels("plugin_bulk_requests_errors", "Number of bulk request errors.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginBulkRequestResponses: descHelper.NewDescWithHelpAndLabels("plugin_bulk_requests_responses", "Bulk request HTTP response counts by code.", "pipeline", "plugin_type", "plugin", "plugin_id", "code"),
 	}
 }
 
@@ -95,6 +105,30 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.QueueEventsCount, prometheus.CounterValue, float64(pipeStats.Queue.EventsCount), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.QueueEventsQueueSize, prometheus.CounterValue, float64(pipeStats.Queue.QueueSizeInBytes), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, float64(pipeStats.Queue.MaxQueueSizeInBytes), pipelineID)
+
+	// Output error metrics
+	for _, output := range pipeStats.Plugins.Outputs {
+		pluginID := TruncatePluginId(output.ID)
+		pluginType := "output"
+		log.Printf("collecting output error stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, output.Name, pluginID)
+		nonRetryableFailures := 0
+		bulkRequestSuccesses := 0
+		bulkRequestErrors := 0
+		if &output.Documents != nil {
+			bulkRequestSuccesses = output.Documents.Successes
+			nonRetryableFailures = output.Documents.NonRetryableFailures
+		}
+		// Response codes returned by output Bulk Requests
+		if &output.BulkRequests != nil {
+			bulkRequestErrors = output.BulkRequests.WithErrors
+			for code, count := range output.BulkRequests.Responses {
+				ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, float64(count), pipelineID, pluginType, output.Name, pluginID, code)
+			}
+		}
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, float64(bulkRequestSuccesses), pipelineID, pluginType, output.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, float64(nonRetryableFailures), pipelineID, pluginType, output.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, float64(bulkRequestErrors), pipelineID, pluginType, output.Name, pluginID)
+	}
 
 	// Pipeline plugins metrics
 	for _, plugin := range pipeStats.Plugins.Inputs {
