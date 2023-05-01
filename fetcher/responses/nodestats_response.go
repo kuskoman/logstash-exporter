@@ -164,7 +164,7 @@ type SinglePipelineResponse struct {
 			BulkRequests struct {
 				WithErrors int `json:"with_errors"`
 				Responses map[string]int `json:"responses"`
-			} `json:"bulk_requests,omitempty"`
+			} `json:"bulk_requests"`
 		} `json:"outputs"`
 	} `json:"plugins"`
 	Reloads PipelineReloadResponse `json:"reloads"`

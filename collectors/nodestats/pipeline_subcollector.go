@@ -111,23 +111,15 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 		pluginID := TruncatePluginId(output.ID)
 		pluginType := "output"
 		log.Printf("collecting output error stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, output.Name, pluginID)
-		nonRetryableFailures := 0
-		bulkRequestSuccesses := 0
-		bulkRequestErrors := 0
-		if &output.Documents != nil {
-			bulkRequestSuccesses = output.Documents.Successes
-			nonRetryableFailures = output.Documents.NonRetryableFailures
-		}
+		
 		// Response codes returned by output Bulk Requests
-		if &output.BulkRequests != nil {
-			bulkRequestErrors = output.BulkRequests.WithErrors
-			for code, count := range output.BulkRequests.Responses {
-				ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, float64(count), pipelineID, pluginType, output.Name, pluginID, code)
-			}
+		for code, count := range output.BulkRequests.Responses {
+			ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, float64(count), pipelineID, pluginType, output.Name, pluginID, code)
 		}
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, float64(bulkRequestSuccesses), pipelineID, pluginType, output.Name, pluginID)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, float64(nonRetryableFailures), pipelineID, pluginType, output.Name, pluginID)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, float64(bulkRequestErrors), pipelineID, pluginType, output.Name, pluginID)
+		
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, float64(output.Documents.Successes), pipelineID, pluginType, output.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, float64(output.Documents.NonRetryableFailures), pipelineID, pluginType, output.Name, pluginID)
+		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, float64(output.BulkRequests.WithErrors), pipelineID, pluginType, output.Name, pluginID)
 	}
 
 	// Pipeline plugins metrics
