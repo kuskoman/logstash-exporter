@@ -226,7 +226,6 @@ jobs:
           retention-days: 1
 
       - name: Login to GitHub registry
-        if: github.ref == 'refs/heads/master'
         run: echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
       - name: Login to Docker Hub
