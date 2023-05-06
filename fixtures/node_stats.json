@@ -215,6 +215,16 @@
               "out": 0,
               "in": 2000,
               "duration_in_millis": 0
+            },
+            "documents": {
+              "successes": 1337,
+              "non_retryable_failures": 87
+            },
+            "bulk_requests": {
+              "with_errors": 87,
+              "responses": {
+                "200": 87
+              }
             }
           }
         ]
