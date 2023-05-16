@@ -42,10 +42,21 @@ type PipelineSubcollector struct {
 	PipelinePluginEventsDuration          *prometheus.Desc
 	PipelinePluginEventsQueuePushDuration *prometheus.Desc
 
-	PipelinePluginDocumentsSuccesses    *prometheus.Desc
+	PipelinePluginDocumentsSuccesses            *prometheus.Desc
 	PipelinePluginDocumentsNonRetryableFailures *prometheus.Desc
-	PipelinePluginBulkRequestErrors    *prometheus.Desc
-	PipelinePluginBulkRequestResponses *prometheus.Desc
+	PipelinePluginBulkRequestErrors             *prometheus.Desc
+	PipelinePluginBulkRequestResponses          *prometheus.Desc
+
+	FlowInputCurrent              *prometheus.Desc
+	FlowInputLifetime             *prometheus.Desc
+	FlowFilterCurrent             *prometheus.Desc
+	FlowFilterLifetime            *prometheus.Desc
+	FlowOutputCurrent             *prometheus.Desc
+	FlowOutputLifetime            *prometheus.Desc
+	FlowQueueBackpressureCurrent  *prometheus.Desc
+	FlowQueueBackpressureLifetime *prometheus.Desc
+	FlowWorkerConcurrencyCurrent  *prometheus.Desc
+	FlowWorkerConcurrencyLifetime *prometheus.Desc
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
@@ -73,10 +84,21 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		PipelinePluginEventsDuration:          descHelper.NewDescWithHelpAndLabels("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 		PipelinePluginEventsQueuePushDuration: descHelper.NewDescWithHelpAndLabels("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 
-		PipelinePluginDocumentsSuccesses: descHelper.NewDescWithHelpAndLabels("plugin_documents_successes", "Number of successful bulk requests.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginDocumentsSuccesses:            descHelper.NewDescWithHelpAndLabels("plugin_documents_successes", "Number of successful bulk requests.", "pipeline", "plugin_type", "plugin", "plugin_id"),
 		PipelinePluginDocumentsNonRetryableFailures: descHelper.NewDescWithHelpAndLabels("plugin_documents_non_retryable_failures", "Number of output events with non-retryable failures.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginBulkRequestErrors:    descHelper.NewDescWithHelpAndLabels("plugin_bulk_requests_errors", "Number of bulk request errors.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginBulkRequestResponses: descHelper.NewDescWithHelpAndLabels("plugin_bulk_requests_responses", "Bulk request HTTP response counts by code.", "pipeline", "plugin_type", "plugin", "plugin_id", "code"),
+		PipelinePluginBulkRequestErrors:             descHelper.NewDescWithHelpAndLabels("plugin_bulk_requests_errors", "Number of bulk request errors.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginBulkRequestResponses:          descHelper.NewDescWithHelpAndLabels("plugin_bulk_requests_responses", "Bulk request HTTP response counts by code.", "pipeline", "plugin_type", "plugin", "plugin_id", "code"),
+
+		FlowInputCurrent:              descHelper.NewDescWithHelpAndLabels("flow_input_current", "Current number of events in the input queue.", "pipeline"),
+		FlowInputLifetime:             descHelper.NewDescWithHelpAndLabels("flow_input_lifetime", "Lifetime number of events in the input queue.", "pipeline"),
+		FlowFilterCurrent:             descHelper.NewDescWithHelpAndLabels("flow_filter_current", "Current number of events in the filter queue.", "pipeline"),
+		FlowFilterLifetime:            descHelper.NewDescWithHelpAndLabels("flow_filter_lifetime", "Lifetime number of events in the filter queue.", "pipeline"),
+		FlowOutputCurrent:             descHelper.NewDescWithHelpAndLabels("flow_output_current", "Current number of events in the output queue.", "pipeline"),
+		FlowOutputLifetime:            descHelper.NewDescWithHelpAndLabels("flow_output_lifetime", "Lifetime number of events in the output queue.", "pipeline"),
+		FlowQueueBackpressureCurrent:  descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_current", "Current number of events in the backpressure queue.", "pipeline"),
+		FlowQueueBackpressureLifetime: descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_lifetime", "Lifetime number of events in the backpressure queue.", "pipeline"),
+		FlowWorkerConcurrencyCurrent:  descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_current", "Current number of workers.", "pipeline"),
+		FlowWorkerConcurrencyLifetime: descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_lifetime", "Lifetime number of workers.", "pipeline"),
 	}
 }
 
@@ -106,17 +128,29 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.QueueEventsQueueSize, prometheus.CounterValue, float64(pipeStats.Queue.QueueSizeInBytes), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, float64(pipeStats.Queue.MaxQueueSizeInBytes), pipelineID)
 
+	flowStats := pipeStats.Flow
+	ch <- prometheus.MustNewConstMetric(collector.FlowInputCurrent, prometheus.GaugeValue, float64(flowStats.InputThroughput.Current), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowInputLifetime, prometheus.CounterValue, float64(flowStats.InputThroughput.Lifetime), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowFilterCurrent, prometheus.GaugeValue, float64(flowStats.FilterThroughput.Current), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowFilterLifetime, prometheus.CounterValue, float64(flowStats.FilterThroughput.Lifetime), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowOutputCurrent, prometheus.GaugeValue, float64(flowStats.OutputThroughput.Current), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowOutputLifetime, prometheus.CounterValue, float64(flowStats.OutputThroughput.Lifetime), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, float64(flowStats.QueueBackpressure.Current), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowQueueBackpressureLifetime, prometheus.CounterValue, float64(flowStats.QueueBackpressure.Lifetime), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, float64(flowStats.WorkerConcurrency.Current), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, float64(flowStats.WorkerConcurrency.Lifetime), pipelineID)
+
 	// Output error metrics
 	for _, output := range pipeStats.Plugins.Outputs {
 		pluginID := TruncatePluginId(output.ID)
 		pluginType := "output"
 		log.Printf("collecting output error stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, output.Name, pluginID)
-		
+
 		// Response codes returned by output Bulk Requests
 		for code, count := range output.BulkRequests.Responses {
 			ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, float64(count), pipelineID, pluginType, output.Name, pluginID, code)
 		}
-		
+
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, float64(output.Documents.Successes), pipelineID, pluginType, output.Name, pluginID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, float64(output.Documents.NonRetryableFailures), pipelineID, pluginType, output.Name, pluginID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, float64(output.BulkRequests.WithErrors), pipelineID, pluginType, output.Name, pluginID)

@@ -300,6 +300,20 @@ Table of exported metrics:
 | logstash_stats_pipeline_events_in | counter | Number of events that have been inputted into this pipeline. |
 | logstash_stats_pipeline_events_out | counter | Number of events that have been processed by this pipeline. |
 | logstash_stats_pipeline_events_queue_push_duration | counter | Time needed to push event to queue. |
+| logstash_stats_pipeline_flow_filter_current | gauge | Current number of events in the filter queue. |
+| logstash_stats_pipeline_flow_filter_lifetime | counter | Lifetime number of events in the filter queue. |
+| logstash_stats_pipeline_flow_input_current | gauge | Current number of events in the input queue. |
+| logstash_stats_pipeline_flow_input_lifetime | counter | Lifetime number of events in the input queue. |
+| logstash_stats_pipeline_flow_output_current | gauge | Current number of events in the output queue. |
+| logstash_stats_pipeline_flow_output_lifetime | counter | Lifetime number of events in the output queue. |
+| logstash_stats_pipeline_flow_queue_backpressure_current | gauge | Current number of events in the backpressure queue. |
+| logstash_stats_pipeline_flow_queue_backpressure_lifetime | counter | Lifetime number of events in the backpressure queue. |
+| logstash_stats_pipeline_flow_worker_concurrency_current | gauge | Current number of workers. |
+| logstash_stats_pipeline_flow_worker_concurrency_lifetime | counter | Lifetime number of workers. |
+| logstash_stats_pipeline_plugin_bulk_requests_errors | counter | Number of bulk request errors. |
+| logstash_stats_pipeline_plugin_bulk_requests_responses | counter | Bulk request HTTP response counts by code. |
+| logstash_stats_pipeline_plugin_documents_non_retryable_failures | counter | Number of output events with non-retryable failures. |
+| logstash_stats_pipeline_plugin_documents_successes | counter | Number of successful bulk requests. |
 | logstash_stats_pipeline_plugin_events_duration | counter | Time spent processing events in this plugin. |
 | logstash_stats_pipeline_plugin_events_in | counter | Number of events received this pipeline. |
 | logstash_stats_pipeline_plugin_events_out | counter | Number of events output by this pipeline. |

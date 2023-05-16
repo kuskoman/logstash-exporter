@@ -158,17 +158,17 @@ type SinglePipelineResponse struct {
 				DurationInMillis int `json:"duration_in_millis"`
 			} `json:"events"`
 			Documents struct {
-				Successes 		 	 int `json:"successes"`
+				Successes            int `json:"successes"`
 				NonRetryableFailures int `json:"non_retryable_failures"`
 			} `json:"documents"`
 			BulkRequests struct {
-				WithErrors int `json:"with_errors"`
-				Responses map[string]int `json:"responses"`
+				WithErrors int            `json:"with_errors"`
+				Responses  map[string]int `json:"responses"`
 			} `json:"bulk_requests"`
 		} `json:"outputs"`
 	} `json:"plugins"`
 	Reloads PipelineReloadResponse `json:"reloads"`
-	Queue struct {
+	Queue   struct {
 		Type                string `json:"type"`
 		EventsCount         int    `json:"events_count"`
 		QueueSizeInBytes    int    `json:"queue_size_in_bytes"`
@@ -186,28 +186,7 @@ type PipelineLogstashMonitoringResponse struct {
 		DurationInMillis          int `json:"duration_in_millis"`
 		QueuePushDurationInMillis int `json:"queue_push_duration_in_millis"`
 	} `json:"events"`
-	Flow struct {
-		OutputThroughput struct {
-			Current  float64 `json:"current"`
-			Lifetime float64 `json:"lifetime"`
-		} `json:"output_throughput"`
-		WorkerConcurrency struct {
-			Current  float64 `json:"current"`
-			Lifetime float64 `json:"lifetime"`
-		} `json:"worker_concurrency"`
-		InputThroughput struct {
-			Current  float64 `json:"current"`
-			Lifetime float64 `json:"lifetime"`
-		} `json:"input_throughput"`
-		FilterThroughput struct {
-			Current  float64 `json:"current"`
-			Lifetime float64 `json:"lifetime"`
-		} `json:"filter_throughput"`
-		QueueBackpressure struct {
-			Current  float64 `json:"current"`
-			Lifetime float64 `json:"lifetime"`
-		} `json:"queue_backpressure"`
-	} `json:"flow"`
+	Flow    FlowResponse `json:"flow"`
 	Plugins struct {
 		Inputs  []interface{} `json:"inputs"`
 		Codecs  []interface{} `json:"codecs"`
@@ -215,7 +194,7 @@ type PipelineLogstashMonitoringResponse struct {
 		Outputs []interface{} `json:"outputs"`
 	} `json:"plugins"`
 	Reloads PipelineReloadResponse `json:"reloads"`
-	Queue interface{} `json:"queue,omitempty"`
+	Queue   interface{}            `json:"queue,omitempty"`
 }
 
 type PipelineReloadResponse struct {
@@ -227,7 +206,7 @@ type PipelineReloadResponse struct {
 }
 
 type LastError struct {
-	Message string `json:"message"`
+	Message   string   `json:"message"`
 	Backtrace []string `json:"backtrace"`
 }
 
