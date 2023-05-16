@@ -230,7 +230,7 @@
         ]
       },
       "reloads": {
-        "last_failure_timestamp":  "2023-04-20T20:00:32.437218256Z",
+        "last_failure_timestamp": "2023-04-20T20:00:32.437218256Z",
         "successes": 3,
         "failures": 1,
         "last_success_timestamp": "2023-04-20T22:30:32.437218256Z",
