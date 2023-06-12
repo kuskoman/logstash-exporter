@@ -56,6 +56,11 @@ type PipelineSubcollector struct {
 	FlowQueueBackpressureLifetime *prometheus.Desc
 	FlowWorkerConcurrencyCurrent  *prometheus.Desc
 	FlowWorkerConcurrencyLifetime *prometheus.Desc
+
+	DeadLetterQueueMaxSizeInBytes *prometheus.Desc
+	DeadLetterQueueSizeInBytes    *prometheus.Desc
+	DeadLetterQueueDroppedEvents  *prometheus.Desc
+	DeadLetterQueueExpiredEvents  *prometheus.Desc
 }
 
 func NewPipelineSubcollector() *PipelineSubcollector {
@@ -98,6 +103,11 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		FlowQueueBackpressureLifetime: descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_lifetime", "Lifetime number of events in the backpressure queue.", "pipeline"),
 		FlowWorkerConcurrencyCurrent:  descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_current", "Current number of workers.", "pipeline"),
 		FlowWorkerConcurrencyLifetime: descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_lifetime", "Lifetime number of workers.", "pipeline"),
+
+		DeadLetterQueueMaxSizeInBytes: descHelper.NewDescWithHelpAndLabels("dead_letter_queue_max_size_in_bytes", "Maximum size of the dead letter queue in bytes.", "pipeline"),
+		DeadLetterQueueSizeInBytes:    descHelper.NewDescWithHelpAndLabels("dead_letter_queue_size_in_bytes", "Current size of the dead letter queue in bytes.", "pipeline"),
+		DeadLetterQueueDroppedEvents:  descHelper.NewDescWithHelpAndLabels("dead_letter_queue_dropped_events", "Number of events dropped by the dead letter queue.", "pipeline"),
+		DeadLetterQueueExpiredEvents:  descHelper.NewDescWithHelpAndLabels("dead_letter_queue_expired_events", "Number of events expired in the dead letter queue.", "pipeline"),
 	}
 }
 
@@ -138,6 +148,12 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.FlowQueueBackpressureLifetime, prometheus.CounterValue, float64(flowStats.QueueBackpressure.Lifetime), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, float64(flowStats.WorkerConcurrency.Current), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, float64(flowStats.WorkerConcurrency.Lifetime), pipelineID)
+
+	deadLetterQueueStats := pipeStats.DeadLetterQueue
+	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueMaxSizeInBytes, prometheus.CounterValue, float64(deadLetterQueueStats.MaxQueueSizeInBytes), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueSizeInBytes, prometheus.CounterValue, float64(deadLetterQueueStats.QueueSizeInBytes), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, float64(deadLetterQueueStats.DroppedEvents), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, float64(deadLetterQueueStats.ExpiredEvents), pipelineID)
 
 	// Output error metrics
 	for _, output := range pipeStats.Plugins.Outputs {

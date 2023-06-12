@@ -174,6 +174,14 @@ type SinglePipelineResponse struct {
 		QueueSizeInBytes    int    `json:"queue_size_in_bytes"`
 		MaxQueueSizeInBytes int    `json:"max_queue_size_in_bytes"`
 	} `json:"queue"`
+	DeadLetterQueue struct {
+		MaxQueueSizeInBytes int `json:"max_queue_size_in_bytes"`
+		// todo: research how LastError is returned
+		QueueSizeInBytes int    `json:"queue_size_in_bytes"`
+		DroppedEvents    int    `json:"dropped_events"`
+		ExpiredEvents    int    `json:"expired_events"`
+		StoragePolicy    string `json:"storage_policy"`
+	} `json:"dead_letter_queue"`
 	Hash        string `json:"hash"`
 	EphemeralID string `json:"ephemeral_id"`
 }
