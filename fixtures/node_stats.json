@@ -1,10 +1,10 @@
 {
-  "host": "9e6e14cf5532",
-  "version": "8.6.1",
+  "host": "f26e584ecf05",
+  "version": "8.8.1",
   "http_address": "0.0.0.0:9600",
-  "id": "a2c7110e-5ccf-4226-bc9b-e773710e66a0",
-  "name": "9e6e14cf5532",
-  "ephemeral_id": "4a2ee04f-2733-4eaa-887d-675bad27f07c",
+  "id": "096d672d-50d5-420b-a27c-254c089bdd78",
+  "name": "f26e584ecf05",
+  "ephemeral_id": "25135ee3-be69-4076-bda1-e27524d9ee93",
   "status": "green",
   "snapshot": false,
   "pipeline": {
@@ -248,6 +248,14 @@
         "events_count": 0,
         "queue_size_in_bytes": 0,
         "max_queue_size_in_bytes": 0
+      },
+      "dead_letter_queue": {
+        "max_queue_size_in_bytes": 1073741824,
+        "last_error": "no errors",
+        "queue_size_in_bytes": 1,
+        "dropped_events": 0,
+        "expired_events": 0,
+        "storage_policy": "drop_newer"
       },
       "hash": "a73729cc9c29203931db21553c5edba063820a7e40d16cb5053be75cc3811a17",
       "ephemeral_id": "a5c63d09-1ba6-4d67-90a5-075f468a7ab0"

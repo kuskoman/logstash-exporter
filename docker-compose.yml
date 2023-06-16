@@ -1,11 +1,12 @@
 version: "3.8"
 services:
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.6.1
+    image: docker.elastic.co/logstash/logstash:8.8.1
     restart: unless-stopped
     volumes:
       - logstash-data:/usr/share/logstash/data
-      - ./.docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./.docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./.docker/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
     depends_on:
       - elasticsearch
     healthcheck:
@@ -22,7 +23,7 @@ services:
       - ${LOGSTASH_PORT:-5044}:5044
       - ${LOGSTASH_STATS_PORT:-9600}:9600
   prometheus:
-    image: prom/prometheus:v2.42.0
+    image: prom/prometheus:v2.44.0
     restart: unless-stopped
     volumes:
       - prometheus-data:/prometheus
@@ -41,7 +42,7 @@ services:
       timeout: 10s
       retries: 8
   elasticsearch:
-    image: elasticsearch:8.6.1
+    image: elasticsearch:8.8.0
     restart: unless-stopped
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data

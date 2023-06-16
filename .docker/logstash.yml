@@ -1,0 +1,4 @@
+http.host: "0.0.0.0"
+xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+dead_letter_queue.enable: true
+path.dead_letter_queue: "/usr/share/logstash/data/dead_letter_queue"
