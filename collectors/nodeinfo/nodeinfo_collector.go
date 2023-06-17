@@ -37,13 +37,13 @@ func NewNodeinfoCollector(client logstashclient.Client) *NodeinfoCollector {
 		client: client,
 		NodeInfos: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "node"),
-			"A metric with a constant '1' value labeled by node name, version, host, http_address, and id.",
+			"A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance.",
 			[]string{"name", "version", "http_address", "host", "id"},
 			nil,
 		),
 		BuildInfos: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "build"),
-			"A metric with a constant '1' value labeled by build date, sha, and snapshot.",
+			"A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance.",
 			[]string{"date", "sha", "snapshot"},
 			nil,
 		),
