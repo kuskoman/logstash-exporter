@@ -295,6 +295,16 @@ Table of exported metrics:
 | logstash_stats_events_in | gauge | Number of events received. |
 | logstash_stats_events_out | gauge | Number of events out. |
 | logstash_stats_events_queue_push_duration_millis | gauge | Duration of events push to queue in milliseconds. |
+| logstash_stats_flow_filter_current | gauge | Current number of events in the filter queue. |
+| logstash_stats_flow_filter_lifetime | gauge | Lifetime number of events in the filter queue. |
+| logstash_stats_flow_input_current | gauge | Current number of events in the input queue. |
+| logstash_stats_flow_input_lifetime | gauge | Lifetime number of events in the input queue. |
+| logstash_stats_flow_output_current | gauge | Current number of events in the output queue. |
+| logstash_stats_flow_output_lifetime | gauge | Lifetime number of events in the output queue. |
+| logstash_stats_flow_queue_backpressure_current | gauge | Current number of events in the backpressure queue. |
+| logstash_stats_flow_queue_backpressure_lifetime | gauge | Lifetime number of events in the backpressure queue. |
+| logstash_stats_flow_worker_concurrency_current | gauge | Current number of workers. |
+| logstash_stats_flow_worker_concurrency_lifetime | gauge | Lifetime number of workers. |
 | logstash_stats_jvm_mem_heap_committed_bytes | gauge | Amount of heap memory in bytes that is committed for the Java virtual machine to use. |
 | logstash_stats_jvm_mem_heap_max_bytes | gauge | Maximum amount of heap memory in bytes that can be used for memory management. |
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | Amount of used heap memory in bytes. |
