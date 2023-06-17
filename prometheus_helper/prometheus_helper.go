@@ -55,3 +55,27 @@ func ExtractValueFromMetric(metric prometheus.Metric) (float64, error) {
 
 	return gauge.GetValue(), nil
 }
+
+// ExtractLabelsFromMetric extracts the labels from a prometheus.Metric object.
+// It creates a custom collector and registry, registers the given metric, and then collects
+// the metric value using the registry.
+// Returns a map of labels and their values.
+func ExtractLabelsFromMetric(metric prometheus.Metric) (map[string]string, error) {
+	var dtoMetric dto.Metric
+	err := metric.Write(&dtoMetric)
+	if err != nil {
+		return nil, fmt.Errorf("error writing metric: %v", err)
+	}
+
+	pairs := dtoMetric.GetLabel()
+	if pairs == nil {
+		return nil, errors.New("the metric has no labels")
+	}
+
+	labels := make(map[string]string)
+	for _, pair := range pairs {
+		labels[pair.GetName()] = pair.GetValue()
+	}
+
+	return labels, nil
+}

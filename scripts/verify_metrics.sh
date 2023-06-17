@@ -1,5 +1,11 @@
 #! /usr/bin/env bash
 
+if [ "$DEBUG" == "true" ]; then
+    set -x
+fi
+
+set -eo pipefail
+
 prometheus_response=$(curl -s -X GET http://localhost:9090/api/v1/label/__name__/values)
 status=$(echo $prometheus_response | jq -r '.status')
 if [ "$status" != "success" ]; then

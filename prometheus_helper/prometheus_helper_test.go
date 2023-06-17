@@ -120,3 +120,37 @@ func TestExtractValueFromMetric(t *testing.T) {
 		}
 	})
 }
+
+func TestExtractLabelsFromMetric(t *testing.T) {
+	t.Run("should extract labels from a metric", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", []string{"label1", "label2"}, nil)
+		metric := prometheus.MustNewConstMetric(metricDesc, prometheus.GaugeValue, 42.0, "value1", "value2")
+
+		labels, err := ExtractLabelsFromMetric(metric)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+
+		if len(labels) != 2 || labels["label1"] != "value1" || labels["label2"] != "value2" {
+			t.Errorf("Expected labels {label1: value1, label2: value2}, got %v", labels)
+		}
+	})
+
+	t.Run("should return error if writing metric fails", func(t *testing.T) {
+		badMetric := &badMetricStub{}
+		_, err := ExtractLabelsFromMetric(badMetric)
+		if err == nil {
+			t.Errorf("Expected error, but got nil")
+		}
+	})
+
+	t.Run("should return error if the metric has no labels", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metric := prometheus.MustNewConstMetric(metricDesc, prometheus.GaugeValue, 42.0)
+
+		_, err := ExtractLabelsFromMetric(metric)
+		if err == nil {
+			t.Errorf("Expected error, but got nil")
+		}
+	})
+}

@@ -10,10 +10,9 @@ import (
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
 
-const subsystem = "stats"
-
-var (
+const (
 	namespace = config.PrometheusNamespace
+	subsystem = "stats"
 )
 
 // NodestatsCollector is a custom collector for the /_node/stats endpoint

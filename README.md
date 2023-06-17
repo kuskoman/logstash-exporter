@@ -269,6 +269,8 @@ Table of exported metrics:
 | Name | Type | Description |
 | ----------- | ----------- | ----------- |
 | logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, goversion from which logstash_exporter was built, and the goos and goarch for the build. |
+| logstash_exporter_self_build_info | gauge | A metric with a constant '1' value labeled by version, git commit, go version, build arch, build os, and build date of the exporter. |
+| logstash_exporter_self_up | gauge | A metric that returns 1 if the exporter is up, 0 otherwise. |
 | logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance. |
 | logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance. |
 | logstash_info_pipeline_batch_delay | counter | Amount of time to wait for events to fill the batch before sending to the filter and output stages. |
