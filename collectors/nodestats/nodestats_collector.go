@@ -57,6 +57,17 @@ type NodestatsCollector struct {
 	EventsOut                       *prometheus.Desc
 	EventsDurationInMillis          *prometheus.Desc
 	EventsQueuePushDurationInMillis *prometheus.Desc
+
+	FlowInputCurrent              *prometheus.Desc
+	FlowInputLifetime             *prometheus.Desc
+	FlowFilterCurrent             *prometheus.Desc
+	FlowFilterLifetime            *prometheus.Desc
+	FlowOutputCurrent             *prometheus.Desc
+	FlowOutputLifetime            *prometheus.Desc
+	FlowQueueBackpressureCurrent  *prometheus.Desc
+	FlowQueueBackpressureLifetime *prometheus.Desc
+	FlowWorkerConcurrencyCurrent  *prometheus.Desc
+	FlowWorkerConcurrencyLifetime *prometheus.Desc
 }
 
 func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
@@ -109,6 +120,17 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 		EventsOut:                       descHelper.NewDescWithHelp("events_out", "Number of events out."),
 		EventsDurationInMillis:          descHelper.NewDescWithHelp("events_duration_millis", "Duration of events processing in milliseconds."),
 		EventsQueuePushDurationInMillis: descHelper.NewDescWithHelp("events_queue_push_duration_millis", "Duration of events push to queue in milliseconds."),
+
+		FlowInputCurrent:              descHelper.NewDescWithHelpAndLabels("flow_input_current", "Current number of events in the input queue."),
+		FlowInputLifetime:             descHelper.NewDescWithHelpAndLabels("flow_input_lifetime", "Lifetime number of events in the input queue."),
+		FlowFilterCurrent:             descHelper.NewDescWithHelpAndLabels("flow_filter_current", "Current number of events in the filter queue."),
+		FlowFilterLifetime:            descHelper.NewDescWithHelpAndLabels("flow_filter_lifetime", "Lifetime number of events in the filter queue."),
+		FlowOutputCurrent:             descHelper.NewDescWithHelpAndLabels("flow_output_current", "Current number of events in the output queue."),
+		FlowOutputLifetime:            descHelper.NewDescWithHelpAndLabels("flow_output_lifetime", "Lifetime number of events in the output queue."),
+		FlowQueueBackpressureCurrent:  descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_current", "Current number of events in the backpressure queue."),
+		FlowQueueBackpressureLifetime: descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_lifetime", "Lifetime number of events in the backpressure queue."),
+		FlowWorkerConcurrencyCurrent:  descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_current", "Current number of workers."),
+		FlowWorkerConcurrencyLifetime: descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_lifetime", "Lifetime number of workers."),
 	}
 }
 
@@ -168,6 +190,17 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(c.EventsOut, prometheus.GaugeValue, float64(nodeStats.Events.Out))
 	ch <- prometheus.MustNewConstMetric(c.EventsDurationInMillis, prometheus.GaugeValue, float64(nodeStats.Events.DurationInMillis))
 	ch <- prometheus.MustNewConstMetric(c.EventsQueuePushDurationInMillis, prometheus.GaugeValue, float64(nodeStats.Events.QueuePushDurationInMillis))
+
+	ch <- prometheus.MustNewConstMetric(c.FlowInputCurrent, prometheus.GaugeValue, float64(nodeStats.Flow.InputThroughput.Current))
+	ch <- prometheus.MustNewConstMetric(c.FlowInputLifetime, prometheus.GaugeValue, float64(nodeStats.Flow.InputThroughput.Lifetime))
+	ch <- prometheus.MustNewConstMetric(c.FlowFilterCurrent, prometheus.GaugeValue, float64(nodeStats.Flow.FilterThroughput.Current))
+	ch <- prometheus.MustNewConstMetric(c.FlowFilterLifetime, prometheus.GaugeValue, float64(nodeStats.Flow.FilterThroughput.Lifetime))
+	ch <- prometheus.MustNewConstMetric(c.FlowOutputCurrent, prometheus.GaugeValue, float64(nodeStats.Flow.OutputThroughput.Current))
+	ch <- prometheus.MustNewConstMetric(c.FlowOutputLifetime, prometheus.GaugeValue, float64(nodeStats.Flow.OutputThroughput.Lifetime))
+	ch <- prometheus.MustNewConstMetric(c.FlowQueueBackpressureCurrent, prometheus.GaugeValue, float64(nodeStats.Flow.QueueBackpressure.Current))
+	ch <- prometheus.MustNewConstMetric(c.FlowQueueBackpressureLifetime, prometheus.GaugeValue, float64(nodeStats.Flow.QueueBackpressure.Lifetime))
+	ch <- prometheus.MustNewConstMetric(c.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, float64(nodeStats.Flow.WorkerConcurrency.Current))
+	ch <- prometheus.MustNewConstMetric(c.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, float64(nodeStats.Flow.WorkerConcurrency.Lifetime))
 
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
 		c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)
