@@ -290,6 +290,11 @@ Table of exported metrics:
 | logstash_info_pipeline_workers | counter | Number of worker threads that will process pipeline events. |
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
 | logstash_info_up | gauge | A metric that returns 1 if the node is up, 0 otherwise. |
+| logstash_stats_events_duration_millis | gauge | Duration of events processing in milliseconds. |
+| logstash_stats_events_filtered | gauge | Number of events filtered out. |
+| logstash_stats_events_in | gauge | Number of events received. |
+| logstash_stats_events_out | gauge | Number of events out. |
+| logstash_stats_events_queue_push_duration_millis | gauge | Duration of events push to queue in milliseconds. |
 | logstash_stats_jvm_mem_heap_committed_bytes | gauge | Amount of heap memory in bytes that is committed for the Java virtual machine to use. |
 | logstash_stats_jvm_mem_heap_max_bytes | gauge | Maximum amount of heap memory in bytes that can be used for memory management. |
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | Amount of used heap memory in bytes. |
