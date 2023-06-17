@@ -51,6 +51,12 @@ type NodestatsCollector struct {
 	ReloadFailures  *prometheus.Desc
 
 	QueueEventsCount *prometheus.Desc
+
+	EventsIn                        *prometheus.Desc
+	EventsFiltered                  *prometheus.Desc
+	EventsOut                       *prometheus.Desc
+	EventsDurationInMillis          *prometheus.Desc
+	EventsQueuePushDurationInMillis *prometheus.Desc
 }
 
 func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
@@ -97,6 +103,12 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 		ReloadFailures:  descHelper.NewDescWithHelp("reload_failures", "Number of failed reloads."),
 
 		QueueEventsCount: descHelper.NewDescWithHelp("queue_events_count", "Number of events in the queue."),
+
+		EventsIn:                        descHelper.NewDescWithHelp("events_in", "Number of events received."),
+		EventsFiltered:                  descHelper.NewDescWithHelp("events_filtered", "Number of events filtered out."),
+		EventsOut:                       descHelper.NewDescWithHelp("events_out", "Number of events out."),
+		EventsDurationInMillis:          descHelper.NewDescWithHelp("events_duration_millis", "Duration of events processing in milliseconds."),
+		EventsQueuePushDurationInMillis: descHelper.NewDescWithHelp("events_queue_push_duration_millis", "Duration of events push to queue in milliseconds."),
 	}
 }
 
@@ -150,6 +162,12 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(c.ReloadFailures, prometheus.GaugeValue, float64(nodeStats.Reloads.Failures))
 
 	ch <- prometheus.MustNewConstMetric(c.QueueEventsCount, prometheus.GaugeValue, float64(nodeStats.Queue.EventsCount))
+
+	ch <- prometheus.MustNewConstMetric(c.EventsIn, prometheus.GaugeValue, float64(nodeStats.Events.In))
+	ch <- prometheus.MustNewConstMetric(c.EventsFiltered, prometheus.GaugeValue, float64(nodeStats.Events.Filtered))
+	ch <- prometheus.MustNewConstMetric(c.EventsOut, prometheus.GaugeValue, float64(nodeStats.Events.Out))
+	ch <- prometheus.MustNewConstMetric(c.EventsDurationInMillis, prometheus.GaugeValue, float64(nodeStats.Events.DurationInMillis))
+	ch <- prometheus.MustNewConstMetric(c.EventsQueuePushDurationInMillis, prometheus.GaugeValue, float64(nodeStats.Events.QueuePushDurationInMillis))
 
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
 		c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch)

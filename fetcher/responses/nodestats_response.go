@@ -259,6 +259,8 @@ type NodeStatsResponse struct {
 	Pipeline    PipelineResponse `json:"pipeline"`
 	Jvm         JvmResponse      `json:"jvm"`
 	Process     ProcessResponse  `json:"process"`
+	Events      EventsResponse   `json:"events"`
+	Flow        FlowResponse     `json:"flow"`
 	Reloads     ReloadResponse   `json:"reloads"`
 	Os          OsResponse       `json:"os"`
 	Queue       QueueResponse    `json:"queue"`
