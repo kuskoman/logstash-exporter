@@ -151,6 +151,8 @@ jobs:
 
       - name: Build Linux binary
         run: make build-linux
+        env:
+          VERSION: ${{ github.ref }}
 
       - name: Upload Linux binary
         uses: actions/upload-artifact@v3
@@ -174,6 +176,8 @@ jobs:
 
       - name: Build Mac binary
         run: make build-darwin
+        env:
+          VERSION: ${{ github.ref }}
 
       - name: Upload Mac binary
         uses: actions/upload-artifact@v3
@@ -197,6 +201,8 @@ jobs:
 
       - name: Build Windows binary
         run: make build-windows
+        env:
+          VERSION: ${{ github.ref }}
 
       - name: Upload Windows binary
         uses: actions/upload-artifact@v3

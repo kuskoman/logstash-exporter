@@ -3,7 +3,7 @@ GOOS_BINARIES := $(foreach goos,$(GOOS_VALUES),out/main-$(goos))
 GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/main-$(goos),out/main-$(goos)))
 
 GITHUB_REPO := github.com/kuskoman/logstash-exporter
-VERSION := $(shell git symbolic-ref --short HEAD)
+VERSION ?= $(shell git symbolic-ref --short HEAD)
 GIT_COMMIT := $(shell git rev-parse HEAD)
 DOCKER_IMG ?= "logstash-exporter"
 
