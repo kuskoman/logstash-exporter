@@ -153,7 +153,7 @@ Run all tests:
 
     make test
 
-Displays test coverage report:
+Display test coverage report:
 
     make test-coverage 
 
