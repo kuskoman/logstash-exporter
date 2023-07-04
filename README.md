@@ -106,6 +106,7 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the Go Exporter application.
 - `make clean`: Deletes all binary executables in the out directory.
 - `make test`: Runs all tests.
+- `make test-coverage`: Displays test coverage report.
 - `make compose`: Starts a Docker-compose configuration.
 - `make wait-for-compose`: Starts a Docker-compose configuration and waits for it to be ready.
 - `make compose-down`: Stops a Docker-compose configuration.
@@ -113,6 +114,8 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make pull`: Pulls the Docker image from the registry.
 - `make logs`: Shows logs from the Docker-compose configuration.
 - `make minify`: Minifies the binary executables.
+- `make install-helm-readme`: Installs readme-generator-for-helm tool.
+- `make helm-readme`: Generates Helm chart README.md file.
 - `make help`: Shows the available commands.
 
 #### File Structure
@@ -150,6 +153,10 @@ Run all tests:
 
     make test
 
+Displays test coverage report:
+
+    make test-coverage 
+
 Start the Docker-compose configuration:
 
     make compose
@@ -177,6 +184,14 @@ Show logs from the Docker-compose configuration:
 Minify the binary executables:
 
     make minify
+
+Install readme-generator-for-helm tool:
+
+    make install-helm-readme
+
+Generate Helm chart README.md file:
+
+    make helm-readme
 
 Show the available commands:
 
