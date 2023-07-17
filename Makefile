@@ -8,10 +8,10 @@ GIT_COMMIT := $(shell git rev-parse HEAD)
 DOCKER_IMG ?= "logstash-exporter"
 
 # ****************************** NOTE ****************************** #
-# Commands description was made using the following syntax:	   		 #
-# https://stackoverflow.com/a/59087509						   		 #
-#															   		 #
-# To write command description use "#:" before command definition	 #
+# Commands description was made using the following syntax:          #
+# https://stackoverflow.com/a/59087509                               #
+#                                                                    #
+# To write command description use "#:" before command definition    #
 # ****************************************************************** #
 
 #: Builds binary executables for all OS (Win, Darwin, Linux)
@@ -83,19 +83,19 @@ pull:
 logs:
 	docker-compose logs -f
 
-#: Minifies the binary executables.
+#: Minifies the binary executables
 minify:
 	upx -9 $(GOOS_EXES)
 
-#: Installs readme-generator-for-helm tool.
+#: Installs readme-generator-for-helm tool
 install-helm-readme:
 	./scripts/install_helm_readme_generator.sh
 
-#: Generates Helm chart README.md file.
+#: Generates Helm chart README.md file
 helm-readme:
 	./scripts/generate_helm_readme.sh
 
-#: Show this help about available commands
+#: Shows info about available commands
 help:
 	@grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$$)" Makefile \
 	| grep -v -- -- \
