@@ -2,9 +2,10 @@ package collectors
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
+
+	"golang.org/x/exp/slog"
 
 	"github.com/kuskoman/logstash-exporter/collectors/nodeinfo"
 	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
@@ -53,9 +54,9 @@ func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	waitGroup.Add(len(manager.collectors))
 	for name, collector := range manager.collectors {
 		go func(name string, collector Collector) {
-			log.Printf("executing collector %s", name)
+			slog.Debug("executing collector", "name", name)
 			manager.executeCollector(name, ctx, collector, ch)
-			log.Printf("collector %s finished", name)
+			slog.Debug("collector finished", "name", name)
 			waitGroup.Done()
 		}(name, collector)
 	}
@@ -73,10 +74,10 @@ func (manager *CollectorManager) executeCollector(name string, ctx context.Conte
 	var executionStatus string
 
 	if err != nil {
-		log.Printf("executor %s failed after %s: %s", name, executionDuration, err.Error())
+		slog.Error("executor failed", "name", name, "duration", executionDuration, "err", err)
 		executionStatus = "error"
 	} else {
-		log.Printf("executor %s succeeded after %s", name, executionDuration)
+		slog.Debug("executor succeeded", "name", name, "duration", executionDuration)
 		executionStatus = "success"
 	}
 
