@@ -2,8 +2,9 @@ package nodestats
 
 import (
 	"fmt"
-	"log"
 	"time"
+
+	"golang.org/x/exp/slog"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -113,7 +114,7 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 
 func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric) {
 	collectingStart := time.Now()
-	log.Printf("collecting pipeline stats for pipeline %s", pipelineID)
+	slog.Debug("collecting pipeline stats for pipeline", "pipelineID", pipelineID)
 
 	ch <- prometheus.MustNewConstMetric(collector.EventsOut, prometheus.CounterValue, float64(pipeStats.Events.Out), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.EventsFiltered, prometheus.CounterValue, float64(pipeStats.Events.Filtered), pipelineID)
@@ -159,7 +160,7 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	for _, output := range pipeStats.Plugins.Outputs {
 		pluginID := output.ID
 		pluginType := "output"
-		log.Printf("collecting output error stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, output.Name, pluginID)
+		slog.Debug("collecting output error stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", output.Name, "id", pluginID)
 
 		// Response codes returned by output Bulk Requests
 		for code, count := range output.BulkRequests.Responses {
@@ -174,13 +175,13 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	// Pipeline plugins metrics
 	for _, plugin := range pipeStats.Plugins.Inputs {
 		pluginType := "input"
-		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, plugin.Name, plugin.ID)
+		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, float64(plugin.Events.QueuePushDurationInMillis), pipelineID, pluginType, plugin.Name, plugin.ID)
 	}
 
 	for _, plugin := range pipeStats.Plugins.Codecs {
-		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, "codec", plugin.Name, plugin.ID)
+		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", "codec", "name", plugin.Name, "id", plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Encode.WritesIn), pipelineID, "codec:encode", plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Decode.WritesIn), pipelineID, "codec:decode", plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Decode.Out), pipelineID, "codec:decode", plugin.Name, plugin.ID)
@@ -190,7 +191,7 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 
 	for _, plugin := range pipeStats.Plugins.Filters {
 		pluginType := "filter"
-		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, plugin.Name, plugin.ID)
+		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Events.In), pipelineID, pluginType, plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Events.DurationInMillis), pipelineID, pluginType, plugin.Name, plugin.ID)
@@ -198,14 +199,14 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 
 	for _, plugin := range pipeStats.Plugins.Outputs {
 		pluginType := "output"
-		log.Printf("collecting pipeline plugin stats for pipeline %s :: plugin type:%s name:%s id:%s", pipelineID, pluginType, plugin.Name, plugin.ID)
+		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Events.In), pipelineID, pluginType, plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, plugin.ID)
 		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Events.DurationInMillis), pipelineID, pluginType, plugin.Name, plugin.ID)
 	}
 
 	collectingEnd := time.Now()
-	log.Printf("collected pipeline stats for pipeline %s in %s", pipelineID, collectingEnd.Sub(collectingStart))
+	slog.Debug("collected pipeline stats for pipeline", "pipelineID", pipelineID, "duration", collectingEnd.Sub(collectingStart))
 }
 
 // isPipelineHealthy returns 1 if the pipeline is healthy, 0 if it is not
