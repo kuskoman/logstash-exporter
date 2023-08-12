@@ -7,13 +7,15 @@ for service in $(docker service ls --format "{{.Name}}"); do
 		version=${service#logstash_}
 		compatibilityTable+="| $version"
 
-		metrics=$(curl -s "http://$service:9600/_node/stats")
+		metrics=$(curl -s "http://$service:9600/_node/stats" | jq -c '.data[] | select(.metric | startswith("logstash"))')
 
-		metric1Available=$(jq -r '.Metric1' <<< "$metrics")
-		metric2Available=$(jq -r '.Metric2' <<< "$metrics")
-		metric3Available=$(jq -r '.Metric3' <<< "$metrics")
+		for metric in $metrics; do
+			metricName=$(echo "$metric" | jq -r '.metric')
+			metricAvailable=$(jq -r ".$metricName" <<< "$metrics")
+			compatibilityTable+=" | $metricAvailable"
+		done
 
-		compatibilityTable+=" | $metric1Available | $metric2Available | $metric3Available |\n"
+		compatibilityTable+=" |\n"
 	fi
 done
 
