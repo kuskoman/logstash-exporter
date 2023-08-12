@@ -16,6 +16,8 @@ func main() {
 		panic(err)
 	}
 
+	logstashVersions := strings.Split(os.Getenv("LOGSTASH_VERSIONS"), ",")
+
 	services, err := cli.ServiceList(context.Background(), types.ServiceListOptions{})
 	if err != nil {
 		panic(err)
@@ -25,12 +27,12 @@ func main() {
 	compatibilityTable.WriteString("| Logstash Version | Metric 1 | Metric 2 | Metric 3 |\n")
 	compatibilityTable.WriteString("|------------------|----------|----------|----------|\n")
 
-	for _, service := range services {
-		if strings.HasPrefix(service.Spec.Name, "logstash") {
-			version := strings.TrimPrefix(service.Spec.Name, "logstash_")
-			compatibilityTable.WriteString("| " + version)
+ 	for _, service := range services {
+ 		for _, version := range logstashVersions {
+ 			if strings.HasPrefix(service.Spec.Name, "logstash_"+version) {
+ 				compatibilityTable.WriteString("| " + version)
 
-			resp, err := http.Get(fmt.Sprintf("http://%s:9600/_node/stats", service.Spec.Name))
+   			resp, err := http.Get(fmt.Sprintf("http://logstash_%s:9600/_node/stats", version))
 			if err != nil {
 				fmt.Printf("Error getting metrics from Logstash: %v\n", err)
 				continue
