@@ -239,11 +239,13 @@ Then you can run the tests:
 
 ## Grafana Dashboard
 
-A Grafana Dashboard designed for metrics from Logstash-exporter on Kubernetes is available at https://grafana.com/grafana/dashboards/18628-logstash-on-kubernetes-dashboard/. This dashboard's JSON source is at [excalq/grafana-logstash-kubernetes](https://github.com/excalq/grafana-logstash-kubernetes).
+A Grafana Dashboard designed for metrics from Logstash-exporter on Kubernetes is available at
+[grafana.com/grafana/dashboards/18628-logstash-on-kubernetes-dashboard/](https://grafana.com/grafana/dashboards/18628-logstash-on-kubernetes-dashboard/).
+This dashboard's JSON source is at [excalq/grafana-logstash-kubernetes](https://github.com/excalq/grafana-logstash-kubernetes).
 
 (If not using Kubernetes, change `$pod` to `$instance` in the JSON.)
 
-<img src="https://grafana.com/api/dashboards/18628/images/14184/image" width="300">
+![Grafana Dashboard](https://grafana.com/api/dashboards/18628/images/14184/image)
 
 ## Additional Information
 
