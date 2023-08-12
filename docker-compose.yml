@@ -29,7 +29,7 @@ services:
       - prometheus-data:/prometheus
       - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
     environment:
-      - PROMETHEUS_PORT=${PROMETHEUS_PORT:-9090}
+      - PROMETHEUS_PORT=9090
     ports:
       - ${PROMETHEUS_PORT:-9090}:9090
     healthcheck:

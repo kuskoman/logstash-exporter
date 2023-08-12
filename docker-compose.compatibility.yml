@@ -1,0 +1,106 @@
+services:
+  elasticsearch:
+    environment:
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+      discovery.type: single-node
+      xpack.security.enabled: 'false'
+      xpack.security.http.ssl.enabled: 'false'
+      xpack.security.transport.ssl.enabled: 'false'
+    healthcheck:
+      interval: 30s
+      retries: 8
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s
+      timeout: 10s
+    image: elasticsearch:8.8.0
+    restart: unless-stopped
+  exporter_7_17_0:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      LOGSTASH_URL: http://logstash_7_17_0:9600
+    restart: unless-stopped
+  exporter_8_8_1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      LOGSTASH_URL: http://logstash_8_8_1:9600
+    restart: unless-stopped
+  logstash_7_17_0:
+    depends_on:
+    - elasticsearch
+    healthcheck:
+      interval: 30s
+      retries: 8
+      test:
+      - CMD
+      - bash
+      - -c
+      - curl -Ss localhost:9600 | grep -o '"status":"[a-z]*"' | awk -F':' '{print
+        $2}' | grep -q "green" || exit 1
+      timeout: 10s
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    restart: unless-stopped
+    volumes:
+    - ./.docker/logstash-matrix.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    - ./.docker/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+  logstash_8_8_1:
+    depends_on:
+    - elasticsearch
+    healthcheck:
+      interval: 30s
+      retries: 8
+      test:
+      - CMD
+      - bash
+      - -c
+      - curl -Ss localhost:9600 | grep -o '"status":"[a-z]*"' | awk -F':' '{print
+        $2}' | grep -q "green" || exit 1
+      timeout: 10s
+    image: docker.elastic.co/logstash/logstash:8.8.1
+    restart: unless-stopped
+    volumes:
+    - ./.docker/logstash-matrix.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    - ./.docker/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+  prometheus_7_17_0:
+    environment:
+      PROMETHEUS_PORT: 19199
+    healthcheck:
+      interval: 30s
+      retries: 8
+      test:
+      - CMD
+      - sh
+      - -c
+      - wget --no-verbose --tries=1 --spider http://localhost:9090 || exit 1
+      timeout: 10s
+    image: prom/prometheus:v2.44.0
+    ports:
+    - 19199:9090
+    restart: unless-stopped
+    volumes:
+    - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+  prometheus_8_8_1:
+    environment:
+      PROMETHEUS_PORT: 19198
+    healthcheck:
+      interval: 30s
+      retries: 8
+      test:
+      - CMD
+      - sh
+      - -c
+      - wget --no-verbose --tries=1 --spider http://localhost:9090 || exit 1
+      timeout: 10s
+    image: prom/prometheus:v2.44.0
+    ports:
+    - 19198:9090
+    restart: unless-stopped
+    volumes:
+    - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+version: '3.8'
