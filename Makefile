@@ -65,7 +65,7 @@ compose:
 
 #: Starts a Docker-compose configuration until it's ready
 wait-for-compose:
-	cd /path/to/docker-compose/file && docker-compose up -d --wait
+	docker-compose up -d --wait
 
 #: Stops a Docker-compose configuration
 compose-down:
@@ -107,14 +107,5 @@ help:
 	| sed -n 's/^#: \(.*\)###\(.*\):.*/\2###\1/p' \
 	| column -t  -s '###'
 
-
-#: Waits for multiple services to be healthy
-wait-for-multiple-services:
-	docker-compose up -d
-	while [ $$(docker-compose ps | grep 'starting\|unhealthy' | wc -l) -gt 0 ]; do
-		echo "Waiting for services to be healthy..."
-		sleep 5
-	done
-	echo "All services are healthy."
 
 .DEFAULT_GOAL := run
