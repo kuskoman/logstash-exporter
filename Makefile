@@ -65,7 +65,7 @@ compose:
 
 #: Starts a Docker-compose configuration until it's ready
 wait-for-compose:
-	docker-compose up -d --wait
+	docker-compose -f docker-compose-compatibility.yml up -d --wait
 
 #: Stops a Docker-compose configuration
 compose-down:
