@@ -89,11 +89,12 @@ The Helm chart has its own [README](./chart/README.md).
 
 The application can be configured using the following environment variables, which are also loaded from `.env` file:
 
-| Variable Name  | Description                                   | Default Value           |
-| -------------- | --------------------------------------------- | ----------------------- |
-| `LOGSTASH_URL` | URL to Logstash API                           | `http://localhost:9600` |
-| `PORT`         | Port on which the application will be exposed | `9198`                  |
-| `HOST`         | Host on which the application will be exposed | empty string            |
+| Variable Name  | Description                                                 | Default Value            |
+| -------------- | ----------------------------------------------------------- | -----------------------  |
+| `LOGSTASH_URL` | URL to Logstash API                                         | `http://localhost:9600`  |
+| `PORT`         | Port on which the application will be exposed               | `9198`                   |
+| `HOST`         | Host on which the application will be exposed               | empty string             |
+| `LOG_LEVEL`    | [Log level](https://pkg.go.dev/golang.org/x/exp/slog#Level) | empty (defaults to info) |
 
 All configuration variables can be checked in the [config directory](./config/).
 
