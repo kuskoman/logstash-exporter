@@ -95,9 +95,6 @@ install-helm-readme:
 helm-readme:
 	./scripts/generate_helm_readme.sh
 
-#: Generates the compatibility table for different versions of Logstash
-generate-compatibility-table:
-	go run scripts/generate_compatibility_table.go
 
 #: Shows info about available commands
 help:
