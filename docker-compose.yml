@@ -1,6 +1,12 @@
 version: "3.8"
 services:
-  logstash:
+  logstash_7_8_0:
+    image: docker.elastic.co/logstash/logstash:7.8.0
+  logstash_7_9_0:
+    image: docker.elastic.co/logstash/logstash:7.9.0
+  logstash_8_0_0:
+    image: docker.elastic.co/logstash/logstash:8.0.0
+  logstash_8_8_1:
     image: docker.elastic.co/logstash/logstash:8.8.1
     restart: unless-stopped
     volumes:
