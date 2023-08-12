@@ -32,17 +32,30 @@ func main() {
 
 			resp, err := http.Get(fmt.Sprintf("http://%s:9600/_node/stats", service.Spec.Name))
 			if err != nil {
-				panic(err)
+				fmt.Printf("Error getting metrics from Logstash: %v\n", err)
+				continue
 			}
 			defer resp.Body.Close()
 
-			// Check the compatibility of the metrics and add the results to the compatibility table
-			// This is a simplified example and the actual implementation may vary
-			if resp.StatusCode == http.StatusOK {
-				compatibilityTable.WriteString(" | Yes | Yes | Yes |\n")
-			} else {
-				compatibilityTable.WriteString(" | No | No | No |\n")
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error reading response body: %v\n", err)
+				continue
 			}
+
+			var metrics Metrics
+			err = json.Unmarshal(body, &metrics)
+			if err != nil {
+				fmt.Printf("Error unmarshalling JSON: %v\n", err)
+				continue
+			}
+
+			// Check the compatibility of the metrics and add the results to the compatibility table
+			metric1Available := metrics.Metric1 != ""
+			metric2Available := metrics.Metric2 != ""
+			metric3Available := metrics.Metric3 != ""
+
+			compatibilityTable.WriteString(fmt.Sprintf(" | %v | %v | %v |\n", metric1Available, metric2Available, metric3Available))
 		}
 	}
 
