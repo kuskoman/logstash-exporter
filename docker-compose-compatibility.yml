@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  logstash_7_8_0:
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION_7_8_0:-7.8.0}
+    ports:
+      - ${LOGSTASH_PORT_7_8_0:-5045}:5044
+      - ${LOGSTASH_STATS_PORT_7_8_0:-9601}:9600
+  logstash_7_9_0:
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION_7_9_0:-7.9.0}
+    ports:
+      - ${LOGSTASH_PORT_7_9_0:-5046}:5044
+      - ${LOGSTASH_STATS_PORT_7_9_0:-9602}:9600
+  logstash_8_0_0:
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION_8_0_0:-8.0.0}
+    ports:
+      - ${LOGSTASH_PORT_8_0_0:-5047}:5044
+      - ${LOGSTASH_STATS_PORT_8_0_0:-9603}:9600
+  logstash_8_8_1:
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION_8_8_1:-8.8.1}
+    ports:
+      - ${LOGSTASH_PORT_8_8_1:-5048}:5044
+      - ${LOGSTASH_STATS_PORT_8_8_1:-9604}:9600
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    ports:
+      - ${PROMETHEUS_PORT:-9091}:9090
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    ports:
+      - ${ELASTICSEARCH_PORT:-9201}:9200
+  exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - ${EXPORTER_PORT:-9199}:9198
+volumes:
+  logstash-data:
+  prometheus-data:
+  elasticsearch-data:
+  elast
