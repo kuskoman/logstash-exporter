@@ -95,6 +95,15 @@ install-helm-readme:
 helm-readme:
 	./scripts/generate_helm_readme.sh
 
+#: Cleans Elasticsearch data, works only with default ES port. The command may take a very long time to complete
+clean-elasticsearch:
+	@indices=$(shell curl -s -X GET "http://localhost:9200/_cat/indices" | awk '{print $$3}') ;\
+	for index in $$indices ; do \
+		echo "Deleting all documents from index $$index" ;\
+		curl -X POST "http://localhost:9200/$$index/_delete_by_query?conflicts=proceed" -H "Content-Type: application/json" -d '{"query": {"match_all": {}}}' ;\
+		echo "" ;\
+	done
+
 #: Shows info about available commands
 help:
 	@grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$$)" Makefile \
