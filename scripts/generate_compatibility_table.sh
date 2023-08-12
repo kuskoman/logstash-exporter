@@ -1,8 +1,18 @@
 #!/bin/bash
 
-compatibilityTable="| Logstash Version | Metric 1 | Metric 2 | Metric 3 |\n|------------------|----------|----------|----------|\n"
+compatibilityTable="| Logstash Version "
+metrics=$(curl -s "http://localhost:9600/_node/stats" | jq -c '.data[] | select(.metric | startswith("logstash"))')
+for metric in $metrics; do
+	metricName=$(echo "$metric" | jq -r '.metric')
+	compatibilityTable+="| $metricName "
+done
+compatibilityTable+="\n|------------------"
+for metric in $metrics; do
+	compatibilityTable+="|----------"
+done
+compatibilityTable+="\n"
 
-for service in $(docker service ls --format "{{.Name}}"); do
+for service in $(grep 'logstash_' docker-compose-compatibility.yml | cut -d ':' -f 1 | tr -d ' '); do
 	if [[ $service == logstash_* ]]; then
 		version=${service#logstash_}
 		compatibilityTable+="| $version"
