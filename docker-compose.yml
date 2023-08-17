@@ -64,6 +64,20 @@ services:
       retries: 8
     ports:
       - ${ELASTICSEARCH_PORT:-9200}:9200
+  grafana:
+    image: grafana/grafana:10.0.3
+    restart: unless-stopped
+    ports:
+      - ${GRAFANA_PORT:-3000}:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./.docker/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./.docker/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
   exporter:
     build:
       context: .
@@ -90,3 +104,4 @@ volumes:
   prometheus-data:
   elasticsearch-data:
   elasticsearch-logs:
+  grafana-data:
