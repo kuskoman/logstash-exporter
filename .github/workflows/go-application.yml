@@ -220,8 +220,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
       - name: Build Docker image
-        run: make build-docker
+        run: make build-docker-multi
 
       - name: Package Docker image
         run: docker save logstash-exporter:latest | gzip > logstash-exporter.tar.gz
