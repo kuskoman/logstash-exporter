@@ -45,7 +45,7 @@ build-docker:
 #: Builds a multi-arch Docker image (`amd64` and `arm64`)
 build-docker-multi:
 	for arch in amd64 arm64 ; do \
-	docker buildx build --platform linux/$$arch --output type=docker  -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) . ; \
+	docker buildx build --push --platform linux/$$arch --output type=docker  -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) . ; \
 	done
 
 #: Deletes all binary executables in the out directory
