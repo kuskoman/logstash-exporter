@@ -1,6 +1,6 @@
 module github.com/kuskoman/logstash-exporter
 
-go 1.20
+go 1.21.0
 
 require (
 	github.com/joho/godotenv v1.5.1
