@@ -104,6 +104,10 @@ clean-elasticsearch:
 		echo "" ;\
 	done
 
+#: Upgrades all dependencies
+upgrade-dependencies:
+	go get -u ./...
+
 #: Shows info about available commands
 help:
 	@grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$$)" Makefile \
