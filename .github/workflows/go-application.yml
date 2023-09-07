@@ -268,7 +268,7 @@ jobs:
   build-docker-linux-arm-image:
     name: Build Linux ARM Docker image
     runs-on: ubuntu-20.04
-    needs: [lint, test]
+    needs: [build-linux]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
