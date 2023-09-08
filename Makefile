@@ -44,7 +44,7 @@ build-docker:
 # Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
 #: Builds a multi-arch Docker image (`amd64` and `arm64`)
 build-docker-multi:
-	docker buildx build --push --platform linux/amd64,linux/arm64 --output -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
+	docker buildx build --push --platform linux/amd64,linux/arm64 -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
 
 #: Deletes all binary executables in the out directory
 clean:

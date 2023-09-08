@@ -282,7 +282,7 @@ jobs:
         run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
 
       - name: Build Docker image
-        run: "DOCKER_IMG=${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }} make build-docker-multi"
+        run: "VERSION=${{ env.TAG_NAME }} DOCKER_IMG=${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }} make build-docker-multi"
 
   test-helm-integration:
     name: Test integration with Helm chart
