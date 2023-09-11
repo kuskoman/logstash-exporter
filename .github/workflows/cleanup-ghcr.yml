@@ -1,0 +1,20 @@
+name: Cleanup Untagged Images
+
+on:
+  # every sunday at 00:00
+  schedule:
+    - cron: "0 0 * * SUN"
+  # or manually
+  workflow_dispatch:
+
+jobs:
+  delete-untagged-images:
+    name: Delete Untagged Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bots-house/ghcr-delete-image-action@v1.1.0
+        with:
+          owner: kuskoman
+          name: logstash-exporter
+          token: ${{ secrets.GH_PAT }}
+          untagged-keep-latest: 10
