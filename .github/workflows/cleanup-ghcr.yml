@@ -6,6 +6,9 @@ on:
     - cron: "0 0 * * SUN"
   # or manually
   workflow_dispatch:
+  push:
+    branches:
+      - cleanup-old-ghcr-images
 
 jobs:
   delete-untagged-images:
