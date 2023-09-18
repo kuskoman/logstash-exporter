@@ -19,11 +19,6 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["go"]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,7 +26,12 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          languages: ${{ matrix.language }}
+          languages: "go"
+
+      - name: Setup Golang with cache
+        uses: magnetikonline/action-golang-cache@v4
+        with:
+          go-version: "^1.21"
 
       - name: Build application binary
         run: make build-linux
@@ -39,4 +39,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
         with:
-          category: "/language:${{matrix.language}}"
+          category: "/language:go"
