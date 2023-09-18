@@ -2,10 +2,9 @@ package collectors
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/slog"
 
 	"github.com/kuskoman/logstash-exporter/collectors/nodeinfo"
 	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
