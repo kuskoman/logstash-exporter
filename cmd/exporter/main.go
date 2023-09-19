@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/collectors"
@@ -23,21 +24,20 @@ func main() {
 	}
 	slog.SetDefault(logger)
 
-	port := config.Port
-	host := config.Host
+	port, host := config.Port, config.Host
 	logstashUrl := config.LogstashUrl
 
-	slog.Debug("Application starting... ")
+	slog.Debug("application starting... ")
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
 	collectorManager := collectors.NewCollectorManager(logstashUrl)
-	server := server.NewAppServer(host, port)
+	appServer := server.NewAppServer(host, port)
 	prometheus.MustRegister(collectorManager)
 
-	slog.Info("Starting server on port", "port", port)
-	err = server.ListenAndServe()
-	if err != nil {
+	slog.Info("starting server on", "host", host, "port", port)
+	if err := appServer.ListenAndServe(); err != nil {
 		slog.Error("failed to listen and serve", "err", err)
+		os.Exit(1)
 	}
 }
