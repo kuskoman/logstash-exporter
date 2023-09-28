@@ -17,7 +17,7 @@ func TestSimpleDescHelper(t *testing.T) {
 
 	t.Run("NewDescWithHelp", func(t *testing.T) {
 		desc := helper.NewDescWithHelp("metric", "help")
-		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: []}"
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {}}"
 		if desc.String() != expectedDesc {
 			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
 		}
@@ -25,7 +25,7 @@ func TestSimpleDescHelper(t *testing.T) {
 
 	t.Run("NewDescWithHelpAndLabel", func(t *testing.T) {
 		desc := helper.NewDescWithHelpAndLabels("metric", "help", "customLabel")
-		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: [{customLabel <nil>}]}"
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {customLabel}}"
 		if desc.String() != expectedDesc {
 			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
 		}
