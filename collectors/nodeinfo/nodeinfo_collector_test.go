@@ -35,6 +35,10 @@ func (m *mockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResp
 	return nil, nil
 }
 
+func (m *mockClient) GetEndpoint() string {
+	return ""
+}
+
 type errorMockClient struct{}
 
 func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
@@ -43,6 +47,10 @@ func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoR
 
 func (m *errorMockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error) {
 	return nil, nil
+}
+
+func (m *errorMockClient) GetEndpoint() string {
+	return ""
 }
 
 func TestCollectNotNil(t *testing.T) {

@@ -12,12 +12,18 @@ import (
 type Client interface {
 	GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error)
 	GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error)
+
+	GetEndpoint() string
 }
 
 // DefaultClient is the default implementation of the Client interface
 type DefaultClient struct {
 	httpClient *http.Client
 	endpoint   string
+}
+
+func (client *DefaultClient) GetEndpoint() string {
+	return client.endpoint
 }
 
 const defaultLogstashEndpoint = "http://localhost:9600"

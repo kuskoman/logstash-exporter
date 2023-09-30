@@ -35,6 +35,10 @@ func (m *mockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoRespon
 	return nil, nil
 }
 
+func (m *mockClient) GetEndpoint() string {
+	return ""
+}
+
 type errorMockClient struct{}
 
 func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
@@ -43,6 +47,10 @@ func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoR
 
 func (m *errorMockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error) {
 	return nil, errors.New("could not connect to instance")
+}
+
+func (m *errorMockClient) GetEndpoint() string {
+	return ""
 }
 
 func TestCollectNotNil(t *testing.T) {
@@ -86,8 +94,8 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_plugin_events_queue_push_duration",
 		"logstash_stats_pipeline_plugin_documents_successes",
 		"logstash_stats_pipeline_plugin_documents_non_retryable_failures",
-      	"logstash_stats_pipeline_plugin_bulk_requests_errors",
-      	"logstash_stats_pipeline_plugin_bulk_requests_responses",
+		"logstash_stats_pipeline_plugin_bulk_requests_errors",
+		"logstash_stats_pipeline_plugin_bulk_requests_responses",
 		"logstash_stats_process_cpu_percent",
 		"logstash_stats_process_cpu_total_millis",
 		"logstash_stats_process_cpu_load_average_1m",
