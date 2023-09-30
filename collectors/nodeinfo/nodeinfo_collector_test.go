@@ -10,6 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
@@ -54,81 +55,116 @@ func (m *errorMockClient) GetEndpoint() string {
 }
 
 func TestCollectNotNil(t *testing.T) {
-	collector := NewNodeinfoCollector(&mockClient{})
-	ch := make(chan prometheus.Metric)
-	ctx := context.Background()
+	runTest := func(t *testing.T, clients []logstashclient.Client) {
+		collector := NewNodeinfoCollector(clients)
+		ch := make(chan prometheus.Metric)
+		ctx := context.Background()
 
-	go func() {
-		err := collector.Collect(ctx, ch)
-		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
-		}
-		close(ch)
-	}()
+		go func() {
+			err := collector.Collect(ctx, ch)
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+			close(ch)
+		}()
 
-	expectedMetrics := []string{
-		"logstash_info_build",
-		"logstash_info_node",
-		"logstash_info_pipeline_batch_delay",
-		"logstash_info_pipeline_batch_size",
-		"logstash_info_pipeline_workers",
-		"logstash_info_status",
-		"logstash_info_up",
-	}
-
-	var foundMetrics []string
-	for metric := range ch {
-		if metric == nil {
-			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+		expectedMetrics := []string{
+			"logstash_info_build",
+			"logstash_info_node",
+			"logstash_info_pipeline_batch_delay",
+			"logstash_info_pipeline_batch_size",
+			"logstash_info_pipeline_workers",
+			"logstash_info_status",
+			"logstash_info_up",
 		}
 
-		foundMetricDesc := metric.Desc().String()
-		foundMetricFqName, err := prometheus_helper.ExtractFqName(foundMetricDesc)
-		if err != nil {
-			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
+		var foundMetrics []string
+		for metric := range ch {
+			if metric == nil {
+				t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+			}
+
+			foundMetricDesc := metric.Desc().String()
+			foundMetricFqName, err := prometheus_helper.ExtractFqName(foundMetricDesc)
+			if err != nil {
+				t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
+			}
+
+			foundMetrics = append(foundMetrics, foundMetricFqName)
 		}
 
-		foundMetrics = append(foundMetrics, foundMetricFqName)
-	}
+		for _, expectedMetric := range expectedMetrics {
+			found := false
+			for _, foundMetric := range foundMetrics {
+				if foundMetric == expectedMetric {
+					found = true
+					break
+				}
+			}
 
-	for _, expectedMetric := range expectedMetrics {
-		found := false
-		for _, foundMetric := range foundMetrics {
-			if foundMetric == expectedMetric {
-				found = true
-				break
+			if !found {
+				t.Errorf("Expected metric %s to be found", expectedMetric)
 			}
 		}
-
-		if !found {
-			t.Errorf("Expected metric %s to be found", expectedMetric)
-		}
 	}
+
+	t.Run("single client", func(t *testing.T) {
+		t.Parallel()
+
+		runTest(t, []logstashclient.Client{&mockClient{}})
+	})
+
+	t.Run("multiple clients", func(t *testing.T) {
+		t.Parallel()
+
+		runTest(t, []logstashclient.Client{&mockClient{}, &mockClient{}})
+	})
 }
 
 func TestCollectError(t *testing.T) {
-	collector := NewNodeinfoCollector(&errorMockClient{})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	runTest := func(t *testing.T, clients []logstashclient.Client) {
+		collector := NewNodeinfoCollector(clients)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 
-	ch := make(chan prometheus.Metric)
+		ch := make(chan prometheus.Metric)
 
-	go func() {
-		for range ch {
-			// simulate reading from the channel
+		go func() {
+			for range ch {
+				// simulate reading from the channel
+			}
+		}()
+
+		err := collector.Collect(ctx, ch)
+		close(ch)
+
+		if err == nil {
+			t.Error("Expected err not to be nil")
 		}
-	}()
-
-	err := collector.Collect(ctx, ch)
-	close(ch)
-
-	if err == nil {
-		t.Error("Expected err not to be nil")
 	}
+
+	t.Run("single faulty client", func(t *testing.T) {
+		t.Parallel()
+
+		runTest(t, []logstashclient.Client{&errorMockClient{}})
+	})
+
+	t.Run("multiple faulty clients", func(t *testing.T) {
+		t.Parallel()
+
+		runTest(t, []logstashclient.Client{&errorMockClient{}, &errorMockClient{}})
+	})
+
+	t.Run("multiple clients, one faulty", func(t *testing.T) {
+		t.Parallel()
+
+		runTest(t, []logstashclient.Client{&mockClient{}, &errorMockClient{}})
+	})
 }
 
 func TestGetUpStatus(t *testing.T) {
-	collector := NewNodeinfoCollector(&mockClient{})
+	clients := []logstashclient.Client{&mockClient{}}
+	collector := NewNodeinfoCollector(clients)
 
 	tests := []struct {
 		name     string
@@ -164,7 +200,7 @@ func TestGetUpStatus(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			metric := collector.getUpStatus(test.nodeInfo, test.err)
+			metric := collector.getUpStatus(test.nodeInfo, test.err, "test_endpoint")
 			metricValue, err := prometheus_helper.ExtractValueFromMetric(metric)
 
 			if err != nil {

@@ -10,12 +10,21 @@ import (
 )
 
 func TestNewCollectorManager(t *testing.T) {
-	mockEndpoint := "http://localhost:9600"
-	cm := NewCollectorManager(mockEndpoint)
+	t.Parallel()
 
-	if cm == nil {
-		t.Error("Expected collector manager to be initialized")
-	}
+	t.Run("multiple endpoints", func(t *testing.T) {
+		mockEndpoints := []string{
+			"http://localhost:9600",
+			"http://localhost:9601",
+		}
+		cm := NewCollectorManager(mockEndpoints)
+
+		if cm == nil {
+			t.Error("expected collector manager to be initialized")
+		}
+	})
+
+	// prometheus has a global state, so we cannot register the same collector twice, therefore there is no single endpoint test
 }
 
 type mockCollector struct {
