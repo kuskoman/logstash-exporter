@@ -10,12 +10,25 @@ import (
 )
 
 func TestNewCollectorManager(t *testing.T) {
-	mockEndpoint := "http://localhost:9600"
-	cm := NewCollectorManager(mockEndpoint)
+	t.Parallel()
 
-	if cm == nil {
-		t.Error("Expected collector manager to be initialized")
-	}
+	t.Run("single instance", func(t *testing.T) {
+		mockEndpoint := "http://localhost:9600"
+		cm := NewCollectorManager([]string{mockEndpoint})
+
+		if cm == nil {
+			t.Error("expected collector manager to be initialized")
+		}
+	})
+
+	t.Run("multiple instances", func(t *testing.T) {
+		mockEndpoints := []string{"http://localhost:9600", "http://localhost:9601"}
+		cm := NewCollectorManager(mockEndpoints)
+
+		if cm == nil {
+			t.Error("expected collector manager to be initialized")
+		}
+	})
 }
 
 type mockCollector struct {
@@ -43,15 +56,15 @@ func (m *mockCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric
 
 func TestCollect(t *testing.T) {
 	t.Run("should fail", func(t *testing.T) {
+		mockEndpoint := "http://localhost:9600"
 		cm := &CollectorManager{
-			collectors: map[string]Collector{
-				"mock": newMockCollector(true),
+			collectors: map[string]map[string]Collector{
+				mockEndpoint: {"mock": newMockCollector(true)},
 			},
 			scrapeDurations: getScrapeDurationsCollector(),
 		}
 
 		ch := make(chan prometheus.Metric)
-
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
@@ -70,14 +83,14 @@ func TestCollect(t *testing.T) {
 			}()
 			return done
 		}():
-			// No metric was sent to the channel, which is expected.
 		}
 	})
 
 	t.Run("should succeed", func(t *testing.T) {
+		mockEndpoint := "http://localhost:9600"
 		cm := &CollectorManager{
-			collectors: map[string]Collector{
-				"mock": newMockCollector(false),
+			collectors: map[string]map[string]Collector{
+				mockEndpoint: {"mock": newMockCollector(false)},
 			},
 			scrapeDurations: getScrapeDurationsCollector(),
 		}
@@ -96,9 +109,10 @@ func TestCollect(t *testing.T) {
 }
 
 func TestDescribe(t *testing.T) {
+	mockEndpoint := "http://localhost:9600"
 	cm := &CollectorManager{
-		collectors: map[string]Collector{
-			"mock": newMockCollector(false),
+		collectors: map[string]map[string]Collector{
+			mockEndpoint: {"mock": newMockCollector(false)},
 		},
 		scrapeDurations: getScrapeDurationsCollector(),
 	}
@@ -107,7 +121,7 @@ func TestDescribe(t *testing.T) {
 	cm.Describe(ch)
 
 	desc := <-ch
-	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: {collector,result}}"
+	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: {collector,endpoint,result}}"
 	if desc.String() != expectedDesc {
 		t.Errorf("Expected metric description to be '%s', got %s", expectedDesc, desc.String())
 	}
