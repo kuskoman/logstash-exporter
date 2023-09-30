@@ -24,10 +24,20 @@ type CollectorManager struct {
 	scrapeDurations *prometheus.SummaryVec
 }
 
-func NewCollectorManager(endpoint string) *CollectorManager {
-	client := logstashclient.NewClient(endpoint)
+func getClientsForEndpoints(endpoints []string) []logstashclient.Client {
+	clients := make([]logstashclient.Client, len(endpoints))
 
-	collectors := getCollectors(client)
+	for i, endpoint := range endpoints {
+		clients[i] = logstashclient.NewClient(endpoint)
+	}
+
+	return clients
+}
+
+func NewCollectorManager(endpoints []string) *CollectorManager {
+	clients := getClientsForEndpoints(endpoints)
+
+	collectors := getCollectors(clients)
 
 	scrapeDurations := getScrapeDurationsCollector()
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
@@ -35,10 +45,10 @@ func NewCollectorManager(endpoint string) *CollectorManager {
 	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations}
 }
 
-func getCollectors(client logstashclient.Client) map[string]Collector {
+func getCollectors(clients []logstashclient.Client) map[string]Collector {
 	collectors := make(map[string]Collector)
-	collectors["nodeinfo"] = nodeinfo.NewNodeinfoCollector(client)
-	collectors["nodestats"] = nodestats.NewNodestatsCollector(client)
+	collectors["nodeinfo"] = nodeinfo.NewNodeinfoCollector(clients)
+	collectors["nodestats"] = nodestats.NewNodestatsCollector(clients[0]) // TODO: support multiple clients
 	return collectors
 }
 

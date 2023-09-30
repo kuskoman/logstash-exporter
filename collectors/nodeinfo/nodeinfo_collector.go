@@ -2,7 +2,10 @@ package nodeinfo
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -13,7 +16,7 @@ import (
 
 // NodeinfoCollector is a custom collector for the /_node/stats endpoint
 type NodeinfoCollector struct {
-	client logstashclient.Client
+	clients []logstashclient.Client
 
 	NodeInfos  *prometheus.Desc
 	BuildInfos *prometheus.Desc
@@ -27,12 +30,12 @@ type NodeinfoCollector struct {
 	Status *prometheus.Desc
 }
 
-func NewNodeinfoCollector(client logstashclient.Client) *NodeinfoCollector {
+func NewNodeinfoCollector(clients []logstashclient.Client) *NodeinfoCollector {
 	const subsystem = "info"
 	namespace := config.PrometheusNamespace
 
 	return &NodeinfoCollector{
-		client: client,
+		clients: clients,
 		NodeInfos: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "node"),
 			"A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance.",
@@ -81,23 +84,49 @@ func NewNodeinfoCollector(client logstashclient.Client) *NodeinfoCollector {
 }
 
 func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric) error {
-	err := c.collectSingleInstance(ctx, ch)
-	if err != nil {
-		return err
+	wg := sync.WaitGroup{}
+	wg.Add(len(c.clients))
+
+	errorChannel := make(chan error, len(c.clients))
+
+	for _, client := range c.clients {
+		go func(client logstashclient.Client) {
+			err := c.collectSingleInstance(client, ctx, ch)
+			if err != nil {
+				errorChannel <- err
+			}
+			wg.Done()
+		}(client)
 	}
 
-	return nil
+	wg.Wait()
+	close(errorChannel)
+
+	if len(errorChannel) == 0 {
+		return nil
+	}
+
+	if len(errorChannel) == 1 {
+		return <-errorChannel
+	}
+
+	errorString := fmt.Sprintf("encountered %d errors while collecting nodeinfo metrics", len(errorChannel))
+	for err := range errorChannel {
+		errorString += fmt.Sprintf("\n\t%s", err.Error())
+	}
+
+	return errors.New(errorString)
 }
 
-func (c *NodeinfoCollector) collectSingleInstance(ctx context.Context, ch chan<- prometheus.Metric) error {
-	nodeInfo, err := c.client.GetNodeInfo(ctx)
+func (c *NodeinfoCollector) collectSingleInstance(client logstashclient.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
+	nodeInfo, err := client.GetNodeInfo(ctx)
 	if err != nil {
-		ch <- c.getUpStatus(nodeInfo, err)
+		ch <- c.getUpStatus(nodeInfo, err, client.GetEndpoint())
 
 		return err
 	}
 
-	endpoint := c.client.GetEndpoint()
+	endpoint := client.GetEndpoint()
 
 	ch <- prometheus.MustNewConstMetric(
 		c.NodeInfos,
@@ -160,7 +189,7 @@ func (c *NodeinfoCollector) collectSingleInstance(ctx context.Context, ch chan<-
 	return nil
 }
 
-func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) prometheus.Metric {
+func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error, endpoint string) prometheus.Metric {
 	status := 1
 	if err != nil {
 		status = 0
@@ -172,6 +201,6 @@ func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, er
 		c.Up,
 		prometheus.GaugeValue,
 		float64(status),
-		c.client.GetEndpoint(),
+		endpoint,
 	)
 }

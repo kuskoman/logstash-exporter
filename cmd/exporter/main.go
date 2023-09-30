@@ -48,13 +48,8 @@ func main() {
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-	for _, logstashServerConfig := range exporterConfig.Logstash.Servers {
-		logstashUrl := logstashServerConfig.URL
-		slog.Info("booting collector manager for", "logstashUrl", logstashUrl)
-
-		collectorManager := collectors.NewCollectorManager(logstashUrl)
-		prometheus.MustRegister(collectorManager)
-	}
+	collectorManager := collectors.NewCollectorManager(exporterConfig.GetLogstashUrls())
+	prometheus.MustRegister(collectorManager)
 
 	appServer := server.NewAppServer(host, port, exporterConfig)
 
