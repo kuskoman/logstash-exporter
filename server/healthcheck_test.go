@@ -7,13 +7,17 @@ import (
 )
 
 func TestHealthCheck(t *testing.T) {
-	runTest := func(mockStatus int, expectedStatus int) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(mockStatus)
-		}))
-		defer mockServer.Close()
+	runTest := func(mockStatuses []int, expectedStatus int) {
+		var urls []string
+		for _, status := range mockStatuses {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(status)
+			}))
+			defer server.Close()
+			urls = append(urls, server.URL)
+		}
 
-		handler := getHealthCheck(mockServer.URL)
+		handler := getHealthCheck(urls)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)
@@ -27,20 +31,28 @@ func TestHealthCheck(t *testing.T) {
 		}
 	}
 
-	t.Run("500 status", func(t *testing.T) {
-		runTest(http.StatusInternalServerError, http.StatusInternalServerError)
+	t.Run("single 500 status", func(t *testing.T) {
+		runTest([]int{http.StatusInternalServerError}, http.StatusInternalServerError)
 	})
 
-	t.Run("200 status", func(t *testing.T) {
-		runTest(http.StatusOK, http.StatusOK)
+	t.Run("single 200 status", func(t *testing.T) {
+		runTest([]int{http.StatusOK}, http.StatusOK)
 	})
 
-	t.Run("404 status", func(t *testing.T) {
-		runTest(http.StatusNotFound, http.StatusInternalServerError)
+	t.Run("single 404 status", func(t *testing.T) {
+		runTest([]int{http.StatusNotFound}, http.StatusInternalServerError)
+	})
+
+	t.Run("multiple instances, mixed statuses", func(t *testing.T) {
+		runTest([]int{http.StatusOK, http.StatusNotFound, http.StatusInternalServerError}, http.StatusInternalServerError)
+	})
+
+	t.Run("multiple instances, all OK", func(t *testing.T) {
+		runTest([]int{http.StatusOK, http.StatusOK, http.StatusOK}, http.StatusOK)
 	})
 
 	t.Run("no response", func(t *testing.T) {
-		handler := getHealthCheck("http://localhost:12345")
+		handler := getHealthCheck([]string{"http://localhost:12345"})
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)
@@ -55,7 +67,7 @@ func TestHealthCheck(t *testing.T) {
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
-		handler := getHealthCheck("http://localhost:96010:invalidurl")
+		handler := getHealthCheck([]string{"http://localhost:96010:invalidurl"})
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)

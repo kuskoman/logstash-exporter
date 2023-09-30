@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/collectors"
@@ -34,16 +35,28 @@ func main() {
 	}
 	slog.SetDefault(logger)
 
-	port, host := config.Port, config.Host
-	logstashUrl := config.LogstashUrl
+	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
+	if err != nil {
+		slog.Error("failed to get exporter config", "err", err)
+		os.Exit(1)
+	}
+
+	host := exporterConfig.Server.Host
+	port := strconv.Itoa(exporterConfig.Server.Port)
 
 	slog.Debug("application starting... ")
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-	collectorManager := collectors.NewCollectorManager(logstashUrl)
-	appServer := server.NewAppServer(host, port)
-	prometheus.MustRegister(collectorManager)
+	for _, logstashServerConfig := range exporterConfig.Logstash.Servers {
+		logstashUrl := logstashServerConfig.URL
+		slog.Info("booting collector manager for", "logstashUrl", logstashUrl)
+
+		collectorManager := collectors.NewCollectorManager(logstashUrl)
+		prometheus.MustRegister(collectorManager)
+	}
+
+	appServer := server.NewAppServer(host, port, exporterConfig)
 
 	slog.Info("starting server on", "host", host, "port", port)
 	if err := appServer.ListenAndServe(); err != nil {
