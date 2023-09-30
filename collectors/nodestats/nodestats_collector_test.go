@@ -10,6 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
@@ -54,7 +55,10 @@ func (m *errorMockClient) GetEndpoint() string {
 }
 
 func TestCollectNotNil(t *testing.T) {
-	collector := NewNodestatsCollector(&mockClient{})
+	t.Parallel()
+
+	clients := []logstash_client.Client{&mockClient{}, &mockClient{}}
+	collector := NewNodestatsCollector(clients)
 	ch := make(chan prometheus.Metric)
 	ctx := context.Background()
 
@@ -126,6 +130,7 @@ func TestCollectNotNil(t *testing.T) {
 			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
 		}
 
+		// todo: check if exists
 		foundMetrics = append(foundMetrics, foundMetricFqName)
 	}
 

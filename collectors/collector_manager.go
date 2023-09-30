@@ -48,7 +48,7 @@ func NewCollectorManager(endpoints []string) *CollectorManager {
 func getCollectors(clients []logstashclient.Client) map[string]Collector {
 	collectors := make(map[string]Collector)
 	collectors["nodeinfo"] = nodeinfo.NewNodeinfoCollector(clients)
-	collectors["nodestats"] = nodestats.NewNodestatsCollector(clients[0]) // TODO: support multiple clients
+	collectors["nodestats"] = nodestats.NewNodestatsCollector(clients) // TODO: support multiple clients
 	return collectors
 }
 

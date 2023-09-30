@@ -17,7 +17,9 @@ type SimpleDescHelper struct {
 
 // NewDescWithLabel creates a new prometheus.Desc with the namespace and subsystem.
 // Labels are used to differentiate between different sources of the same metric.
+// Labels are always appended with "hostname" to differentiate between different instances.
 func (h *SimpleDescHelper) NewDesc(name string, help string, labels ...string) *prometheus.Desc {
+	labels = append(labels, "hostname")
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, labels, nil)
 }
 
