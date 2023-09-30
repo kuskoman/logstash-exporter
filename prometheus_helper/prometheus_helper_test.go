@@ -15,14 +15,6 @@ func TestSimpleDescHelper(t *testing.T) {
 		Subsystem: "test",
 	}
 
-	t.Run("NewDescWithHelp", func(t *testing.T) {
-		desc := helper.NewDescWithHelp("metric", "help")
-		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {}}"
-		if desc.String() != expectedDesc {
-			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
-		}
-	})
-
 	t.Run("NewDescWithHelpAndLabel", func(t *testing.T) {
 		desc := helper.NewDescWithHelpAndLabels("metric", "help", "customLabel")
 		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {customLabel}}"
@@ -42,7 +34,7 @@ func TestExtractFqdnName(t *testing.T) {
 		metricSubname := "fqdn_metric"
 
 		descriptors := []*prometheus.Desc{
-			helper.NewDescWithHelp(metricSubname, "help"),
+			helper.NewDescWithHelpAndLabels(metricSubname, "help"),
 			helper.NewDescWithHelpAndLabels(metricSubname, "help", "label"),
 		}
 

@@ -15,11 +15,6 @@ type SimpleDescHelper struct {
 	Subsystem string
 }
 
-// NewDescWithHelp creates a new prometheus.Desc with the namespace and subsystem.
-func (h *SimpleDescHelper) NewDescWithHelp(name string, help string) *prometheus.Desc {
-	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, nil, nil)
-}
-
 // NewDescWithLabel creates a new prometheus.Desc with the namespace and subsystem.
 // Labels are used to differentiate between different sources of the same metric.
 func (h *SimpleDescHelper) NewDescWithHelpAndLabels(name string, help string, labels ...string) *prometheus.Desc {
