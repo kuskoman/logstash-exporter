@@ -2,10 +2,9 @@ package collectors
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
-
-	"log/slog"
 
 	"github.com/kuskoman/logstash-exporter/collectors/nodeinfo"
 	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
@@ -21,17 +20,14 @@ type Collector interface {
 
 // CollectorManager is a collector that executes all other collectors
 type CollectorManager struct {
-	collectors      map[string]map[string]Collector // map[endpoint]map[collectorName]Collector
+	collectors      map[string]Collector
 	scrapeDurations *prometheus.SummaryVec
 }
 
-func NewCollectorManager(endpoints []string) *CollectorManager {
-	collectors := make(map[string]map[string]Collector)
+func NewCollectorManager(endpoint string) *CollectorManager {
+	client := logstashclient.NewClient(endpoint)
 
-	for _, endpoint := range endpoints {
-		client := logstashclient.NewClient(endpoint)
-		collectors[endpoint] = getCollectors(client)
-	}
+	collectors := getCollectors(client)
 
 	scrapeDurations := getScrapeDurationsCollector()
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
@@ -46,19 +42,22 @@ func getCollectors(client logstashclient.Client) map[string]Collector {
 	return collectors
 }
 
+// Collect executes all collectors and sends the collected metrics to the provided channel.
+// It also sends the duration of the collection to the scrapeDurations collector.
 func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), config.HttpTimeout)
+
 	defer cancel()
 
 	waitGroup := sync.WaitGroup{}
-	for endpoint, endpointCollectors := range manager.collectors {
-		waitGroup.Add(len(endpointCollectors))
-		for name, collector := range endpointCollectors {
-			go func(name string, endpoint string, collector Collector) {
-				manager.executeCollector(name, endpoint, ctx, collector, ch)
-				waitGroup.Done()
-			}(name, endpoint, collector)
-		}
+	waitGroup.Add(len(manager.collectors))
+	for name, collector := range manager.collectors {
+		go func(name string, collector Collector) {
+			slog.Debug("executing collector", "name", name)
+			manager.executeCollector(name, ctx, collector, ch)
+			slog.Debug("collector finished", "name", name)
+			waitGroup.Done()
+		}(name, collector)
 	}
 	waitGroup.Wait()
 }
@@ -67,21 +66,21 @@ func (manager *CollectorManager) Describe(ch chan<- *prometheus.Desc) {
 	manager.scrapeDurations.Describe(ch)
 }
 
-func (manager *CollectorManager) executeCollector(name string, endpoint string, ctx context.Context, collector Collector, ch chan<- prometheus.Metric) {
+func (manager *CollectorManager) executeCollector(name string, ctx context.Context, collector Collector, ch chan<- prometheus.Metric) {
 	executionStart := time.Now()
 	err := collector.Collect(ctx, ch)
 	executionDuration := time.Since(executionStart)
 	var executionStatus string
 
 	if err != nil {
-		slog.Error("executor failed", "name", name, "endpoint", endpoint, "duration", executionDuration, "err", err)
+		slog.Error("executor failed", "name", name, "duration", executionDuration, "err", err)
 		executionStatus = "error"
 	} else {
-		slog.Debug("executor succeeded", "name", name, "endpoint", endpoint, "duration", executionDuration)
+		slog.Debug("executor succeeded", "name", name, "duration", executionDuration)
 		executionStatus = "success"
 	}
 
-	manager.scrapeDurations.WithLabelValues(name, endpoint, executionStatus).Observe(executionDuration.Seconds())
+	manager.scrapeDurations.WithLabelValues(name, executionStatus).Observe(executionDuration.Seconds())
 }
 
 func getScrapeDurationsCollector() *prometheus.SummaryVec {
@@ -92,7 +91,7 @@ func getScrapeDurationsCollector() *prometheus.SummaryVec {
 			Name:      "scrape_duration_seconds",
 			Help:      "logstash_exporter: Duration of a scrape job.",
 		},
-		[]string{"collector", "endpoint", "result"},
+		[]string{"collector", "result"},
 	)
 
 	return scrapeDurations

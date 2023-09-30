@@ -42,6 +42,3 @@ _debug*.yaml
 
 # Readme generator files
 helm-generator/
-
-# local config
-config.yml
