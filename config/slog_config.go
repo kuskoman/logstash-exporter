@@ -2,10 +2,9 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
-
-	"golang.org/x/exp/slog"
 )
 
 var (

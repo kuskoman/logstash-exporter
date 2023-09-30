@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -9,7 +10,6 @@ import (
 	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/kuskoman/logstash-exporter/server"
 	"github.com/prometheus/client_golang/prometheus"
-	"golang.org/x/exp/slog"
 )
 
 func main() {

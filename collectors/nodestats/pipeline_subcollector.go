@@ -2,14 +2,12 @@ package nodestats
 
 import (
 	"fmt"
+	"log/slog"
 	"time"
-
-	"golang.org/x/exp/slog"
-
-	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
