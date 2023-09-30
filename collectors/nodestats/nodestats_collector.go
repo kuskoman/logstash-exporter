@@ -78,59 +78,59 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 
 		pipelineSubcollector: NewPipelineSubcollector(),
 
-		JvmThreadsCount:     descHelper.NewDescWithHelpAndLabels("jvm_threads_count", "Number of live threads including both daemon and non-daemon threads."),
-		JvmThreadsPeakCount: descHelper.NewDescWithHelpAndLabels("jvm_threads_peak_count", "Peak live thread count since the Java virtual machine started or peak was reset."),
+		JvmThreadsCount:     descHelper.NewDesc("jvm_threads_count", "Number of live threads including both daemon and non-daemon threads."),
+		JvmThreadsPeakCount: descHelper.NewDesc("jvm_threads_peak_count", "Peak live thread count since the Java virtual machine started or peak was reset."),
 
-		JvmMemHeapUsedPercent:       descHelper.NewDescWithHelpAndLabels("jvm_mem_heap_used_percent", "Percentage of the heap memory that is used."),
-		JvmMemHeapCommittedBytes:    descHelper.NewDescWithHelpAndLabels("jvm_mem_heap_committed_bytes", "Amount of heap memory in bytes that is committed for the Java virtual machine to use."),
-		JvmMemHeapMaxBytes:          descHelper.NewDescWithHelpAndLabels("jvm_mem_heap_max_bytes", "Maximum amount of heap memory in bytes that can be used for memory management."),
-		JvmMemHeapUsedBytes:         descHelper.NewDescWithHelpAndLabels("jvm_mem_heap_used_bytes", "Amount of used heap memory in bytes."),
-		JvmMemNonHeapCommittedBytes: descHelper.NewDescWithHelpAndLabels("jvm_mem_non_heap_committed_bytes", "Amount of non-heap memory in bytes that is committed for the Java virtual machine to use."),
+		JvmMemHeapUsedPercent:       descHelper.NewDesc("jvm_mem_heap_used_percent", "Percentage of the heap memory that is used."),
+		JvmMemHeapCommittedBytes:    descHelper.NewDesc("jvm_mem_heap_committed_bytes", "Amount of heap memory in bytes that is committed for the Java virtual machine to use."),
+		JvmMemHeapMaxBytes:          descHelper.NewDesc("jvm_mem_heap_max_bytes", "Maximum amount of heap memory in bytes that can be used for memory management."),
+		JvmMemHeapUsedBytes:         descHelper.NewDesc("jvm_mem_heap_used_bytes", "Amount of used heap memory in bytes."),
+		JvmMemNonHeapCommittedBytes: descHelper.NewDesc("jvm_mem_non_heap_committed_bytes", "Amount of non-heap memory in bytes that is committed for the Java virtual machine to use."),
 
-		JvmMemPoolPeakUsedInBytes: descHelper.NewDescWithHelpAndLabels(
+		JvmMemPoolPeakUsedInBytes: descHelper.NewDesc(
 			"jvm_mem_pool_peak_used_bytes", "Peak used bytes of a given JVM memory pool.", "pool"),
-		JvmMemPoolUsedInBytes: descHelper.NewDescWithHelpAndLabels(
+		JvmMemPoolUsedInBytes: descHelper.NewDesc(
 			"jvm_mem_pool_used_bytes", "Currently used bytes of a given JVM memory pool.", "pool"),
-		JvmMemPoolPeakMaxInBytes: descHelper.NewDescWithHelpAndLabels(
+		JvmMemPoolPeakMaxInBytes: descHelper.NewDesc(
 			"jvm_mem_pool_peak_max_bytes", "Highest value of bytes that were used in a given JVM memory pool.", "pool"),
-		JvmMemPoolMaxInBytes: descHelper.NewDescWithHelpAndLabels(
+		JvmMemPoolMaxInBytes: descHelper.NewDesc(
 			"jvm_mem_pool_max_bytes", "Maximum amount of bytes that can be used in a given JVM memory pool.", "pool"),
-		JvmMemPoolCommittedInBytes: descHelper.NewDescWithHelpAndLabels(
+		JvmMemPoolCommittedInBytes: descHelper.NewDesc(
 			"jvm_mem_pool_committed_bytes", "Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool.", "pool"),
 
-		JvmUptimeMillis: descHelper.NewDescWithHelpAndLabels("jvm_uptime_millis", "Uptime of the JVM in milliseconds."),
+		JvmUptimeMillis: descHelper.NewDesc("jvm_uptime_millis", "Uptime of the JVM in milliseconds."),
 
-		ProcessOpenFileDescriptors:    descHelper.NewDescWithHelpAndLabels("process_open_file_descriptors", "Number of currently open file descriptors."),
-		ProcessMaxFileDescriptors:     descHelper.NewDescWithHelpAndLabels("process_max_file_descriptors", "Limit of open file descriptors."),
-		ProcessCpuPercent:             descHelper.NewDescWithHelpAndLabels("process_cpu_percent", "CPU usage of the process."),
-		ProcessCpuTotalMillis:         descHelper.NewDescWithHelpAndLabels("process_cpu_total_millis", "Total CPU time used by the process."),
-		ProcessCpuLoadAverageOneM:     descHelper.NewDescWithHelpAndLabels("process_cpu_load_average_1m", "Total 1m system load average."),
-		ProcessCpuLoadAverageFiveM:    descHelper.NewDescWithHelpAndLabels("process_cpu_load_average_5m", "Total 5m system load average."),
-		ProcessCpuLoadAverageFifteenM: descHelper.NewDescWithHelpAndLabels("process_cpu_load_average_15m", "Total 15m system load average."),
+		ProcessOpenFileDescriptors:    descHelper.NewDesc("process_open_file_descriptors", "Number of currently open file descriptors."),
+		ProcessMaxFileDescriptors:     descHelper.NewDesc("process_max_file_descriptors", "Limit of open file descriptors."),
+		ProcessCpuPercent:             descHelper.NewDesc("process_cpu_percent", "CPU usage of the process."),
+		ProcessCpuTotalMillis:         descHelper.NewDesc("process_cpu_total_millis", "Total CPU time used by the process."),
+		ProcessCpuLoadAverageOneM:     descHelper.NewDesc("process_cpu_load_average_1m", "Total 1m system load average."),
+		ProcessCpuLoadAverageFiveM:    descHelper.NewDesc("process_cpu_load_average_5m", "Total 5m system load average."),
+		ProcessCpuLoadAverageFifteenM: descHelper.NewDesc("process_cpu_load_average_15m", "Total 15m system load average."),
 
-		ProcessMemTotalVirtual: descHelper.NewDescWithHelpAndLabels("process_mem_total_virtual", "Total virtual memory used by the process."),
+		ProcessMemTotalVirtual: descHelper.NewDesc("process_mem_total_virtual", "Total virtual memory used by the process."),
 
-		ReloadSuccesses: descHelper.NewDescWithHelpAndLabels("reload_successes", "Number of successful reloads."),
-		ReloadFailures:  descHelper.NewDescWithHelpAndLabels("reload_failures", "Number of failed reloads."),
+		ReloadSuccesses: descHelper.NewDesc("reload_successes", "Number of successful reloads."),
+		ReloadFailures:  descHelper.NewDesc("reload_failures", "Number of failed reloads."),
 
-		QueueEventsCount: descHelper.NewDescWithHelpAndLabels("queue_events_count", "Number of events in the queue."),
+		QueueEventsCount: descHelper.NewDesc("queue_events_count", "Number of events in the queue."),
 
-		EventsIn:                        descHelper.NewDescWithHelpAndLabels("events_in", "Number of events received."),
-		EventsFiltered:                  descHelper.NewDescWithHelpAndLabels("events_filtered", "Number of events filtered out."),
-		EventsOut:                       descHelper.NewDescWithHelpAndLabels("events_out", "Number of events out."),
-		EventsDurationInMillis:          descHelper.NewDescWithHelpAndLabels("events_duration_millis", "Duration of events processing in milliseconds."),
-		EventsQueuePushDurationInMillis: descHelper.NewDescWithHelpAndLabels("events_queue_push_duration_millis", "Duration of events push to queue in milliseconds."),
+		EventsIn:                        descHelper.NewDesc("events_in", "Number of events received."),
+		EventsFiltered:                  descHelper.NewDesc("events_filtered", "Number of events filtered out."),
+		EventsOut:                       descHelper.NewDesc("events_out", "Number of events out."),
+		EventsDurationInMillis:          descHelper.NewDesc("events_duration_millis", "Duration of events processing in milliseconds."),
+		EventsQueuePushDurationInMillis: descHelper.NewDesc("events_queue_push_duration_millis", "Duration of events push to queue in milliseconds."),
 
-		FlowInputCurrent:              descHelper.NewDescWithHelpAndLabels("flow_input_current", "Current number of events in the input queue."),
-		FlowInputLifetime:             descHelper.NewDescWithHelpAndLabels("flow_input_lifetime", "Lifetime number of events in the input queue."),
-		FlowFilterCurrent:             descHelper.NewDescWithHelpAndLabels("flow_filter_current", "Current number of events in the filter queue."),
-		FlowFilterLifetime:            descHelper.NewDescWithHelpAndLabels("flow_filter_lifetime", "Lifetime number of events in the filter queue."),
-		FlowOutputCurrent:             descHelper.NewDescWithHelpAndLabels("flow_output_current", "Current number of events in the output queue."),
-		FlowOutputLifetime:            descHelper.NewDescWithHelpAndLabels("flow_output_lifetime", "Lifetime number of events in the output queue."),
-		FlowQueueBackpressureCurrent:  descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_current", "Current number of events in the backpressure queue."),
-		FlowQueueBackpressureLifetime: descHelper.NewDescWithHelpAndLabels("flow_queue_backpressure_lifetime", "Lifetime number of events in the backpressure queue."),
-		FlowWorkerConcurrencyCurrent:  descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_current", "Current number of workers."),
-		FlowWorkerConcurrencyLifetime: descHelper.NewDescWithHelpAndLabels("flow_worker_concurrency_lifetime", "Lifetime number of workers."),
+		FlowInputCurrent:              descHelper.NewDesc("flow_input_current", "Current number of events in the input queue."),
+		FlowInputLifetime:             descHelper.NewDesc("flow_input_lifetime", "Lifetime number of events in the input queue."),
+		FlowFilterCurrent:             descHelper.NewDesc("flow_filter_current", "Current number of events in the filter queue."),
+		FlowFilterLifetime:            descHelper.NewDesc("flow_filter_lifetime", "Lifetime number of events in the filter queue."),
+		FlowOutputCurrent:             descHelper.NewDesc("flow_output_current", "Current number of events in the output queue."),
+		FlowOutputLifetime:            descHelper.NewDesc("flow_output_lifetime", "Lifetime number of events in the output queue."),
+		FlowQueueBackpressureCurrent:  descHelper.NewDesc("flow_queue_backpressure_current", "Current number of events in the backpressure queue."),
+		FlowQueueBackpressureLifetime: descHelper.NewDesc("flow_queue_backpressure_lifetime", "Lifetime number of events in the backpressure queue."),
+		FlowWorkerConcurrencyCurrent:  descHelper.NewDesc("flow_worker_concurrency_current", "Current number of workers."),
+		FlowWorkerConcurrencyLifetime: descHelper.NewDesc("flow_worker_concurrency_lifetime", "Lifetime number of workers."),
 	}
 }
 

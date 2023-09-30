@@ -55,13 +55,13 @@ func NewNodeinfoCollector(client logstashclient.Client) *NodeinfoCollector {
 			nil,
 		),
 
-		PipelineWorkers: descHelper.NewDescWithHelpAndLabels("pipeline_workers",
+		PipelineWorkers: descHelper.NewDesc("pipeline_workers",
 			"Number of worker threads that will process pipeline events.",
 		),
-		PipelineBatchSize: descHelper.NewDescWithHelpAndLabels("pipeline_batch_size",
+		PipelineBatchSize: descHelper.NewDesc("pipeline_batch_size",
 			"Number of events to retrieve from the input queue before sending to the filter and output stages.",
 		),
-		PipelineBatchDelay: descHelper.NewDescWithHelpAndLabels("pipeline_batch_delay",
+		PipelineBatchDelay: descHelper.NewDesc("pipeline_batch_delay",
 			"Amount of time to wait for events to fill the batch before sending to the filter and output stages.",
 		),
 

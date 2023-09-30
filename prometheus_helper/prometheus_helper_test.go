@@ -16,7 +16,7 @@ func TestSimpleDescHelper(t *testing.T) {
 	}
 
 	t.Run("NewDescWithHelpAndLabel", func(t *testing.T) {
-		desc := helper.NewDescWithHelpAndLabels("metric", "help", "customLabel")
+		desc := helper.NewDesc("metric", "help", "customLabel")
 		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {customLabel}}"
 		if desc.String() != expectedDesc {
 			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
@@ -34,8 +34,8 @@ func TestExtractFqdnName(t *testing.T) {
 		metricSubname := "fqdn_metric"
 
 		descriptors := []*prometheus.Desc{
-			helper.NewDescWithHelpAndLabels(metricSubname, "help"),
-			helper.NewDescWithHelpAndLabels(metricSubname, "help", "label"),
+			helper.NewDesc(metricSubname, "help"),
+			helper.NewDesc(metricSubname, "help", "label"),
 		}
 
 		for _, desc := range descriptors {
