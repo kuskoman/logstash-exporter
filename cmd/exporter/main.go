@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -13,6 +15,14 @@ import (
 )
 
 func main() {
+	version := flag.Bool("version", false, "prints the version and exits")
+
+	flag.Parse()
+	if *version {
+		fmt.Printf("%s\n", config.SemanticVersion)
+		return
+	}
+
 	warn := godotenv.Load()
 	if warn != nil {
 		log.Println(warn)

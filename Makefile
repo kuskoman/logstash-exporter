@@ -4,6 +4,7 @@ GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/ma
 
 GITHUB_REPO := github.com/kuskoman/logstash-exporter
 VERSION ?= $(shell git symbolic-ref --short HEAD)
+SEMANTIC_VERSION ?= $(shell git describe --tags --abbrev=1 --dirty 2> /dev/null)
 GIT_COMMIT := $(shell git rev-parse HEAD)
 DOCKER_IMG ?= "logstash-exporter"
 
@@ -20,6 +21,7 @@ all: $(GOOS_BINARIES)
 VERSIONINFO_PKG := config
 ldflags := -s -w \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).Version=$(VERSION)' \
+	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).SemanticVersion=$(SEMANTIC_VERSION)' \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).GitCommit=$(GIT_COMMIT)' \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).BuildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S%Z)'
 

@@ -89,7 +89,7 @@ func TestHandleVersionInfo(t *testing.T) {
 		}
 
 		firstWrite := string(w.writes[0])
-		expectedFirstWrite := `{"Version":"version","GitCommit":"git commit","GoVersion":"go version","BuildArch":"build arch","BuildOS":"build os","BuildDate":"build date"}`
+		expectedFirstWrite := `{"Version":"version","SemanticVersion":"","GitCommit":"git commit","GoVersion":"go version","BuildArch":"build arch","BuildOS":"build os","BuildDate":"build date"}`
 		expectedFirstWrite = expectedFirstWrite + "\n"
 		if firstWrite != expectedFirstWrite {
 			t.Errorf("expected first write to be %s, but got: %s", expectedFirstWrite, firstWrite)
