@@ -12,6 +12,10 @@ func TestGetBuildInfo(t *testing.T) {
 		t.Error("Expected Version to be set")
 	}
 
+	if versionInfo.SemanticVersion == "" {
+		t.Error("Expected SemanticVersion to be set")
+	}
+
 	if versionInfo.GitCommit == "" {
 		t.Error("Expected GitCommit to be set")
 	}
@@ -35,15 +39,16 @@ func TestGetBuildInfo(t *testing.T) {
 
 func TestVersionInfoString(t *testing.T) {
 	versionInfo := &VersionInfo{
-		Version:   "test-version",
-		GitCommit: "test-commit",
-		GoVersion: "test-go-version",
-		BuildArch: "test-arch",
-		BuildOS:   "test-os",
-		BuildDate: "test-date",
+		Version:         "test-version",
+		SemanticVersion: "v0.0.1-0548a52",
+		GitCommit:       "test-commit",
+		GoVersion:       "test-go-version",
+		BuildArch:       "test-arch",
+		BuildOS:         "test-os",
+		BuildDate:       "test-date",
 	}
 
-	expectedString := "Version: test-version, GitCommit: test-commit, GoVersion: test-go-version, BuildArch: test-arch, BuildOS: test-os, BuildDate: test-date"
+	expectedString := "Version: test-version, SemanticVersion: v0.0.1-0548a52, GitCommit: test-commit, GoVersion: test-go-version, BuildArch: test-arch, BuildOS: test-os, BuildDate: test-date"
 	versionInfoString := versionInfo.String()
 
 	if versionInfoString != expectedString {
