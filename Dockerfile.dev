@@ -1,4 +1,4 @@
-FROM cosmtrek/air:v1.48.0
+FROM cosmtrek/air:v1.49.0
 
 WORKDIR /app
 
