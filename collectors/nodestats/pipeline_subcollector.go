@@ -149,8 +149,8 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	ch <- prometheus.MustNewConstMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, float64(flowStats.WorkerConcurrency.Lifetime), pipelineID)
 
 	deadLetterQueueStats := pipeStats.DeadLetterQueue
-	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueMaxSizeInBytes, prometheus.CounterValue, float64(deadLetterQueueStats.MaxQueueSizeInBytes), pipelineID)
-	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueSizeInBytes, prometheus.CounterValue, float64(deadLetterQueueStats.QueueSizeInBytes), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, float64(deadLetterQueueStats.MaxQueueSizeInBytes), pipelineID)
+	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, float64(deadLetterQueueStats.QueueSizeInBytes), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, float64(deadLetterQueueStats.DroppedEvents), pipelineID)
 	ch <- prometheus.MustNewConstMetric(collector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, float64(deadLetterQueueStats.ExpiredEvents), pipelineID)
 
