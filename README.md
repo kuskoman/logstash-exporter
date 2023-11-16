@@ -351,8 +351,8 @@ Table of exported metrics:
 | logstash_stats_jvm_uptime_millis | gauge | Uptime of the JVM in milliseconds. |
 | logstash_stats_pipeline_dead_letter_queue_dropped_events | counter | Number of events dropped by the dead letter queue. |
 | logstash_stats_pipeline_dead_letter_queue_expired_events | counter | Number of events expired in the dead letter queue. |
-| logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes | counter | Maximum size of the dead letter queue in bytes. |
-| logstash_stats_pipeline_dead_letter_queue_size_in_bytes | counter | Current size of the dead letter queue in bytes. |
+| logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes | gauge | Maximum size of the dead letter queue in bytes. |
+| logstash_stats_pipeline_dead_letter_queue_size_in_bytes | gauge | Current size of the dead letter queue in bytes. |
 | logstash_stats_pipeline_events_duration | counter | Time needed to process event. |
 | logstash_stats_pipeline_events_filtered | counter | Number of events that have been filtered out by this pipeline. |
 | logstash_stats_pipeline_events_in | counter | Number of events that have been inputted into this pipeline. |
