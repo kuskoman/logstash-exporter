@@ -19,11 +19,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
     -X ${GITHUB_REPO}/config.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     -o main cmd/exporter/main.go
 
+RUN grep "nobody:x:65534" /etc/passwd > /app/user
 
 FROM scratch as release
 
 COPY --from=build /app/main /app/main
+COPY --from=build /app/user /etc/passwd
 
 EXPOSE 9198
-
+USER 65534
 ENTRYPOINT ["/app/main"]
