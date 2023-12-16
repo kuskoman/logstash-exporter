@@ -33,12 +33,11 @@ func main() {
 
 		log.Fatalf("failed to setup slog: %s", err)
 	} else {
+		slog.SetDefault(logger)
 		if warn != nil {
 			slog.Warn("failed to load .env file", "err", warn)
 		}
 	}
-
-	slog.SetDefault(logger)
 
 	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
 	if err != nil {
