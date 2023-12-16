@@ -24,11 +24,12 @@ func TestNewClient(t *testing.T) {
 	})
 
 	t.Run("should return a new client for the given endpoint", func(t *testing.T) {
-		endpoint := "http://localhost:9601"
-		client := NewClient(endpoint)
+		expectedEndpoint := "http://localhost:9601"
+		client := NewClient(expectedEndpoint)
 
-		if client.(*DefaultClient).endpoint != endpoint {
-			t.Errorf("expected endpoint to be %s, got %s", endpoint, client.(*DefaultClient).endpoint)
+		receivedEndpoint := client.GetEndpoint()
+		if receivedEndpoint != expectedEndpoint {
+			t.Errorf("expected endpoint to be %s, got %s", expectedEndpoint, receivedEndpoint)
 		}
 	})
 }
