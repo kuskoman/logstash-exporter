@@ -149,25 +149,42 @@ func TestCollectNotNil(t *testing.T) {
 	}
 }
 
-func TestCollectError(t *testing.T) {
+func TestCollectsErrors(t *testing.T) {
 	t.Parallel()
-	clients := []logstash_client.Client{&errorMockClient{}, &errorMockClient{}}
-	collector := NewNodestatsCollector(clients)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 
-	ch := make(chan prometheus.Metric)
+	testCollectorForClients := func(clients []logstash_client.Client) {
+		collector := NewNodestatsCollector(clients)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 
-	go func() {
-		for range ch {
-			// simulate reading from the channel
+		ch := make(chan prometheus.Metric)
+
+		go func() {
+			for range ch {
+				// simulate reading from the channel
+			}
+		}()
+
+		err := collector.Collect(ctx, ch)
+		close(ch)
+
+		if err == nil {
+			t.Error("Expected err not to be nil")
 		}
-	}()
-
-	err := collector.Collect(ctx, ch)
-	close(ch)
-
-	if err == nil {
-		t.Error("Expected err not to be nil")
 	}
+
+	t.Run("should return an error if the only client returns an error", func(t *testing.T) {
+		t.Parallel()
+		testCollectorForClients([]logstash_client.Client{&errorMockClient{}})
+	})
+
+	t.Run("should return an error if one of the clients returns an error", func(t *testing.T) {
+		t.Parallel()
+		testCollectorForClients([]logstash_client.Client{&mockClient{}, &errorMockClient{}})
+	})
+
+	t.Run("should return an error if all clients return an error", func(t *testing.T) {
+		t.Parallel()
+		testCollectorForClients([]logstash_client.Client{&errorMockClient{}, &errorMockClient{}})
+	})
 }
