@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  logstash:
+  logstash: &logstash
     image: docker.elastic.co/logstash/logstash:8.9.0
     restart: unless-stopped
     volumes:
@@ -22,6 +22,15 @@ services:
     ports:
       - ${LOGSTASH_PORT:-5044}:5044
       - ${LOGSTASH_STATS_PORT:-9600}:9600
+  logstash2:
+    <<: *logstash
+    ports:
+      - ${LOGSTASH2_PORT:-5045}:5044
+      - ${LOGSTASH2_STATS_PORT:-9601}:9600
+    volumes:
+      - logstash2-data:/usr/share/logstash/data
+      - ./.docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./.docker/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
   prometheus:
     image: prom/prometheus:v2.46.0
     restart: unless-stopped
@@ -101,6 +110,7 @@ services:
       - ${EXPORTER_PORT:-9198}:9198
 volumes:
   logstash-data:
+  logstash2-data:
   prometheus-data:
   elasticsearch-data:
   elasticsearch-logs:
