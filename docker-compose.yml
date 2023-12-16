@@ -106,6 +106,7 @@ services:
     environment:
       - LOGSTASH_URL=${LOGSTASH_URL:-http://logstash:9600}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - EXPORTER_CONFIG_LOCATION=${EXPORTER_CONFIG_LOCATION:-/app/.docker/exporter-config.yml}
     ports:
       - ${EXPORTER_PORT:-9198}:9198
 volumes:
