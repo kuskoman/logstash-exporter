@@ -4,6 +4,6 @@ logstash:
     - url: "http://logstash2:9600"
 server:
   host: "127.0.0.1"
-  port: 9200
+  port: 9198
 logging:
   level: "debug"
