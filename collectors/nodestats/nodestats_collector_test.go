@@ -150,7 +150,9 @@ func TestCollectNotNil(t *testing.T) {
 }
 
 func TestCollectError(t *testing.T) {
-	collector := NewNodestatsCollector(&errorMockClient{})
+	t.Parallel()
+	clients := []logstash_client.Client{&errorMockClient{}, &errorMockClient{}}
+	collector := NewNodestatsCollector(clients)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
