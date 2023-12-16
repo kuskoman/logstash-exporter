@@ -1,7 +1,6 @@
 package config
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -19,8 +18,8 @@ func TestLoadConfig(t *testing.T) {
 		if config == nil {
 			t.Fatal("expected config to be non-nil")
 		}
-		if config.Logstash.Servers[0].URL != "http://localhost:9601" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", config.Logstash.Servers[0].URL)
+		if config.Logstash.Servers[0].Host != "http://localhost:9601" {
+			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", config.Logstash.Servers[0].Host)
 		}
 	})
 
@@ -69,8 +68,8 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logging.Level != defaultLogLevel {
 			t.Errorf("expected level to be %v, got %v", defaultLogLevel, mergedConfig.Logging.Level)
 		}
-		if mergedConfig.Logstash.Servers[0].URL != defaultLogstashURL {
-			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].URL)
+		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
+			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
 	})
 
@@ -85,8 +84,8 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logging.Level != defaultLogLevel {
 			t.Errorf("expected level to be %v, got %v", defaultLogLevel, mergedConfig.Logging.Level)
 		}
-		if mergedConfig.Logstash.Servers[0].URL != defaultLogstashURL {
-			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].URL)
+		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
+			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
 	})
 
@@ -101,9 +100,9 @@ func TestMergeWithDefault(t *testing.T) {
 				Level: "debug",
 			},
 			Logstash: LogstashConfig{
-				Servers: []LogstashServer{
-					{URL: "http://localhost:9601"},
-					{URL: "http://localhost:9602"},
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
 				},
 			},
 		}
@@ -118,12 +117,12 @@ func TestMergeWithDefault(t *testing.T) {
 			t.Errorf("expected level to be %v, got %v", "debug", mergedConfig.Logging.Level)
 		}
 
-		if mergedConfig.Logstash.Servers[0].URL != "http://localhost:9601" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", mergedConfig.Logstash.Servers[0].URL)
+		if mergedConfig.Logstash.Servers[0].Host != "http://localhost:9601" {
+			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", mergedConfig.Logstash.Servers[0].Host)
 		}
 
-		if mergedConfig.Logstash.Servers[1].URL != "http://localhost:9602" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Servers[1].URL)
+		if mergedConfig.Logstash.Servers[1].Host != "http://localhost:9602" {
+			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Servers[1].Host)
 		}
 	})
 }
@@ -151,23 +150,6 @@ func TestGetConfig(t *testing.T) {
 		}
 		if config != nil {
 			t.Fatal("expected config to be nil")
-		}
-	})
-}
-
-func TestGetLogstashUrls(t *testing.T) {
-	t.Run("gets Logstash URLs correctly", func(t *testing.T) {
-		config := &Config{
-			Logstash: LogstashConfig{
-				Servers: []LogstashServer{{URL: "http://localhost:9601"}},
-			},
-		}
-
-		urls := config.GetLogstashUrls()
-		expectedUrls := []string{"http://localhost:9601"}
-
-		if !reflect.DeepEqual(urls, expectedUrls) {
-			t.Errorf("expected urls to be %v, got %v", expectedUrls, urls)
 		}
 	})
 }

@@ -14,29 +14,40 @@ type Client interface {
 	GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error)
 
 	GetEndpoint() string
+	GetLabels() map[string]string
 }
 
 // DefaultClient is the default implementation of the Client interface
 type DefaultClient struct {
 	httpClient *http.Client
 	endpoint   string
+	labels     map[string]string
 }
 
 func (client *DefaultClient) GetEndpoint() string {
 	return client.endpoint
 }
 
+func (client *DefaultClient) GetLabels() map[string]string {
+	return client.labels
+}
+
 const defaultLogstashEndpoint = "http://localhost:9600"
 
 // NewClient returns a new instance of the DefaultClient configured with the given endpoint
-func NewClient(endpoint string) Client {
+func NewClient(endpoint string, labels map[string]string) Client {
 	if endpoint == "" {
 		endpoint = defaultLogstashEndpoint
+	}
+
+	if labels == nil {
+		labels = make(map[string]string)
 	}
 
 	return &DefaultClient{
 		httpClient: &http.Client{},
 		endpoint:   endpoint,
+		labels:     labels,
 	}
 }
 

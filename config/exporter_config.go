@@ -20,12 +20,13 @@ var (
 
 // LogstashServer represents individual Logstash server configuration
 type LogstashServer struct {
-	URL string `yaml:"url"`
+	Host   string            `yaml:"url"`
+	Labels map[string]string `yaml:"labels"`
 }
 
 // LogstashConfig holds the configuration for all Logstash servers
 type LogstashConfig struct {
-	Servers []LogstashServer `yaml:"servers"`
+	Servers []*LogstashServer `yaml:"servers"`
 }
 
 // ServerConfig represents the server configuration
@@ -87,8 +88,8 @@ func mergeWithDefault(config *Config) *Config {
 
 	if len(config.Logstash.Servers) == 0 {
 		slog.Debug("using default logstash server", "url", defaultLogstashURL)
-		config.Logstash.Servers = append(config.Logstash.Servers, LogstashServer{
-			URL: defaultLogstashURL,
+		config.Logstash.Servers = append(config.Logstash.Servers, &LogstashServer{
+			Host: defaultLogstashURL,
 		})
 	}
 
@@ -104,12 +105,4 @@ func GetConfig(location string) (*Config, error) {
 
 	mergedConfig := mergeWithDefault(config)
 	return mergedConfig, nil
-}
-
-func (cfg *Config) GetLogstashUrls() []string {
-	urls := make([]string, len(cfg.Logstash.Servers))
-	for i, server := range cfg.Logstash.Servers {
-		urls[i] = server.URL
-	}
-	return urls
 }

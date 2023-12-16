@@ -9,6 +9,15 @@ import (
 	"github.com/kuskoman/logstash-exporter/config"
 )
 
+func convertServersToUrls(servers []*config.LogstashServer) []string {
+	urls := make([]string, len(servers))
+	for i, server := range servers {
+		urls[i] = server.Host
+	}
+
+	return urls
+}
+
 func getHealthCheck(logstashUrls []string) func(http.ResponseWriter, *http.Request) {
 	client := &http.Client{}
 

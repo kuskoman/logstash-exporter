@@ -18,7 +18,9 @@ func NewAppServer(host, port string, cfg *config.Config) *http.Server {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/metrics", http.StatusMovedPermanently)
 	})
-	mux.HandleFunc("/healthcheck", getHealthCheck(cfg.GetLogstashUrls()))
+
+	logstashUrls := convertServersToUrls(cfg.Logstash.Servers)
+	mux.HandleFunc("/healthcheck", getHealthCheck(logstashUrls))
 	mux.HandleFunc("/version", getVersionInfoHandler(config.GetVersionInfo()))
 
 	listenUrl := fmt.Sprintf("%s:%s", host, port)

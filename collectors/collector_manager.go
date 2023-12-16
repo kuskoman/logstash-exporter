@@ -24,18 +24,18 @@ type CollectorManager struct {
 	scrapeDurations *prometheus.SummaryVec
 }
 
-func getClientsForEndpoints(endpoints []string) []logstashclient.Client {
+func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstashclient.Client {
 	clients := make([]logstashclient.Client, len(endpoints))
 
 	for i, endpoint := range endpoints {
-		clients[i] = logstashclient.NewClient(endpoint)
+		clients[i] = logstashclient.NewClient(endpoint.Host, endpoint.Labels)
 	}
 
 	return clients
 }
 
-func NewCollectorManager(endpoints []string) *CollectorManager {
-	clients := getClientsForEndpoints(endpoints)
+func NewCollectorManager(servers []*config.LogstashServer) *CollectorManager {
+	clients := getClientsForEndpoints(servers)
 
 	collectors := getCollectors(clients)
 

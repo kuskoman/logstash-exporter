@@ -44,8 +44,8 @@ func TestNewAppServer(t *testing.T) {
 	t.Run("test handling of /healthcheck endpoint", func(t *testing.T) {
 		cfg := &config.Config{
 			Logstash: config.LogstashConfig{
-				Servers: []config.LogstashServer{
-					{URL: "http://localhost:1234"},
+				Servers: []*config.LogstashServer{
+					{Host: "http://localhost:1234"},
 				},
 			},
 		}

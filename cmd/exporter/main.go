@@ -52,7 +52,7 @@ func main() {
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-	collectorManager := collectors.NewCollectorManager(exporterConfig.GetLogstashUrls())
+	collectorManager := collectors.NewCollectorManager(exporterConfig.Logstash.Servers)
 	prometheus.MustRegister(collectorManager)
 
 	appServer := server.NewAppServer(host, port, exporterConfig)
