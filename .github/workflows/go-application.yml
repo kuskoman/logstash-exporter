@@ -157,7 +157,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: logstash-exporter-linux
           path: out/main-linux
@@ -182,7 +182,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Mac binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: logstash-exporter-darwin
           path: out/main-darwin
@@ -207,7 +207,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Windows binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: logstash-exporter-windows
           path: out/main-windows
@@ -227,7 +227,7 @@ jobs:
         run: docker save logstash-exporter:latest | gzip > logstash-exporter.tar.gz
 
       - name: Upload Docker image as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: logstash-exporter-docker-image
           path: logstash-exporter.tar.gz
@@ -297,7 +297,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Docker image
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: logstash-exporter-docker-image
           path: .helm/files
@@ -306,7 +306,7 @@ jobs:
         run: docker load -i .helm/files/logstash-exporter.tar.gz
 
       - name: Install Helm
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@v4
         with:
           version: 3.11.2
 
@@ -379,7 +379,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: logstash-exporter-${{ matrix.binary }}
       - name: Generate sha256 checksum
