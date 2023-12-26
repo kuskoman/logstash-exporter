@@ -308,7 +308,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
-          version: 3.11.2
+          version: 3.13.3
 
       - name: Include current chart versions
         working-directory: .helm/logstash-integration-test-chart
