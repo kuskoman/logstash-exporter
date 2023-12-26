@@ -6,6 +6,7 @@ metadata:
     app: {{ include "logstash-exporter.name" . }}
     release: {{ .Release.Name }}
 data: |
+  config.yml: |-
   {{- if .Values.customConfig.enabled }}
     {{- .Values.customConfig.config | nindent 4 }}
   {{- else }}
