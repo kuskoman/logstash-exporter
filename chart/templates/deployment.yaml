@@ -85,6 +85,8 @@ spec:
       containers:
       - name: exporter
         env:
+        - name: EXPORTER_CONFIG_LOCATION
+          value: /app/config.yml
         {{- range $key, $value := .Values.deployment.env }}
         - name: {{ $key | quote }}
           value: {{ $value | quote }}
@@ -119,11 +121,11 @@ spec:
         ports:
         - name: http
           containerPort: {{ required "service.port is required" .Values.service.port }}
-    volumeMounts:
-    - name: config-volume
-      mountPath: /app/config.yml
-      subPath: config.yml
-  volumes:
-  - name: config-volume
-    configMap:
-      name: {{ include "logstash-exporter.name" . }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config.yml
+          subPath: config.yml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ include "logstash-exporter.name" . }}
