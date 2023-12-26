@@ -5,7 +5,7 @@ metadata:
   labels:
     app: {{ include "logstash-exporter.name" . }}
     release: {{ .Release.Name }}
-data: |
+data:
   config.yml: |-
   {{- if .Values.customConfig.enabled }}
     {{- .Values.customConfig.config | nindent 4 }}
