@@ -10,6 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 )
@@ -35,6 +36,14 @@ func (m *mockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoRespon
 	return nil, nil
 }
 
+func (m *mockClient) GetEndpoint() string {
+	return ""
+}
+
+func (m *mockClient) GetLabels() map[string]string {
+	return nil
+}
+
 type errorMockClient struct{}
 
 func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
@@ -45,8 +54,19 @@ func (m *errorMockClient) GetNodeStats(ctx context.Context) (*responses.NodeStat
 	return nil, errors.New("could not connect to instance")
 }
 
+func (m *errorMockClient) GetEndpoint() string {
+	return ""
+}
+
+func (m *errorMockClient) GetLabels() map[string]string {
+	return nil
+}
+
 func TestCollectNotNil(t *testing.T) {
-	collector := NewNodestatsCollector(&mockClient{})
+	t.Parallel()
+
+	clients := []logstash_client.Client{&mockClient{}, &mockClient{}}
+	collector := NewNodestatsCollector(clients)
 	ch := make(chan prometheus.Metric)
 	ctx := context.Background()
 
@@ -86,8 +106,8 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_plugin_events_queue_push_duration",
 		"logstash_stats_pipeline_plugin_documents_successes",
 		"logstash_stats_pipeline_plugin_documents_non_retryable_failures",
-      	"logstash_stats_pipeline_plugin_bulk_requests_errors",
-      	"logstash_stats_pipeline_plugin_bulk_requests_responses",
+		"logstash_stats_pipeline_plugin_bulk_requests_errors",
+		"logstash_stats_pipeline_plugin_bulk_requests_responses",
 		"logstash_stats_process_cpu_percent",
 		"logstash_stats_process_cpu_total_millis",
 		"logstash_stats_process_cpu_load_average_1m",
@@ -118,7 +138,18 @@ func TestCollectNotNil(t *testing.T) {
 			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
 		}
 
-		foundMetrics = append(foundMetrics, foundMetricFqName)
+		// todo: optimize this
+		found := false
+		for _, foundMetric := range foundMetrics {
+			if foundMetric == foundMetricFqName {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			foundMetrics = append(foundMetrics, foundMetricFqName)
+		}
 	}
 
 	for _, expectedMetric := range expectedBaseMetrics {
@@ -136,23 +167,42 @@ func TestCollectNotNil(t *testing.T) {
 	}
 }
 
-func TestCollectError(t *testing.T) {
-	collector := NewNodestatsCollector(&errorMockClient{})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+func TestCollectsErrors(t *testing.T) {
+	t.Parallel()
 
-	ch := make(chan prometheus.Metric)
+	testCollectorForClients := func(clients []logstash_client.Client) {
+		collector := NewNodestatsCollector(clients)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 
-	go func() {
-		for range ch {
-			// simulate reading from the channel
+		ch := make(chan prometheus.Metric)
+
+		go func() {
+			for range ch {
+				// simulate reading from the channel
+			}
+		}()
+
+		err := collector.Collect(ctx, ch)
+		close(ch)
+
+		if err == nil {
+			t.Error("Expected err not to be nil")
 		}
-	}()
-
-	err := collector.Collect(ctx, ch)
-	close(ch)
-
-	if err == nil {
-		t.Error("Expected err not to be nil")
 	}
+
+	t.Run("should return an error if the only client returns an error", func(t *testing.T) {
+		t.Parallel()
+		testCollectorForClients([]logstash_client.Client{&errorMockClient{}})
+	})
+
+	t.Run("should return an error if one of the clients returns an error", func(t *testing.T) {
+		t.Parallel()
+		testCollectorForClients([]logstash_client.Client{&mockClient{}, &errorMockClient{}})
+	})
+
+	t.Run("should return an error if all clients return an error", func(t *testing.T) {
+		t.Parallel()
+		testCollectorForClients([]logstash_client.Client{&errorMockClient{}, &errorMockClient{}})
+	})
 }

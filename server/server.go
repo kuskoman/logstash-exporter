@@ -12,13 +12,15 @@ import (
 // and registers the prometheus handler and the healthcheck handler
 // to the server's mux. The prometheus handler is managed under the
 // hood by the prometheus client library.
-func NewAppServer(host, port string) *http.Server {
+func NewAppServer(host, port string, cfg *config.Config) *http.Server {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/metrics", http.StatusMovedPermanently)
 	})
-	mux.HandleFunc("/healthcheck", getHealthCheck(config.LogstashUrl))
+
+	logstashUrls := convertServersToUrls(cfg.Logstash.Servers)
+	mux.HandleFunc("/healthcheck", getHealthCheck(logstashUrls))
 	mux.HandleFunc("/version", getVersionInfoHandler(config.GetVersionInfo()))
 
 	listenUrl := fmt.Sprintf("%s:%s", host, port)

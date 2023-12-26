@@ -1,9 +1,38 @@
-## @section Logstash configuration
+## @section Logstash configuration. Discarded if customConfig is enabled
 ##
 logstash:
-  ## @param logstash.url Logstash instance URL
+  ## @param logstash.urls Logstash instance URL. Multiple URLs can be specified. Defaults to http://logstash:9600
   ##
-  url: "http://logstash:9600"
+  urls:
+    - "http://logstash:9600"
+  ## @section logstash.server Logstash exporter server configuration
+  ##
+  server:
+    ## @param logstash.server.host Host for the logstash exporter server
+    ##
+    host: "0.0.0.0"
+    ## @param logstash.server.port Port for the logstash exporter server
+    ##
+    port: 9198
+  ## @section logstash.logging Logstash exporter logging configuration
+  ##
+  logging:
+    ## @param logstash.logging.level Logstash exporter logging level
+    ##
+    level: "info"
+
+## @section Custom logstash-exporter configuration. Overrides the default .logstash section
+##
+customConfig:
+  ## @param customConfig.enabled Enable custom configuration
+  ##
+  enabled: false
+  ## @param customConfig.config Custom configuration
+  ##
+  config: |
+    logstash:
+      urls:
+        - "http://logstash:9600"
 
 ## @section Image settings
 ##

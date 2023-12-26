@@ -110,6 +110,10 @@ clean-elasticsearch:
 upgrade-dependencies:
 	go get -u ./...
 
+#: Migrates configuration from v1 to v2
+migrate-v1-to-v2:
+	./scripts/migrate_v1_to_v2.sh
+
 #: Shows info about available commands
 help:
 	@grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$$)" Makefile \

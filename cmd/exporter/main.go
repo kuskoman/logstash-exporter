@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/collectors"
@@ -24,26 +25,37 @@ func main() {
 	}
 
 	warn := godotenv.Load()
-	if warn != nil {
-		log.Println(warn)
-	}
-
 	logger, err := config.SetupSlog()
 	if err != nil {
-		log.Fatalf("failed to setup slog: %s", err)
-	}
-	slog.SetDefault(logger)
+		if warn != nil {
+			log.Printf("failed to load .env file: %s", warn)
+		}
 
-	port, host := config.Port, config.Host
-	logstashUrl := config.LogstashUrl
+		log.Fatalf("failed to setup slog: %s", err)
+	} else {
+		slog.SetDefault(logger)
+		if warn != nil {
+			slog.Warn("failed to load .env file", "err", warn)
+		}
+	}
+
+	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
+	if err != nil {
+		slog.Error("failed to get exporter config", "err", err)
+		os.Exit(1)
+	}
+
+	host := exporterConfig.Server.Host
+	port := strconv.Itoa(exporterConfig.Server.Port)
 
 	slog.Debug("application starting... ")
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-	collectorManager := collectors.NewCollectorManager(logstashUrl)
-	appServer := server.NewAppServer(host, port)
+	collectorManager := collectors.NewCollectorManager(exporterConfig.Logstash.Servers)
 	prometheus.MustRegister(collectorManager)
+
+	appServer := server.NewAppServer(host, port, exporterConfig)
 
 	slog.Info("starting server on", "host", host, "port", port)
 	if err := appServer.ListenAndServe(); err != nil {

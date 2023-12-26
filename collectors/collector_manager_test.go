@@ -6,16 +6,32 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 func TestNewCollectorManager(t *testing.T) {
-	mockEndpoint := "http://localhost:9600"
-	cm := NewCollectorManager(mockEndpoint)
+	t.Parallel()
 
-	if cm == nil {
-		t.Error("Expected collector manager to be initialized")
-	}
+	t.Run("multiple endpoints", func(t *testing.T) {
+		endpoint1 := &config.LogstashServer{
+			Host:   "http://localhost:9600",
+			Labels: map[string]string{"foo": "bar"},
+		}
+
+		endpoint2 := &config.LogstashServer{
+			Host: "http://localhost:9601",
+		}
+
+		mockEndpoints := []*config.LogstashServer{endpoint1, endpoint2}
+		cm := NewCollectorManager(mockEndpoints)
+
+		if cm == nil {
+			t.Error("expected collector manager to be initialized")
+		}
+	})
+
+	// prometheus has a global state, so we cannot register the same collector twice, therefore there is no single endpoint test
 }
 
 type mockCollector struct {

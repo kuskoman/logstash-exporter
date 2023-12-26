@@ -23,6 +23,12 @@ logstash:
 
 prometheus:
   enabled: true
+  alertmanager:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
   service:
     type: ClusterIP
   config: |
