@@ -8,6 +8,10 @@ The project was created as rewrite of existing awesome application
 which was also written in Go, but it was not maintained for a long time.
 A lot of code was reused from the original project.
 
+**Important:** V2 version of the application is currently in beta. It is recommended to use V1 version in production.
+It is still maintained and available under [v1 branch](https://github.com/kuskoman/logstash-exporter/tree/v1).
+Make sure to check the [Migration](#migration) section before upgrading to V2.
+
 **Important:** Because of limited workforces, this project is tested only against a single Logstash version.
 You can check the tested version in [docker-compose.yml](./docker-compose.yml) file.
 Using this exporter with other versions of Logstash may not work properly (although most of the metrics should work).
