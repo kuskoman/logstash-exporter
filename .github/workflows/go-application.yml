@@ -306,7 +306,7 @@ jobs:
         run: docker load -i .helm/files/logstash-exporter.tar.gz
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v3
         with:
           version: 3.11.2
 
