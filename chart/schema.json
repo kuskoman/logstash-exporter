@@ -5,10 +5,55 @@
         "logstash": {
             "type": "object",
             "properties": {
-                "url": {
+                "urls": {
+                    "type": "array",
+                    "description": "Logstash instance URL. Multiple URLs can be specified. Defaults to http://logstash:9600",
+                    "default": [
+                        "http://logstash:9600"
+                    ],
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "server": {
+                    "type": "object",
+                    "properties": {
+                        "host": {
+                            "type": "string",
+                            "description": "Host for the logstash exporter server",
+                            "default": "0.0.0.0"
+                        },
+                        "port": {
+                            "type": "number",
+                            "description": "Port for the logstash exporter server",
+                            "default": 9198
+                        }
+                    }
+                },
+                "logging": {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "string",
+                            "description": "Logstash exporter logging level",
+                            "default": "info"
+                        }
+                    }
+                }
+            }
+        },
+        "customConfig": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Enable custom configuration",
+                    "default": false
+                },
+                "config": {
                     "type": "string",
-                    "description": "Logstash instance URL",
-                    "default": "http://logstash:9600"
+                    "description": "Custom configuration",
+                    "default": "logstash:\n  urls:\n    - \"http://logstash:9600\"\n"
                 }
             }
         },

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "logstash-exporter.name" . }}
+  labels:
+    app: {{ include "logstash-exporter.name" . }}
+    release: {{ .Release.Name }}
+data: |
+  {{- if .Values.customConfig.enabled }}
+    {{- .Values.customConfig.config | nindent 4 }}
+  {{- else }}
+    logstash:
+      servers:
+        {{ range .Values.logstash.urls -}}
+        - url: {{ . | quote }}
+        {{- end }}
+    server:
+      host: {{ .Values.logstash.server.host | quote }}
+      port: {{ .Values.logstash.server.port }}
+    logging:
+      level: {{ .Values.logstash.logging.level | quote }}
+  {{- end -}}
