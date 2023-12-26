@@ -5,16 +5,16 @@ type: application
 version: 0.1.0
 dependencies:
   - name: logstash
-    version: "8.5.1"
+    version: "^8.5.1"
     repository: https://helm.elastic.co
     condition: logstash.enabled
   # we are replacing elasticsearch with apache for testing purposes
   - name: apache
-    version: "^9.2.23"
+    version: "^10.2.4"
     repository: https://charts.bitnami.com/bitnami
     condition: apache.enabled
   - name: prometheus
-    version: "^20.2.0"
+    version: "^25.8.2"
     repository: https://prometheus-community.github.io/helm-charts
     condition: prometheus.enabled
   - name: logstash-exporter
