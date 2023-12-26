@@ -138,8 +138,18 @@ func TestCollectNotNil(t *testing.T) {
 			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
 		}
 
-		// todo: check if exists
-		foundMetrics = append(foundMetrics, foundMetricFqName)
+		// todo: optimize this
+		found := false
+		for _, foundMetric := range foundMetrics {
+			if foundMetric == foundMetricFqName {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			foundMetrics = append(foundMetrics, foundMetricFqName)
+		}
 	}
 
 	for _, expectedMetric := range expectedBaseMetrics {
