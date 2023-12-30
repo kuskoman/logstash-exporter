@@ -40,10 +40,6 @@ func (m *mockClient) GetEndpoint() string {
 	return ""
 }
 
-func (m *mockClient) GetLabels() map[string]string {
-	return nil
-}
-
 type errorMockClient struct{}
 
 func (m *errorMockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
@@ -56,10 +52,6 @@ func (m *errorMockClient) GetNodeStats(ctx context.Context) (*responses.NodeStat
 
 func (m *errorMockClient) GetEndpoint() string {
 	return ""
-}
-
-func (m *errorMockClient) GetLabels() map[string]string {
-	return nil
 }
 
 func TestCollectNotNil(t *testing.T) {

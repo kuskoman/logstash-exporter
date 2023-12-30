@@ -15,8 +15,7 @@ func TestNewCollectorManager(t *testing.T) {
 
 	t.Run("multiple endpoints", func(t *testing.T) {
 		endpoint1 := &config.LogstashServer{
-			Host:   "http://localhost:9600",
-			Labels: map[string]string{"foo": "bar"},
+			Host: "http://localhost:9600",
 		}
 
 		endpoint2 := &config.LogstashServer{
