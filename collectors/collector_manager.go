@@ -28,7 +28,7 @@ func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstashclient
 	clients := make([]logstashclient.Client, len(endpoints))
 
 	for i, endpoint := range endpoints {
-		clients[i] = logstashclient.NewClient(endpoint.Host, endpoint.Labels)
+		clients[i] = logstashclient.NewClient(endpoint.Host)
 	}
 
 	return clients

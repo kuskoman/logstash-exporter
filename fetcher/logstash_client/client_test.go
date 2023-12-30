@@ -20,7 +20,7 @@ func TestNewClient(t *testing.T) {
 	t.Run("should return a new client for the default endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("", nil)
+		client := NewClient("")
 
 		if client.(*DefaultClient).endpoint != defaultLogstashEndpoint {
 			t.Errorf("expected endpoint to be %s, got %s", defaultLogstashEndpoint, client.(*DefaultClient).endpoint)
@@ -31,34 +31,11 @@ func TestNewClient(t *testing.T) {
 		t.Parallel()
 
 		expectedEndpoint := "http://localhost:9601"
-		client := NewClient(expectedEndpoint, nil)
+		client := NewClient(expectedEndpoint)
 
 		receivedEndpoint := client.GetEndpoint()
 		if receivedEndpoint != expectedEndpoint {
 			t.Errorf("expected endpoint to be %s, got %s", expectedEndpoint, receivedEndpoint)
-		}
-	})
-
-	t.Run("should return a new client with the given labels", func(t *testing.T) {
-		t.Parallel()
-
-		expectedLabels := map[string]string{"foo": "bar"}
-		client := NewClient("", expectedLabels)
-
-		receivedLabels := client.GetLabels()
-		if receivedLabels["foo"] != expectedLabels["foo"] {
-			t.Errorf("expected label to be %s, got %s", expectedLabels["foo"], receivedLabels["foo"])
-		}
-	})
-
-	t.Run("should return a new client with an empty map if no labels are given", func(t *testing.T) {
-		t.Parallel()
-
-		client := NewClient("", nil)
-
-		receivedLabels := client.GetLabels()
-		if len(receivedLabels) != 0 {
-			t.Errorf("expected labels to be empty, got %v", receivedLabels)
 		}
 	})
 }

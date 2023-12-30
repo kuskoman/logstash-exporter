@@ -22,7 +22,7 @@ func TestGetNodeInfo(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		client := NewClient(ts.URL, nil)
+		client := NewClient(ts.URL)
 
 		response, err := client.GetNodeInfo(context.Background())
 		if err != nil {
@@ -49,7 +49,7 @@ func TestGetNodeStats(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		client := NewClient(ts.URL, nil)
+		client := NewClient(ts.URL)
 
 		response, err := client.GetNodeStats(context.Background())
 		if err != nil {

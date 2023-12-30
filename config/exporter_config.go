@@ -20,8 +20,7 @@ var (
 
 // LogstashServer represents individual Logstash server configuration
 type LogstashServer struct {
-	Host   string            `yaml:"url"`
-	Labels map[string]string `yaml:"labels"`
+	Host string `yaml:"url"`
 }
 
 // LogstashConfig holds the configuration for all Logstash servers
