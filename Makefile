@@ -38,6 +38,9 @@ build-linux: out/main-linux
 build-darwin: out/main-darwin
 #: Builds a binary executable for Windows
 build-windows: out/main-windows
+#: Builds a binary executable for Linux ARM
+build-linux-arm:
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/main-linux-arm cmd/exporter/main.go
 
 #: Builds a Docker image for the Go Exporter application
 build-docker:

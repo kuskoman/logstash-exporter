@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - master
+      - v1
     tags:
       - "*"
   pull_request:
     branches:
       - master
+      - v1
 
 env:
   TAG_NAME: "${GITHUB_REF##*/}"
@@ -161,6 +163,31 @@ jobs:
         with:
           name: logstash-exporter-linux
           path: out/main-linux
+
+  build-linux-arm:
+    name: Build Linux ARM binary
+    runs-on: ubuntu-20.04
+    needs: [lint, test]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Golang with cache
+        uses: magnetikonline/action-golang-cache@v4
+        with:
+          go-version: "^1.21"
+
+      - name: Build Linux ARM binary
+        run: make build-linux-arm
+        env:
+          VERSION: ${{ github.ref }}
+
+      - name: Upload Linux ARM binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: logstash-exporter-linux-arm
+          path: out/main-linux-arm
 
   build-darwin:
     name: Build Mac binary
@@ -369,13 +396,14 @@ jobs:
   upload-binaries:
     strategy:
       matrix:
-        binary: [linux, darwin, windows]
+        binary: [linux, darwin, windows, linux-arm]
     runs-on: ubuntu-20.04
     needs:
       - create-release
       - build-linux
       - build-darwin
       - build-windows
+      - build-linux-arm
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
