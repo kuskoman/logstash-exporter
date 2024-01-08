@@ -6,7 +6,7 @@ toolchain go1.21.4
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/prometheus/client_golang v1.17.0
+	github.com/prometheus/client_golang v1.18.0
 )
 
 require (
@@ -29,7 +29,7 @@ require (
 	github.com/gkampitakis/go-snaps v0.4.12
 	github.com/prometheus/client_model v0.5.0
 	github.com/prometheus/common v0.45.0
-	github.com/prometheus/procfs v0.11.1 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 )
