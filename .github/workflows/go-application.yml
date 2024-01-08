@@ -366,6 +366,7 @@ jobs:
       - build-linux
       - build-darwin
       - build-windows
+      - build-linux-arm
       - build-linux-docker-image
       - build-docker-linux-arm-image
       - test-integration
