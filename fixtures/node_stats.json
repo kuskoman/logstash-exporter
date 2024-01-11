@@ -250,7 +250,7 @@
         "max_queue_size_in_bytes": 0
       },
       "dead_letter_queue": {
-        "max_queue_size_in_bytes": 1073741824,
+        "max_queue_size_in_bytes": 47244640256,
         "last_error": "no errors",
         "queue_size_in_bytes": 1,
         "dropped_events": 0,
