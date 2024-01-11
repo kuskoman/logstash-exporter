@@ -170,16 +170,16 @@ type SinglePipelineResponse struct {
 	Reloads PipelineReloadResponse `json:"reloads"`
 	Queue   struct {
 		Type                string `json:"type"`
-		EventsCount         int    `json:"events_count"`
-		QueueSizeInBytes    int    `json:"queue_size_in_bytes"`
-		MaxQueueSizeInBytes int    `json:"max_queue_size_in_bytes"`
+		EventsCount         int64  `json:"events_count"`
+		QueueSizeInBytes    int64  `json:"queue_size_in_bytes"`
+		MaxQueueSizeInBytes int64  `json:"max_queue_size_in_bytes"`
 	} `json:"queue"`
 	DeadLetterQueue struct {
 		MaxQueueSizeInBytes int `json:"max_queue_size_in_bytes"`
 		// todo: research how LastError is returned
-		QueueSizeInBytes int    `json:"queue_size_in_bytes"`
-		DroppedEvents    int    `json:"dropped_events"`
-		ExpiredEvents    int    `json:"expired_events"`
+		QueueSizeInBytes int64  `json:"queue_size_in_bytes"`
+		DroppedEvents    int64  `json:"dropped_events"`
+		ExpiredEvents    int64  `json:"expired_events"`
 		StoragePolicy    string `json:"storage_policy"`
 	} `json:"dead_letter_queue"`
 	Hash        string `json:"hash"`

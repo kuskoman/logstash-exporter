@@ -132,6 +132,10 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 		newFloatMetric(desc, metricType, float64(value), labels...)
 	}
 
+	newInt64Metric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value int64, labels ...string) {
+		newFloatMetric(desc, metricType, float64(value), labels...)
+	}
+
 	newIntMetric(collector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
 	newIntMetric(collector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
 	newIntMetric(collector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
@@ -150,9 +154,9 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 		newTimestampMetric(collector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
 	}
 
-	newIntMetric(collector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
-	newIntMetric(collector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
-	newIntMetric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	newInt64Metric(collector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
+	newInt64Metric(collector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
+	newInt64Metric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
 
 	flowStats := pipeStats.Flow
 	newFloatMetric(collector.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
@@ -168,9 +172,9 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 
 	deadLetterQueueStats := pipeStats.DeadLetterQueue
 	newIntMetric(collector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
-	newIntMetric(collector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
-	newIntMetric(collector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
-	newIntMetric(collector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
+	newInt64Metric(collector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
+	newInt64Metric(collector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
+	newInt64Metric(collector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
 
 	// Output error metrics
 	for _, output := range pipeStats.Plugins.Outputs {
