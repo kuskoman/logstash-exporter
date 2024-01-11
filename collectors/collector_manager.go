@@ -22,9 +22,10 @@ type Collector interface {
 type CollectorManager struct {
 	collectors      map[string]Collector
 	scrapeDurations *prometheus.SummaryVec
+	timeout         time.Duration
 }
 
-func NewCollectorManager(endpoint string) *CollectorManager {
+func NewCollectorManager(endpoint string, timeout time.Duration) *CollectorManager {
 	client := logstashclient.NewClient(endpoint)
 
 	collectors := getCollectors(client)
@@ -32,7 +33,7 @@ func NewCollectorManager(endpoint string) *CollectorManager {
 	scrapeDurations := getScrapeDurationsCollector()
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
-	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations}
+	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations, timeout: timeout}
 }
 
 func getCollectors(client logstashclient.Client) map[string]Collector {
@@ -45,7 +46,7 @@ func getCollectors(client logstashclient.Client) map[string]Collector {
 // Collect executes all collectors and sends the collected metrics to the provided channel.
 // It also sends the duration of the collection to the scrapeDurations collector.
 func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
-	ctx, cancel := context.WithTimeout(context.Background(), config.HttpTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), manager.timeout)
 
 	defer cancel()
 
