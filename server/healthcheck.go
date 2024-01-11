@@ -3,14 +3,13 @@ package server
 import (
 	"context"
 	"net/http"
-
-	"github.com/kuskoman/logstash-exporter/config"
+	"time"
 )
 
-func getHealthCheck(logstashURL string) func(http.ResponseWriter, *http.Request) {
+func getHealthCheck(logstashURL string, timeout time.Duration) func(http.ResponseWriter, *http.Request) {
 	client := &http.Client{}
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), config.HttpTimeout)
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, logstashURL, nil)

@@ -5,13 +5,16 @@ import (
 	"errors"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const httpTimeout = 2 * time.Second
+
 func TestNewCollectorManager(t *testing.T) {
 	mockEndpoint := "http://localhost:9600"
-	cm := NewCollectorManager(mockEndpoint)
+	cm := NewCollectorManager(mockEndpoint, httpTimeout)
 
 	if cm == nil {
 		t.Error("Expected collector manager to be initialized")

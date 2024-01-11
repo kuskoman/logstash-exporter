@@ -13,7 +13,7 @@ func TestHealthCheck(t *testing.T) {
 		}))
 		defer mockServer.Close()
 
-		handler := getHealthCheck(mockServer.URL)
+		handler := getHealthCheck(mockServer.URL, defaultHttpTimeout)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)
@@ -40,7 +40,7 @@ func TestHealthCheck(t *testing.T) {
 	})
 
 	t.Run("no response", func(t *testing.T) {
-		handler := getHealthCheck("http://localhost:12345")
+		handler := getHealthCheck("http://localhost:12345", defaultHttpTimeout)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)
@@ -55,7 +55,7 @@ func TestHealthCheck(t *testing.T) {
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
-		handler := getHealthCheck("http://localhost:96010:invalidurl")
+		handler := getHealthCheck("http://localhost:96010:invalidurl", defaultHttpTimeout)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)

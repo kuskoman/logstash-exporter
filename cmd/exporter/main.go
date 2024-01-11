@@ -41,8 +41,15 @@ func main() {
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-	collectorManager := collectors.NewCollectorManager(logstashUrl)
-	appServer := server.NewAppServer(host, port)
+	httpTimeout, err := config.GetHttpTimeout()
+	if err != nil {
+		slog.Error("failed to get http timeout", "err", err)
+		os.Exit(1)
+	}
+	slog.Debug("http timeout", "timeout", httpTimeout)
+
+	collectorManager := collectors.NewCollectorManager(logstashUrl, httpTimeout)
+	appServer := server.NewAppServer(host, port, httpTimeout)
 	prometheus.MustRegister(collectorManager)
 
 	slog.Info("starting server on", "host", host, "port", port)
