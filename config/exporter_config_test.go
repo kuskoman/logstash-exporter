@@ -2,6 +2,7 @@ package config
 
 import (
 	"testing"
+	"time"
 )
 
 func TestLoadConfig(t *testing.T) {
@@ -71,6 +72,9 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
 			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
+		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout{
+			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
+		}
 	})
 
 	t.Run("merge with nil config", func(t *testing.T) {
@@ -86,6 +90,9 @@ func TestMergeWithDefault(t *testing.T) {
 		}
 		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
 			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
+		}
+		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout{
+			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
 	})
 
@@ -104,6 +111,7 @@ func TestMergeWithDefault(t *testing.T) {
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
+                HttpTimeout: 3 * time.Second,
 			},
 		}
 
@@ -123,6 +131,9 @@ func TestMergeWithDefault(t *testing.T) {
 
 		if mergedConfig.Logstash.Servers[1].Host != "http://localhost:9602" {
 			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Servers[1].Host)
+		}
+		if mergedConfig.Logstash.HttpTimeout != 3 * time.Second{
+			t.Errorf("expected http timeout to be %v, got %v", 3 * time.Second, mergedConfig.Logstash.HttpTimeout)
 		}
 	})
 }
