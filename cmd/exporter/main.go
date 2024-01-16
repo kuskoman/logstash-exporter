@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+    "github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/collectors"
 	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/kuskoman/logstash-exporter/server"
@@ -22,6 +23,11 @@ func main() {
 		fmt.Printf("%s\n", config.SemanticVersion)
 		return
 	}
+
+    warn := godotenv.Load()
+    if warn != nil {
+        log.Printf("failed to load .env file: %s", warn)
+    }
 
 	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
 	if err != nil {

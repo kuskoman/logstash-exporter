@@ -7,8 +7,9 @@ import (
 
 func TestSetupSlog(t *testing.T) {
 	t.Run("Wrong type of log level", func(t *testing.T) {
-		LogLevel = "infox"
-		logger, err := SetupSlog()
+		const LogLevel = "infox"
+		const LogFormat = defaultLogFormat
+		logger, err := SetupSlog(LogLevel, LogFormat)
 		if logger != nil {
 			t.Errorf("Expected logger to be nil, got %s\"", logger)
 		}
@@ -17,8 +18,9 @@ func TestSetupSlog(t *testing.T) {
 		}
 	})
 	t.Run("Wrong type of log level", func(t *testing.T) {
-		LogLevel = "warn"
-		logger, err := SetupSlog()
+		const LogLevel = "warn"
+		const LogFormat = defaultLogFormat
+		logger, err := SetupSlog(LogLevel, LogFormat)
 		if err != nil {
 			t.Errorf("Expected error to be nil, got %s\"", err)
 		}
@@ -27,8 +29,9 @@ func TestSetupSlog(t *testing.T) {
 		}
 	})
 	t.Run("Wrong type of log format", func(t *testing.T) {
-		LogFormat = "test"
-		logger, err := SetupSlog()
+		const LogLevel = defaultLogLevel
+		const LogFormat = "test"
+		logger, err := SetupSlog(LogLevel, LogFormat)
 		if logger != nil {
 			t.Errorf("Expected logger to be nil, got %s\"", logger)
 		}
@@ -37,8 +40,9 @@ func TestSetupSlog(t *testing.T) {
 		}
 	})
 	t.Run("Correct type of log format", func(t *testing.T) {
-		LogFormat = "text"
-		logger, err := SetupSlog()
+		const LogLevel = defaultLogLevel
+		const LogFormat = defaultLogFormat
+		logger, err := SetupSlog(LogLevel, LogFormat)
 		if err != nil {
 			t.Errorf("Expected error to be nil, got %s\"", err)
 		}
@@ -47,8 +51,9 @@ func TestSetupSlog(t *testing.T) {
 		}
 	})
 	t.Run("Json type of log format", func(t *testing.T) {
-		LogFormat = "json"
-		logger, err := SetupSlog()
+		const LogLevel = defaultLogLevel
+		const LogFormat = "json"
+		logger, err := SetupSlog(LogLevel, LogFormat)
 		if err != nil {
 			t.Errorf("Expected error to be nil, got %s\"", err)
 		}
