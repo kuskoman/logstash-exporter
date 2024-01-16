@@ -1,6 +1,7 @@
 logstash:
   servers:
     - url: "http://localhost:9600"
+  timeout: 3s
 server:
   host: "127.0.0.1"
   port: 9200

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/kuskoman/logstash-exporter/config"
 )
@@ -18,7 +19,7 @@ func convertServersToUrls(servers []*config.LogstashServer) []string {
 	return urls
 }
 
-func getHealthCheck(logstashUrls []string) func(http.ResponseWriter, *http.Request) {
+func getHealthCheck(logstashUrls []string, httpTimeout time.Duration) func(http.ResponseWriter, *http.Request) {
 	client := &http.Client{}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +30,7 @@ func getHealthCheck(logstashUrls []string) func(http.ResponseWriter, *http.Reque
 			wg.Add(1)
 			go func(url string) {
 				defer wg.Done()
-				ctx, cancel := context.WithTimeout(r.Context(), config.HttpTimeout)
+				ctx, cancel := context.WithTimeout(r.Context(), httpTimeout)
 				defer cancel()
 
 				req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)

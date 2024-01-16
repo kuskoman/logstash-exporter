@@ -3,7 +3,8 @@ package config
 import (
 	"log/slog"
 	"os"
-
+    "time"
+    
 	"gopkg.in/yaml.v2"
 )
 
@@ -12,6 +13,7 @@ const (
 	defaultPort           = 9198
 	defaultLogLevel       = "info"
 	defaultLogstashURL    = "http://localhost:9600"
+    defaultHttpTimeout    = time.Second * 2
 )
 
 var (
@@ -26,6 +28,7 @@ type LogstashServer struct {
 // LogstashConfig holds the configuration for all Logstash servers
 type LogstashConfig struct {
 	Servers []*LogstashServer `yaml:"servers"`
+    HttpTimeout time.Duration `yaml:"httpTimeout"`
 }
 
 // ServerConfig represents the server configuration
@@ -90,6 +93,11 @@ func mergeWithDefault(config *Config) *Config {
 		config.Logstash.Servers = append(config.Logstash.Servers, &LogstashServer{
 			Host: defaultLogstashURL,
 		})
+	}
+
+	if config.Logstash.HttpTimeout == 0 {
+        slog.Debug("using default http timeout", "httpTimeout", defaultHttpTimeout)
+        config.Logstash.HttpTimeout = defaultHttpTimeout
 	}
 
 	return config

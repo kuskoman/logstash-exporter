@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -12,7 +13,7 @@ import (
 // and registers the prometheus handler and the healthcheck handler
 // to the server's mux. The prometheus handler is managed under the
 // hood by the prometheus client library.
-func NewAppServer(host, port string, cfg *config.Config) *http.Server {
+func NewAppServer(host, port string, cfg *config.Config, httpTimeout time.Duration) *http.Server {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +21,7 @@ func NewAppServer(host, port string, cfg *config.Config) *http.Server {
 	})
 
 	logstashUrls := convertServersToUrls(cfg.Logstash.Servers)
-	mux.HandleFunc("/healthcheck", getHealthCheck(logstashUrls))
+	mux.HandleFunc("/healthcheck", getHealthCheck(logstashUrls, httpTimeout))
 	mux.HandleFunc("/version", getVersionInfoHandler(config.GetVersionInfo()))
 
 	listenUrl := fmt.Sprintf("%s:%s", host, port)

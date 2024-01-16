@@ -5,10 +5,13 @@ import (
 	"errors"
 	"sync"
 	"testing"
+    "time"
 
 	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
+
+const httpTimeout = 2 * time.Second
 
 func TestNewCollectorManager(t *testing.T) {
 	t.Parallel()
@@ -23,7 +26,7 @@ func TestNewCollectorManager(t *testing.T) {
 		}
 
 		mockEndpoints := []*config.LogstashServer{endpoint1, endpoint2}
-		cm := NewCollectorManager(mockEndpoints)
+		cm := NewCollectorManager(mockEndpoints, httpTimeout)
 
 		if cm == nil {
 			t.Error("expected collector manager to be initialized")
