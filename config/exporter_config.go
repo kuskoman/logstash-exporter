@@ -12,6 +12,7 @@ const (
 	defaultConfigLocation = "config.yml"
 	defaultPort           = 9198
 	defaultLogLevel       = "info"
+	defaultLogFormat      = "text"
 	defaultLogstashURL    = "http://localhost:9600"
     defaultHttpTimeout    = time.Second * 2
 )
@@ -46,7 +47,8 @@ type ServerConfig struct {
 
 // LoggingConfig represents the logging configuration
 type LoggingConfig struct {
-	Level string `yaml:"level"`
+	Level  string `yaml:"level"`
+	Format string `yaml:"format"`
 }
 
 // Config represents the overall configuration loaded from the YAML file
@@ -86,6 +88,11 @@ func mergeWithDefault(config *Config) *Config {
 	if config.Logging.Level == "" {
 		slog.Debug("using default log level", "level", defaultLogLevel)
 		config.Logging.Level = defaultLogLevel
+	}
+
+	if config.Logging.Format == "" {
+		slog.Debug("using default log format", "format", defaultLogLevel)
+		config.Logging.Format = defaultLogFormat
 	}
 
 	if len(config.Logstash.Servers) == 0 {

@@ -69,6 +69,9 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logging.Level != defaultLogLevel {
 			t.Errorf("expected level to be %v, got %v", defaultLogLevel, mergedConfig.Logging.Level)
 		}
+		if mergedConfig.Logging.Format != defaultLogFormat {
+			t.Errorf("expected format to be %v, got %v", defaultLogFormat, mergedConfig.Logging.Format)
+		}
 		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
 			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
@@ -88,6 +91,9 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logging.Level != defaultLogLevel {
 			t.Errorf("expected level to be %v, got %v", defaultLogLevel, mergedConfig.Logging.Level)
 		}
+		if mergedConfig.Logging.Format != defaultLogFormat {
+			t.Errorf("expected format to be %v, got %v", defaultLogFormat, mergedConfig.Logging.Format)
+		}
 		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
 			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
@@ -105,6 +111,7 @@ func TestMergeWithDefault(t *testing.T) {
 			},
 			Logging: LoggingConfig{
 				Level: "debug",
+				Format: "json",
 			},
 			Logstash: LogstashConfig{
 				Servers: []*LogstashServer{
@@ -123,6 +130,10 @@ func TestMergeWithDefault(t *testing.T) {
 
 		if mergedConfig.Logging.Level != "debug" {
 			t.Errorf("expected level to be %v, got %v", "debug", mergedConfig.Logging.Level)
+		}
+
+		if mergedConfig.Logging.Format != "json" {
+			t.Errorf("expected format to be %v, got %v", "json", mergedConfig.Logging.Format)
 		}
 
 		if mergedConfig.Logstash.Servers[0].Host != "http://localhost:9601" {
