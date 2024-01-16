@@ -5,14 +5,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/kuskoman/logstash-exporter/config"
 )
 
+const defaultHttpTimeout = 2 * time.Second
+
 func TestNewAppServer(t *testing.T) {
 	t.Run("test handling of /metrics endpoint", func(t *testing.T) {
 		cfg := &config.Config{}
-		server := NewAppServer("", "8080", cfg)
+		server := NewAppServer("", "8080", cfg, defaultHttpTimeout)
 		req, err := http.NewRequest("GET", "/metrics", nil)
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating request: %v", err))
@@ -26,7 +29,7 @@ func TestNewAppServer(t *testing.T) {
 
 	t.Run("test handling of / endpoint", func(t *testing.T) {
 		cfg := &config.Config{}
-		server := NewAppServer("", "8080", cfg)
+		server := NewAppServer("", "8080", cfg, defaultHttpTimeout)
 		req, err := http.NewRequest("GET", "/", nil)
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating request: %v", err))
@@ -49,7 +52,7 @@ func TestNewAppServer(t *testing.T) {
 				},
 			},
 		}
-		server := NewAppServer("", "8080", cfg)
+		server := NewAppServer("", "8080", cfg, defaultHttpTimeout)
 		req, err := http.NewRequest("GET", "/healthcheck", nil)
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating request: %v", err))
@@ -64,7 +67,7 @@ func TestNewAppServer(t *testing.T) {
 
 	t.Run("test handling of /version endpoint", func(t *testing.T) {
 		cfg := &config.Config{}
-		server := NewAppServer("", "8080", cfg)
+		server := NewAppServer("", "8080", cfg, defaultHttpTimeout)
 		req, err := http.NewRequest("GET", "/version", nil)
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating request: %v", err))

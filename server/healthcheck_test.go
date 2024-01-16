@@ -17,7 +17,7 @@ func TestHealthCheck(t *testing.T) {
 			urls = append(urls, server.URL)
 		}
 
-		handler := getHealthCheck(urls)
+		handler := getHealthCheck(urls, defaultHttpTimeout)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)
@@ -52,7 +52,7 @@ func TestHealthCheck(t *testing.T) {
 	})
 
 	t.Run("no response", func(t *testing.T) {
-		handler := getHealthCheck([]string{"http://localhost:12345"})
+		handler := getHealthCheck([]string{"http://localhost:12345"}, defaultHttpTimeout)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)
@@ -67,7 +67,7 @@ func TestHealthCheck(t *testing.T) {
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
-		handler := getHealthCheck([]string{"http://localhost:96010:invalidurl"})
+		handler := getHealthCheck([]string{"http://localhost:96010:invalidurl"}, defaultHttpTimeout)
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
 		if err != nil {
 			t.Fatalf("Error creating request: %v", err)

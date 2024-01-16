@@ -52,10 +52,15 @@ func main() {
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-	collectorManager := collectors.NewCollectorManager(exporterConfig.Logstash.Servers)
+    slog.Debug("http timeout", "timeout", exporterConfig.Logstash.HttpTimeout)
+
+	collectorManager := collectors.NewCollectorManager(
+        exporterConfig.Logstash.Servers,
+        exporterConfig.Logstash.HttpTimeout,
+        )
 	prometheus.MustRegister(collectorManager)
 
-	appServer := server.NewAppServer(host, port, exporterConfig)
+	appServer := server.NewAppServer(host, port, exporterConfig, exporterConfig.Logstash.HttpTimeout)
 
 	slog.Info("starting server on", "host", host, "port", port)
 	if err := appServer.ListenAndServe(); err != nil {
