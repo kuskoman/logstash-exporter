@@ -382,6 +382,15 @@ jobs:
           echo "Tag ref: ${{ github.ref }}"
       - name: Generate release notes
         run: ./scripts/create_release_notes.sh
+      - name: Determine if prerelease
+        id: prerelease
+        run: |
+          # if tag name does not start with v, or when the tag name contains -suffix, then it is a prerelease
+          if [[ "${{ env.TAG_NAME }}" =~ ^v.*$ ]] && [[ "${{ env.TAG_NAME }}" =~ -.*$ ]]; then
+            echo "::set-output name=is_prerelease::true"
+          else
+            echo "::set-output name=is_prerelease::false"
+          fi
       - name: Create GitHub release
         id: create_release
         uses: actions/create-release@v1
@@ -392,7 +401,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           body_path: "./release_notes.txt"
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.prerelease.outputs.is_prerelease }}
 
   upload-binaries:
     strategy:
