@@ -118,7 +118,7 @@ func TestMergeWithDefault(t *testing.T) {
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
-                HttpTimeout: 3 * time.Second,
+			HttpTimeout: 3 * time.Second,
 			},
 		}
 

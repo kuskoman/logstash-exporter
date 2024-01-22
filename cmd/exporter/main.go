@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-    "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/collectors"
 	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/kuskoman/logstash-exporter/server"
@@ -24,10 +24,10 @@ func main() {
 		return
 	}
 
-    warn := godotenv.Load()
-    if warn != nil {
-        log.Printf("failed to load .env file: %s", warn)
-    }
+	warn := godotenv.Load()
+	if warn != nil {
+		log.Printf("failed to load .env file: %s", warn)
+	}
 
 	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
 	if err != nil {
@@ -49,7 +49,7 @@ func main() {
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
-    slog.Debug("http timeout", "timeout", exporterConfig.Logstash.HttpTimeout)
+	slog.Debug("http timeout", "timeout", exporterConfig.Logstash.HttpTimeout)
 
 	collectorManager := collectors.NewCollectorManager(
         exporterConfig.Logstash.Servers,
