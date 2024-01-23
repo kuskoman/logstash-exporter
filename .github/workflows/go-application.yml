@@ -38,6 +38,16 @@ jobs:
           go mod tidy
           git diff --exit-code -- go.mod go.sum
 
+  lint-scripts:
+    name: Lint scripts
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+
   test:
     name: Unit test code
     runs-on: ubuntu-20.04
