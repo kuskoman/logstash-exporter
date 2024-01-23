@@ -403,6 +403,7 @@ jobs:
       - test-integration
       - lint-scripts
       - verify-makefile-readme
+      - test-helm-integration
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
