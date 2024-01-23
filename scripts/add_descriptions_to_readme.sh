@@ -7,9 +7,9 @@ scriptName="$(dirname "$0")/$(basename "$0")"
 function getHelp() { # get descriptions and commands from Makefile
     i=0
     commands=()
-    descriptions=() 
+    descriptions=()
 
-    while read -r line; do 
+    while read -r line; do
         if (( i % 2 == 0 ));
             then
                 descriptions+=( "$(echo $line | sed 's/#:[ ]*//')" )
@@ -21,7 +21,7 @@ function getHelp() { # get descriptions and commands from Makefile
     done < <(
         # https://stackoverflow.com/a/59087509
         grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$)" ./Makefile \
-        | grep -v -- -- 
+        | grep -v -- --
     )
 }
 
@@ -35,7 +35,7 @@ let endLine=$(grep -n "^#### File Structure" $FILE | cut -d : -f 1)-2
 # Updates "Available Commands" section:
 
 if (( startLine <= endLine));
-then 
+then
     $(sed -i "$startLine,${endLine}d" $FILE) # deletion of previous descriptions
 fi
 
@@ -45,7 +45,7 @@ function printAvailableCommands() {
     let commentLen=${#stringToWrite}-11
     i=0
 
-    $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+    $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
     let curLine++
 
     $(sed -i "${curLine}i\\ " $FILE)  # empty line
@@ -55,17 +55,17 @@ function printAvailableCommands() {
     do
 
         stringToWrite="- \`make ${commands[$i]}\`: ${descriptions[$i]}."
-        $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+        $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
         let curLine++
 
         let i++
     done
 
-    $(sed -i "${curLine}i\\ " $FILE)  # empty line 
+    $(sed -i "${curLine}i\\ " $FILE)  # empty line
     let curLine++
 
     stringToWrite="<!--- $( eval $( echo printf '"\*%.0s"' {1..$commentLen} ) ) --->" # multiple '*'
-    $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+    $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
     let curLine++
 
 }
@@ -80,7 +80,7 @@ let startLine=$(grep -n "^#### Example Usage" $FILE | cut -d : -f 1)+2
 let endLine=$(grep -n "^## Helper Scripts" $FILE | cut -d : -f 1)-2
 
 if (( startLine <= endLine));
-then 
+then
     $(sed -i "$startLine,${endLine}d" $FILE) # deletion of previous descriptions
 fi
 
@@ -90,7 +90,7 @@ function printExampleUsage() {
     let commentLen=${#stringToWrite}-11
     i=0
 
-    $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+    $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
     let curLine++
 
     $(sed -i "${curLine}i\\ " $FILE)  # empty line
@@ -99,24 +99,24 @@ function printExampleUsage() {
     while (( $i < ${#commands[@]} ))
     do
         stringToWrite="${descriptions[$i]}:"
-        $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+        $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
         let curLine++
 
-        $(sed -i "${curLine}i\\ " $FILE) 
+        $(sed -i "${curLine}i\\ " $FILE)
         let curLine++
 
         stringToWrite="    make ${commands[$i]}" # 4 spaces for tab (DON'T CHANGE IT)
-        $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+        $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
         let curLine++
 
-        $(sed -i "${curLine}i\\ " $FILE)  
+        $(sed -i "${curLine}i\\ " $FILE)
         let curLine++
 
         let i++
     done
 
     stringToWrite="<!--- $( eval $( echo printf '"\*%.0s"' {1..$commentLen} ) ) --->" # multiple '*'
-    $(sed -i "${curLine}i\\${stringToWrite}" $FILE) 
+    $(sed -i "${curLine}i\\${stringToWrite}" $FILE)
     let curLine++
 
 }

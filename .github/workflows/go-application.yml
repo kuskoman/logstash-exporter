@@ -38,6 +38,24 @@ jobs:
           go mod tidy
           git diff --exit-code -- go.mod go.sum
 
+  lint-scripts:
+    name: Lint scripts
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          ignore_names: >-
+            add_descriptions_to_readme.sh
+            add_metrics_to_readme.sh
+            create_release_notes.sh
+            migrate_v1_to_v2.sh
+            verify_metrics.sh
+            release_tag.sh
+
   test:
     name: Unit test code
     runs-on: ubuntu-20.04
@@ -76,6 +94,19 @@ jobs:
 
       - name: Verify that there are no changes
         run: git diff --exit-code || echo "README.md is not up to date. Please use helm-readme and commit the changes."
+
+  verify-makefile-readme:
+    name: Verify that Makefile section of README is up to date
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate README
+        run: make update-readme-descriptions
+
+      - name: Verify that there are no changes
+        run: git diff --exit-code || echo "README.md is not up to date. Please use makefile-readme and commit the changes."
 
   lint-helm-chart:
     name: Lint Helm chart
@@ -370,6 +401,8 @@ jobs:
       - build-linux-docker-image
       - build-docker-linux-arm-image
       - test-integration
+      - lint-scripts
+      - verify-makefile-readme
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
