@@ -95,7 +95,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate README
-        run: make update-readme-descriptions
+        run: bash -c "set -x && ./scripts/add_descriptions_to_readme.sh"
+      #run: make update-readme-descriptions
 
       - name: Verify that there are no changes
         run: git diff --exit-code || echo "README.md is not up to date. Please use makefile-readme and commit the changes."
