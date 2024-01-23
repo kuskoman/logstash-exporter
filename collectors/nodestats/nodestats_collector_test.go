@@ -131,6 +131,7 @@ func TestCollectNotNil(t *testing.T) {
 		}
 
 		// todo: optimize this
+		// note: use slices.Contains
 		found := false
 		for _, foundMetric := range foundMetrics {
 			if foundMetric == foundMetricFqName {

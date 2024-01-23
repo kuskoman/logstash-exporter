@@ -112,3 +112,35 @@ func TestExtractValueFromMetric(t *testing.T) {
 		}
 	})
 }
+
+func TestSimpleMetricsHelper(t *testing.T) {
+	t.Run("should extract value from a metric", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metricValue := 42.0
+		
+		ch := make(chan prometheus.Metric)
+
+		helper := &SimpleMetricsHelper{
+			Channel: ch,
+			Labels: []string{},
+		}
+		helper.NewFloat64Metric(metricDesc, prometheus.GaugeValue, metricValue)
+
+		for metric := range ch {
+			if metric == nil {
+				t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+			}
+		}
+
+
+		extractedValue, err := ExtractValueFromMetric(metric)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+
+		if extractedValue != metricValue {
+			t.Errorf("Expected extracted value to be %f, got %f", metricValue, extractedValue)
+		}
+	})
+
+}

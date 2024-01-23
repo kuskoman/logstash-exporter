@@ -52,3 +52,22 @@ func ExtractValueFromMetric(metric prometheus.Metric) (float64, error) {
 
 	return gauge.GetValue(), nil
 }
+
+// SimpleMetricsHelper is a helper struct that can be used to channel new prometheus.Metric objects
+type SimpleMetricsHelper struct {
+	Channel chan<- prometheus.Metric
+	Labels []string
+}
+
+// newFloatMetric appends new metric with the desc and metricType, value
+// optional Labels could be specified through property setter
+func (mh *SimpleMetricsHelper) NewFloat64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value float64) {
+	metric := prometheus.MustNewConstMetric(desc, metricType, value, mh.Labels...)
+
+	mh.Channel <- metric
+}
+
+func (mh *SimpleMetricsHelper) NewIntMetric(desc *prometheus.Desc, metricType prometheus.ValueType, value int) {
+    mh.NewFloat64Metric(desc, metricType, float64(value))
+}
+
