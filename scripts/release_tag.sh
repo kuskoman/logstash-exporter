@@ -7,7 +7,7 @@ function ask_confirmation() {
   local yn
 
   while true; do
-    read -p "$prompt [y/n]: " yn
+    read -pr "$prompt [y/n]: " yn
     case $yn in
       [Yy]* ) return 0;;
       [Nn]* ) return 1;;
@@ -25,7 +25,7 @@ fi
 
 latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 echo "Latest tag on the given branch: $latest_tag"
-read -p "Enter the version to release: " release_version
+read -pr "Enter the version to release: " release_version
 
 if [[ $release_version =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   chart_version=${release_version:1}
@@ -44,4 +44,4 @@ ask_confirmation "Do you want to proceed with the above changes?" || exit
 
 git add .
 git commit -m "Release $release_version"
-git tag $release_version
+git tag "$release_version"

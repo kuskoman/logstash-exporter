@@ -54,7 +54,6 @@ jobs:
             create_release_notes.sh
             migrate_v1_to_v2.sh
             verify_metrics.sh
-            release_tag.sh
 
   test:
     name: Unit test code
