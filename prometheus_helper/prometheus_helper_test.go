@@ -114,7 +114,7 @@ func TestExtractValueFromMetric(t *testing.T) {
 }
 
 func TestSimpleMetricsHelper(t *testing.T) {
-	t.Run("should extract value from a metric", func(t *testing.T) {
+	t.Run("should properly create a new metric", func(t *testing.T) {
 		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
 		metricValue := 42.0
 		
@@ -125,13 +125,13 @@ func TestSimpleMetricsHelper(t *testing.T) {
 			Labels: []string{},
 		}
 		helper.NewFloat64Metric(metricDesc, prometheus.GaugeValue, metricValue)
+		metric := <- ch;
 
-		for metric := range ch {
-			if metric == nil {
-				t.Errorf("expected metric %s not to be nil", metric.Desc().String())
-			}
-		}
-
+		//for metric := range ch {
+		//	if metric == nil {
+		//		t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+		//	}
+		//}
 
 		extractedValue, err := ExtractValueFromMetric(metric)
 		if err != nil {

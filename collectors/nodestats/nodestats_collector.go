@@ -209,13 +209,13 @@ func (c *NodestatsCollector) collectSingleInstance(client logstashclient.Client,
 		newFloatMetric(desc, metricType, float64(value), labels...)
 	}
 
-    // ************ THREADS ************
+	// ************ THREADS ************
 	threadsStats := nodeStats.Jvm.Threads
 	mh.NewIntMetric(c.JvmThreadsCount, prometheus.GaugeValue, threadsStats.Count)
 	mh.NewIntMetric(c.JvmThreadsPeakCount, prometheus.GaugeValue, threadsStats.PeakCount)
-    // *********************************
+	// *********************************
 
-    // ************ MEMORY ************
+	// ************ MEMORY ************
 	memStats := nodeStats.Jvm.Mem
 	mh.NewIntMetric(c.JvmMemHeapUsedPercent, prometheus.GaugeValue, memStats.HeapUsedPercent)
 	mh.NewIntMetric(c.JvmMemHeapCommittedBytes, prometheus.GaugeValue, memStats.HeapCommittedInBytes)
@@ -251,7 +251,7 @@ func (c *NodestatsCollector) collectSingleInstance(client logstashclient.Client,
 	mh.NewIntMetric(c.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.CommittedInBytes)
 	//         ****************
 	//	  *************************
-    // ********************************
+	// ********************************
 
 
 	newIntMetric(c.JvmUptimeMillis, prometheus.GaugeValue, nodeStats.Jvm.UptimeInMillis)
