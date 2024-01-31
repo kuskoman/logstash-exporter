@@ -62,8 +62,8 @@ type SimpleMetricsHelper struct {
 // newFloatMetric appends new metric with the desc and metricType, value
 // optional Labels could be specified through property setter
 func (mh *SimpleMetricsHelper) NewFloat64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value float64) {
-	metric := prometheus.MustNewConstMetric(desc, metricType, value, mh.Labels...)
-
+	var metric prometheus.Metric
+	metric = prometheus.MustNewConstMetric(desc, metricType, value, mh.Labels...)
 	mh.Channel <- metric
 }
 
