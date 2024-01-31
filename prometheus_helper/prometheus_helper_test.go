@@ -183,8 +183,31 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		}
 	})
 
-	t.Run("should create metrics with different types", func(t *testing.T) {
-		// TODO
+	t.Run("should create metrics with different value types", func(t *testing.T) {
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricValue := 42.0
+		
+		ch := make(chan prometheus.Metric, 2)
+
+		helper := &SimpleMetricsHelper{
+			Channel: ch,
+			Labels: []string{},
+		}
+		helper.NewFloat64Metric(metricDesc, prometheus.GaugeValue, metricValue)
+		helper.NewIntMetric(metricDesc, prometheus.GaugeValue, int(metricValue))
+
+		close(ch)
+
+		for metric := range ch {
+			val, err := ExtractValueFromMetric(metric)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if val != metricValue {
+				t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+			}
+		}
 	})
 }
 
