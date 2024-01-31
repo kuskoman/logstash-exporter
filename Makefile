@@ -117,6 +117,10 @@ upgrade-dependencies:
 migrate-v1-to-v2:
 	./scripts/migrate_v1_to_v2.sh
 
+#: Update Makefile descriptions in main README.md
+update-readme-descriptions:
+	./scripts/add_descriptions_to_readme.sh
+
 #: Shows info about available commands
 help:
 	@grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$$)" Makefile \

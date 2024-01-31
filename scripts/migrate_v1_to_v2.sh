@@ -5,7 +5,9 @@ default_env_file=".env"
 env_file="${1:-$default_env_file}"
 
 if [ -f "$env_file" ]; then
-    export $(cat "$env_file" | xargs)
+    # we expect argument splitting here
+    # shellcheck disable=SC2046
+    export $(<"$env_file" xargs)
 else
     echo "Warning: .env file not found at $env_file" >&2
 fi
@@ -13,7 +15,8 @@ fi
 get_env_with_default() {
     local var_name=$1
     local default_value=$2
-    local value=$(printenv "$var_name")
+    local value
+    value=$(printenv "$var_name")
     if [ -z "$value" ]; then
         echo "$default_value"
     else
