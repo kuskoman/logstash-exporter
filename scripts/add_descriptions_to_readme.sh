@@ -20,7 +20,7 @@ function getHelp() { # get descriptions and commands from Makefile
         ((i++))
     done < <(
         # https://stackoverflow.com/a/59087509
-        grep -B1 -E "^[a-zA-Z0-9_-]+\:([^\=]|$)" ./Makefile \
+        grep -B1 -E "^[a-zA-Z0-9_-]+:([^\=]|$)" ./Makefile \
         | grep -v -- --
     )
 }
