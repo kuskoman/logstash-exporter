@@ -378,6 +378,10 @@ jobs:
       - name: Export Docker image to Kind cluster
         run: kind load docker-image logstash-exporter:latest --name kind-chart-testing
 
+      - name: Template Helm chart
+        working-directory: .helm/logstash-integration-test-chart
+        run: helm template .
+
       - name: Install Helm chart
         working-directory: .helm/logstash-integration-test-chart
         run: helm install --wait --timeout 15m --debug logstash-integration-test-chart .
