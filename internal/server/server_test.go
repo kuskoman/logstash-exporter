@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/config"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 const defaultHttpTimeout = 2 * time.Second

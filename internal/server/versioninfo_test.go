@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kuskoman/logstash-exporter/config"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 type writerMock struct {

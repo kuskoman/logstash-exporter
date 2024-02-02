@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// ErrUnknownLogFormat is returned when the log format is not recognized by the slog package
 var ErrUnknownLogFormat = fmt.Errorf("unknown log format")
 
 func SetupSlog(logLevel string, logFormat string) (*slog.Logger, error) {

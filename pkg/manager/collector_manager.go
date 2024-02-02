@@ -1,4 +1,4 @@
-package collectors
+package manager
 
 import (
 	"context"
@@ -6,15 +6,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/collectors/nodeinfo"
-	"github.com/kuskoman/logstash-exporter/collectors/nodestats"
-	"github.com/kuskoman/logstash-exporter/config"
-	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
+
+	"github.com/kuskoman/logstash-exporter/internal/collectors/nodeinfo"
+	"github.com/kuskoman/logstash-exporter/internal/collectors/nodestats"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
+// Collector is an interface that defines methods for collecting metrics
 type Collector interface {
+	// Collect is called by the Prometheus registry when collecting metrics
 	Collect(context.Context, chan<- prometheus.Metric) (err error)
 }
 
@@ -22,19 +25,20 @@ type Collector interface {
 type CollectorManager struct {
 	collectors      map[string]Collector
 	scrapeDurations *prometheus.SummaryVec
-    httpTimeout         time.Duration
+	httpTimeout     time.Duration
 }
 
-func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstashclient.Client {
-	clients := make([]logstashclient.Client, len(endpoints))
+func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstash_client.Client {
+	clients := make([]logstash_client.Client, len(endpoints))
 
 	for i, endpoint := range endpoints {
-		clients[i] = logstashclient.NewClient(endpoint.Host)
+		clients[i] = logstash_client.NewClient(endpoint.Host)
 	}
 
 	return clients
 }
 
+// NewCollectorManager creates a new CollectorManager with the provided logstash servers and http timeout
 func NewCollectorManager(servers []*config.LogstashServer, httpTimeout time.Duration) *CollectorManager {
 	clients := getClientsForEndpoints(servers)
 
@@ -43,10 +47,10 @@ func NewCollectorManager(servers []*config.LogstashServer, httpTimeout time.Dura
 	scrapeDurations := getScrapeDurationsCollector()
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
-    return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations, httpTimeout: httpTimeout}
+	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations, httpTimeout: httpTimeout}
 }
 
-func getCollectors(clients []logstashclient.Client) map[string]Collector {
+func getCollectors(clients []logstash_client.Client) map[string]Collector {
 	collectors := make(map[string]Collector)
 	collectors["nodeinfo"] = nodeinfo.NewNodeinfoCollector(clients)
 	collectors["nodestats"] = nodestats.NewNodestatsCollector(clients)
@@ -73,6 +77,7 @@ func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	waitGroup.Wait()
 }
 
+// Describe runs the describe process for the scrapeDurations collector
 func (manager *CollectorManager) Describe(ch chan<- *prometheus.Desc) {
 	manager.scrapeDurations.Describe(ch)
 }

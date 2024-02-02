@@ -10,15 +10,15 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
-	"github.com/kuskoman/logstash-exporter/prometheus_helper"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
 )
 
 type mockClient struct{}
 
 func (m *mockClient) GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error) {
-	b, err := os.ReadFile("../../fixtures/node_info.json")
+	b, err := os.ReadFile("../../../fixtures/node_info.json")
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (m *errorMockClient) GetEndpoint() string {
 }
 
 func TestCollectNotNil(t *testing.T) {
-	runTest := func(t *testing.T, clients []logstashclient.Client) {
+	runTest := func(t *testing.T, clients []logstash_client.Client) {
 		collector := NewNodeinfoCollector(clients)
 		ch := make(chan prometheus.Metric)
 		ctx := context.Background()
@@ -111,18 +111,18 @@ func TestCollectNotNil(t *testing.T) {
 	t.Run("single client", func(t *testing.T) {
 		t.Parallel()
 
-		runTest(t, []logstashclient.Client{&mockClient{}})
+		runTest(t, []logstash_client.Client{&mockClient{}})
 	})
 
 	t.Run("multiple clients", func(t *testing.T) {
 		t.Parallel()
 
-		runTest(t, []logstashclient.Client{&mockClient{}, &mockClient{}})
+		runTest(t, []logstash_client.Client{&mockClient{}, &mockClient{}})
 	})
 }
 
 func TestCollectError(t *testing.T) {
-	runTest := func(t *testing.T, clients []logstashclient.Client) {
+	runTest := func(t *testing.T, clients []logstash_client.Client) {
 		collector := NewNodeinfoCollector(clients)
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -146,24 +146,24 @@ func TestCollectError(t *testing.T) {
 	t.Run("single faulty client", func(t *testing.T) {
 		t.Parallel()
 
-		runTest(t, []logstashclient.Client{&errorMockClient{}})
+		runTest(t, []logstash_client.Client{&errorMockClient{}})
 	})
 
 	t.Run("multiple faulty clients", func(t *testing.T) {
 		t.Parallel()
 
-		runTest(t, []logstashclient.Client{&errorMockClient{}, &errorMockClient{}})
+		runTest(t, []logstash_client.Client{&errorMockClient{}, &errorMockClient{}})
 	})
 
 	t.Run("multiple clients, one faulty", func(t *testing.T) {
 		t.Parallel()
 
-		runTest(t, []logstashclient.Client{&mockClient{}, &errorMockClient{}})
+		runTest(t, []logstash_client.Client{&mockClient{}, &errorMockClient{}})
 	})
 }
 
 func TestGetUpStatus(t *testing.T) {
-	clients := []logstashclient.Client{&mockClient{}}
+	clients := []logstash_client.Client{&mockClient{}}
 	collector := NewNodeinfoCollector(clients)
 
 	tests := []struct {

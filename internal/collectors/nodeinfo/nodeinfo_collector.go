@@ -9,14 +9,14 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/kuskoman/logstash-exporter/config"
-	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 // NodeinfoCollector is a custom collector for the /_node/stats endpoint
 type NodeinfoCollector struct {
-	clients []logstashclient.Client
+	clients []logstash_client.Client
 
 	NodeInfos  *prometheus.Desc
 	BuildInfos *prometheus.Desc
@@ -30,7 +30,7 @@ type NodeinfoCollector struct {
 	Status *prometheus.Desc
 }
 
-func NewNodeinfoCollector(clients []logstashclient.Client) *NodeinfoCollector {
+func NewNodeinfoCollector(clients []logstash_client.Client) *NodeinfoCollector {
 	const subsystem = "info"
 	namespace := config.PrometheusNamespace
 
@@ -90,7 +90,7 @@ func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Me
 	errorChannel := make(chan error, len(c.clients))
 
 	for _, client := range c.clients {
-		go func(client logstashclient.Client) {
+		go func(client logstash_client.Client) {
 			err := c.collectSingleInstance(client, ctx, ch)
 			if err != nil {
 				errorChannel <- err
@@ -118,7 +118,7 @@ func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Me
 	return errors.New(errorString)
 }
 
-func (c *NodeinfoCollector) collectSingleInstance(client logstashclient.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
+func (c *NodeinfoCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
 	nodeInfo, err := client.GetNodeInfo(ctx)
 	if err != nil {
 		ch <- c.getUpStatus(nodeInfo, err, client.GetEndpoint())

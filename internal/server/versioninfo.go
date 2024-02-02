@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/kuskoman/logstash-exporter/config"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 // getVersionInfoHandler returns a handler function that returns the current
