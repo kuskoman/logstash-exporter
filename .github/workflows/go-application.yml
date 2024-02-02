@@ -380,7 +380,11 @@ jobs:
 
       - name: Install Helm chart
         working-directory: .helm/logstash-integration-test-chart
-        run: helm install --atomic --wait --timeout 15m --debug logstash-integration-test-chart .
+        run: helm install --wait --timeout 15m --debug logstash-integration-test-chart .
+
+      - name: Print exporter logs
+        run: kubectl logs -n default -l app=logstash-exporter
+        if: failure()
 
   create-release:
     name: Create GitHub release
