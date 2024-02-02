@@ -126,7 +126,7 @@ func TestSimpleMetricsHelper(t *testing.T) {
 				Channel: ch,
 				Labels: []string{},
 			}
-			helper.NewFloat64Metric(metricDesc, prometheus.GaugeValue, metricValue)
+			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()
 
 		metric := <- ch
@@ -164,7 +164,7 @@ func TestSimpleMetricsHelper(t *testing.T) {
 				Channel: ch,
 				Labels: []string{"customLabelValue", "hostnameEndpoint"},
 			}
-			helper.NewFloat64Metric(metricDesc, prometheus.GaugeValue, metricValue)
+			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()
 
 		metric := <- ch
@@ -188,14 +188,15 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
 		
-		ch := make(chan prometheus.Metric, 2)
+		ch := make(chan prometheus.Metric, 3)
 
 		helper := &SimpleMetricsHelper{
 			Channel: ch,
 			Labels: []string{},
 		}
-		helper.NewFloat64Metric(metricDesc, prometheus.GaugeValue, metricValue)
+		helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		helper.NewIntMetric(metricDesc, prometheus.GaugeValue, int(metricValue))
+		helper.NewInt64Metric(metricDesc, prometheus.GaugeValue, int64(metricValue))
 
 		close(ch)
 

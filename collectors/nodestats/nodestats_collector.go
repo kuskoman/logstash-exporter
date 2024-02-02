@@ -191,23 +191,7 @@ func (c *NodestatsCollector) collectSingleInstance(client logstashclient.Client,
 
 
 	endpoint := client.GetEndpoint()
-
 	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
-
-	newFloatMetric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value float64, labels ...string) {
-		labels = append(labels, endpoint)
-		metric := prometheus.MustNewConstMetric(desc, metricType, value, labels...)
-
-		ch <- metric
-	}
-
-	newInt64Metric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value int64, labels ...string) {
-		newFloatMetric(desc, metricType, float64(value), labels...)
-	}
-
-	newIntMetric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value int, labels ...string) {
-		newFloatMetric(desc, metricType, float64(value), labels...)
-	}
 
 	// ************ THREADS ************
 	threadsStats := nodeStats.Jvm.Threads
@@ -253,39 +237,55 @@ func (c *NodestatsCollector) collectSingleInstance(client logstashclient.Client,
 	//	  *************************
 	// ********************************
 
+	mh.Labels = []string{endpoint}
+	
+	// ************ UPTIME ************
+	mh.NewIntMetric(c.JvmUptimeMillis, prometheus.GaugeValue, nodeStats.Jvm.UptimeInMillis)
+	// ********************************
 
-	newIntMetric(c.JvmUptimeMillis, prometheus.GaugeValue, nodeStats.Jvm.UptimeInMillis)
+	// ************ PROCESS ************
+	procStats := nodeStats.Process
+	mh.NewInt64Metric(c.ProcessOpenFileDescriptors, prometheus.GaugeValue, procStats.OpenFileDescriptors)
+	mh.NewInt64Metric(c.ProcessMaxFileDescriptors, prometheus.GaugeValue, procStats.MaxFileDescriptors)
+	mh.NewInt64Metric(c.ProcessCpuPercent, prometheus.GaugeValue, procStats.CPU.Percent)
+	mh.NewInt64Metric(c.ProcessCpuTotalMillis, prometheus.GaugeValue, procStats.CPU.TotalInMillis)
+	mh.NewFloatMetric(c.ProcessCpuLoadAverageOneM, prometheus.GaugeValue, procStats.CPU.LoadAverage.OneM)
+	mh.NewFloatMetric(c.ProcessCpuLoadAverageFiveM, prometheus.GaugeValue, procStats.CPU.LoadAverage.FiveM)
+	mh.NewFloatMetric(c.ProcessCpuLoadAverageFifteenM, prometheus.GaugeValue, procStats.CPU.LoadAverage.FifteenM)
+	mh.NewInt64Metric(c.ProcessMemTotalVirtual, prometheus.GaugeValue, procStats.Mem.TotalVirtualInBytes)
+	// *********************************
 
-	newInt64Metric(c.ProcessOpenFileDescriptors, prometheus.GaugeValue, nodeStats.Process.OpenFileDescriptors)
-	newInt64Metric(c.ProcessMaxFileDescriptors, prometheus.GaugeValue, nodeStats.Process.MaxFileDescriptors)
-	newInt64Metric(c.ProcessCpuPercent, prometheus.GaugeValue, nodeStats.Process.CPU.Percent)
-	newInt64Metric(c.ProcessCpuTotalMillis, prometheus.GaugeValue, nodeStats.Process.CPU.TotalInMillis)
-	newFloatMetric(c.ProcessCpuLoadAverageOneM, prometheus.GaugeValue, nodeStats.Process.CPU.LoadAverage.OneM)
-	newFloatMetric(c.ProcessCpuLoadAverageFiveM, prometheus.GaugeValue, nodeStats.Process.CPU.LoadAverage.FiveM)
-	newFloatMetric(c.ProcessCpuLoadAverageFifteenM, prometheus.GaugeValue, nodeStats.Process.CPU.LoadAverage.FifteenM)
-	newInt64Metric(c.ProcessMemTotalVirtual, prometheus.GaugeValue, nodeStats.Process.Mem.TotalVirtualInBytes)
+	// ************ RELOADS ************
+	mh.NewIntMetric(c.ReloadSuccesses, prometheus.GaugeValue, nodeStats.Reloads.Successes)
+	mh.NewIntMetric(c.ReloadFailures, prometheus.GaugeValue, nodeStats.Reloads.Failures)
+	// *********************************
 
-	newIntMetric(c.ReloadSuccesses, prometheus.GaugeValue, nodeStats.Reloads.Successes)
-	newIntMetric(c.ReloadFailures, prometheus.GaugeValue, nodeStats.Reloads.Failures)
+	// ************ EVENTS COUNT ************
+	mh.NewIntMetric(c.QueueEventsCount, prometheus.GaugeValue, nodeStats.Queue.EventsCount)
+	// **************************************
 
-	newIntMetric(c.QueueEventsCount, prometheus.GaugeValue, nodeStats.Queue.EventsCount)
+	// ************ EVENTS ************
+	eventsStats := nodeStats.Events
+	mh.NewInt64Metric(c.EventsIn, prometheus.GaugeValue, eventsStats.In)
+	mh.NewInt64Metric(c.EventsFiltered, prometheus.GaugeValue, eventsStats.Filtered)
+	mh.NewInt64Metric(c.EventsOut, prometheus.GaugeValue, eventsStats.Out)
+	mh.NewInt64Metric(c.EventsDurationInMillis, prometheus.GaugeValue, eventsStats.DurationInMillis)
+	mh.NewInt64Metric(c.EventsQueuePushDurationInMillis, prometheus.GaugeValue, eventsStats.QueuePushDurationInMillis)
+	// ********************************
 
-	newInt64Metric(c.EventsIn, prometheus.GaugeValue, nodeStats.Events.In)
-	newInt64Metric(c.EventsFiltered, prometheus.GaugeValue, nodeStats.Events.Filtered)
-	newInt64Metric(c.EventsOut, prometheus.GaugeValue, nodeStats.Events.Out)
-	newInt64Metric(c.EventsDurationInMillis, prometheus.GaugeValue, nodeStats.Events.DurationInMillis)
-	newInt64Metric(c.EventsQueuePushDurationInMillis, prometheus.GaugeValue, nodeStats.Events.QueuePushDurationInMillis)
-
-	newFloatMetric(c.FlowInputCurrent, prometheus.GaugeValue, nodeStats.Flow.InputThroughput.Current)
-	newFloatMetric(c.FlowInputLifetime, prometheus.GaugeValue, nodeStats.Flow.InputThroughput.Lifetime)
-	newFloatMetric(c.FlowFilterCurrent, prometheus.GaugeValue, nodeStats.Flow.FilterThroughput.Current)
-	newFloatMetric(c.FlowFilterLifetime, prometheus.GaugeValue, nodeStats.Flow.FilterThroughput.Lifetime)
-	newFloatMetric(c.FlowOutputCurrent, prometheus.GaugeValue, nodeStats.Flow.OutputThroughput.Current)
-	newFloatMetric(c.FlowOutputLifetime, prometheus.GaugeValue, nodeStats.Flow.OutputThroughput.Lifetime)
-	newFloatMetric(c.FlowQueueBackpressureCurrent, prometheus.GaugeValue, nodeStats.Flow.QueueBackpressure.Current)
-	newFloatMetric(c.FlowQueueBackpressureLifetime, prometheus.GaugeValue, nodeStats.Flow.QueueBackpressure.Lifetime)
-	newFloatMetric(c.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, nodeStats.Flow.WorkerConcurrency.Current)
-	newFloatMetric(c.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, nodeStats.Flow.WorkerConcurrency.Lifetime)
+	// ************ FLOW ************
+	flowStats := nodeStats.Flow
+	mh.NewFloatMetric(c.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
+	mh.NewFloatMetric(c.FlowInputLifetime, prometheus.GaugeValue, nodeStats.Flow.InputThroughput.Lifetime)
+	mh.NewFloatMetric(c.FlowFilterCurrent, prometheus.GaugeValue, nodeStats.Flow.FilterThroughput.Current)
+	mh.NewFloatMetric(c.FlowFilterLifetime, prometheus.GaugeValue, nodeStats.Flow.FilterThroughput.Lifetime)
+	mh.NewFloatMetric(c.FlowOutputCurrent, prometheus.GaugeValue, nodeStats.Flow.OutputThroughput.Current)
+	mh.NewFloatMetric(c.FlowOutputLifetime, prometheus.GaugeValue, nodeStats.Flow.OutputThroughput.Lifetime)
+	mh.NewFloatMetric(c.FlowQueueBackpressureCurrent, prometheus.GaugeValue, nodeStats.Flow.QueueBackpressure.Current)
+	mh.NewFloatMetric(c.FlowQueueBackpressureLifetime, prometheus.GaugeValue, nodeStats.Flow.QueueBackpressure.Lifetime)
+	mh.NewFloatMetric(c.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, nodeStats.Flow.WorkerConcurrency.Current)
+	mh.NewFloatMetric(c.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, nodeStats.Flow.WorkerConcurrency.Lifetime)
+	// ******************************
 
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
 		c.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch, endpoint)
