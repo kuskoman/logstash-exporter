@@ -14,7 +14,7 @@ data:
       servers:
         {{ range .Values.logstash.urls -}}
         - url: {{ . | quote }}
-        {{ end -}}
+        {{ end }}
     server:
       host: {{ .Values.logstash.server.host | quote }}
       port: {{ .Values.logstash.server.port }}
