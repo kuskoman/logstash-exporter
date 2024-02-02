@@ -1,13 +1,13 @@
-package collectors
+package manager
 
 import (
 	"context"
 	"errors"
 	"sync"
 	"testing"
-    "time"
+	"time"
 
-	"github.com/kuskoman/logstash-exporter/config"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

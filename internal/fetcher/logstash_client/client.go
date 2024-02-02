@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 )
 
 // Client is an interface for the Logstash client able to fetch data from the Logstash API

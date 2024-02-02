@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 // NewAppServer creates a new http server with the given host and port
