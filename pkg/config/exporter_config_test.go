@@ -10,7 +10,7 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("loads valid config", func(t *testing.T) {
 		t.Parallel()
 
-		location := "../fixtures/valid_config.yml"
+		location := "../../fixtures/valid_config.yml"
 		config, err := loadConfig(location)
 
 		if err != nil {
@@ -75,7 +75,7 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
 			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
-		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout{
+		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
 	})
@@ -97,7 +97,7 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
 			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
 		}
-		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout{
+		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
 	})
@@ -110,7 +110,7 @@ func TestMergeWithDefault(t *testing.T) {
 				Port: 1234,
 			},
 			Logging: LoggingConfig{
-				Level: "debug",
+				Level:  "debug",
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
@@ -118,7 +118,7 @@ func TestMergeWithDefault(t *testing.T) {
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
-			HttpTimeout: 3 * time.Second,
+				HttpTimeout: 3 * time.Second,
 			},
 		}
 
@@ -143,8 +143,8 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.Servers[1].Host != "http://localhost:9602" {
 			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Servers[1].Host)
 		}
-		if mergedConfig.Logstash.HttpTimeout != 3 * time.Second{
-			t.Errorf("expected http timeout to be %v, got %v", 3 * time.Second, mergedConfig.Logstash.HttpTimeout)
+		if mergedConfig.Logstash.HttpTimeout != 3*time.Second {
+			t.Errorf("expected http timeout to be %v, got %v", 3*time.Second, mergedConfig.Logstash.HttpTimeout)
 		}
 	})
 }
@@ -152,7 +152,7 @@ func TestMergeWithDefault(t *testing.T) {
 func TestGetConfig(t *testing.T) {
 	t.Run("returns valid config", func(t *testing.T) {
 
-		location := "../fixtures/valid_config.yml"
+		location := "../../fixtures/valid_config.yml"
 		config, err := GetConfig(location)
 
 		if err != nil {

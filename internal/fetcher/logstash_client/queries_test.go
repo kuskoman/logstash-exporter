@@ -64,7 +64,7 @@ func TestGetNodeStats(t *testing.T) {
 }
 
 func loadFixture(filename string) ([]byte, error) {
-	fullPath := fmt.Sprintf("../../fixtures/%s", filename)
+	fullPath := fmt.Sprintf("../../../fixtures/%s", filename)
 	fixtureBytes, err := os.ReadFile(fullPath)
 	if err != nil {
 		return nil, err

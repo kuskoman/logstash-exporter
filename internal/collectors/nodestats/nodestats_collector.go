@@ -8,9 +8,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/kuskoman/logstash-exporter/config"
-	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
-	"github.com/kuskoman/logstash-exporter/prometheus_helper"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 const subsystem = "stats"
@@ -21,7 +21,7 @@ var (
 
 // NodestatsCollector is a custom collector for the /_node/stats endpoint
 type NodestatsCollector struct {
-	clients                         []logstashclient.Client
+	clients                         []logstash_client.Client
 	pipelineSubcollector            *PipelineSubcollector
 
 	JvmThreadsCount                 *prometheus.Desc
@@ -73,7 +73,7 @@ type NodestatsCollector struct {
 	FlowWorkerConcurrencyLifetime   *prometheus.Desc
 }
 
-func NewNodestatsCollector(clients []logstashclient.Client) *NodestatsCollector {
+func NewNodestatsCollector(clients []logstash_client.Client) *NodestatsCollector {
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodestatsCollector{
@@ -125,9 +125,7 @@ func NewNodestatsCollector(clients []logstashclient.Client) *NodestatsCollector 
 		ProcessMemTotalVirtual:          descHelper.NewDesc("process_mem_total_virtual", "Total virtual memory used by the process."),
 
 		ReloadSuccesses:                 descHelper.NewDesc("reload_successes", "Number of successful reloads."),
-		ReloadFailures:                  descHelper.NewDesc("reload_failures", "Number of failed reloads."),
-
-		QueueEventsCount:                descHelper.NewDesc("queue_events_count", "Number of events in the queue."),
+		ReloadFailures:                  descHelper.NewDesc("reload_failures", "Number of failed reloads."), QueueEventsCount:                descHelper.NewDesc("queue_events_count", "Number of events in the queue."),
 
 		EventsIn:                        descHelper.NewDesc("events_in", "Number of events received."),
 		EventsFiltered:                  descHelper.NewDesc("events_filtered", "Number of events filtered out."),
@@ -155,7 +153,7 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	errorChannel := make(chan error, len(c.clients))
 
 	for _, client := range c.clients {
-		go func(client logstashclient.Client) {
+		go func(client logstash_client.Client) {
 			err := c.collectSingleInstance(client, ctx, ch)
 			if err != nil {
 				errorChannel <- err
@@ -183,7 +181,7 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	return errors.New(errorString)
 }
 
-func (c *NodestatsCollector) collectSingleInstance(client logstashclient.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
+func (c *NodestatsCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
 	nodeStats, err := client.GetNodeStats(ctx)
 	if err != nil {
 		return err

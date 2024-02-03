@@ -6,20 +6,21 @@ import (
 	"testing"
 
 	"github.com/gkampitakis/go-snaps/snaps"
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 )
 
-func TestNodeStatsResponseStructure(t *testing.T) {
-	fixtureContent, err := os.ReadFile("../../fixtures/node_stats.json")
+func TestNodeInfoResponseStructure(t *testing.T) {
+	fixtureContent, err := os.ReadFile("../../../fixtures/node_info.json")
 	if err != nil {
 		t.Fatalf("Error reading fixture file: %v", err)
 	}
 
-	var target responses.NodeStatsResponse
+	var target responses.NodeInfoResponse
 	err = json.Unmarshal(fixtureContent, &target)
 	if err != nil {
 		t.Fatalf("Error unmarshalling fixture: %v", err)
 	}
 
-	snaps.MatchSnapshot(t, "Unmarshalled NodestatsResponse", target)
+	snaps.MatchSnapshot(t, "Unmarshalled NodeInfoResponse", target)
 }

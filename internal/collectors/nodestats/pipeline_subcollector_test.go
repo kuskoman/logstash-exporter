@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 )
 
 func TestIsPipelineHealthy(t *testing.T) {

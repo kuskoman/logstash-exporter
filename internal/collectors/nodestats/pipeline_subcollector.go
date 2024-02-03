@@ -5,9 +5,10 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
-	"github.com/kuskoman/logstash-exporter/prometheus_helper"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
 )
 
 const (

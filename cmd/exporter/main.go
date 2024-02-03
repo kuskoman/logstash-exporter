@@ -9,10 +9,11 @@ import (
 	"strconv"
 
 	"github.com/joho/godotenv"
-	"github.com/kuskoman/logstash-exporter/collectors"
-	"github.com/kuskoman/logstash-exporter/config"
-	"github.com/kuskoman/logstash-exporter/server"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/kuskoman/logstash-exporter/internal/server"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
+	"github.com/kuskoman/logstash-exporter/pkg/manager"
 )
 
 func main() {
@@ -51,8 +52,10 @@ func main() {
 
 	slog.Debug("http timeout", "timeout", exporterConfig.Logstash.HttpTimeout)
 
-	collectorManager := collectors.NewCollectorManager(exporterConfig.Logstash.Servers,
-        exporterConfig.Logstash.HttpTimeout)
+	collectorManager := manager.NewCollectorManager(
+		exporterConfig.Logstash.Servers,
+		exporterConfig.Logstash.HttpTimeout,
+	)
 	prometheus.MustRegister(collectorManager)
 
 	appServer := server.NewAppServer(host, port, exporterConfig, exporterConfig.Logstash.HttpTimeout)

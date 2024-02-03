@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 )
 
 // GetNodeInfo fetches the node info from the "/" endpoint of the Logstash API

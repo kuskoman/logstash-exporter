@@ -11,15 +11,15 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
-	"github.com/kuskoman/logstash-exporter/fetcher/responses"
-	"github.com/kuskoman/logstash-exporter/prometheus_helper"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
+	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
 )
 
 type mockClient struct{}
 
 func (m *mockClient) GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error) {
-	b, err := os.ReadFile("../../fixtures/node_stats.json")
+	b, err := os.ReadFile("../../../fixtures/node_stats.json")
 	if err != nil {
 		return nil, err
 	}

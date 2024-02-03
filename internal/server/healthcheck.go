@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kuskoman/logstash-exporter/config"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
 func convertServersToUrls(servers []*config.LogstashServer) []string {
