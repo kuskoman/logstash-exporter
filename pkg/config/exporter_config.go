@@ -3,18 +3,26 @@ package config
 import (
 	"log/slog"
 	"os"
-    "time"
-    
+	"strconv"
+	"time"
+
 	"gopkg.in/yaml.v2"
 )
 
 const (
+	envConfigLocation = "EXPORTER_CONFIG_LOCATION"
+	envPort           = "PORT"
+	envLogLevel       = "LOG_LEVEL"
+	envLogFormat      = "LOG_FORMAT"
+	envLogstashURL    = "LOGSTASH_URL"
+	envHttpTimeout    = "HTTP_TIMEOUT"
+
 	defaultConfigLocation = "config.yml"
-	defaultPort           = 9198
+	defaultPort           = "9198"
 	defaultLogLevel       = "info"
 	defaultLogFormat      = "text"
 	defaultLogstashURL    = "http://localhost:9600"
-    defaultHttpTimeout    = time.Second * 2
+	defaultHttpTimeout    = "2s"
 )
 
 var (
@@ -28,8 +36,8 @@ type LogstashServer struct {
 
 // LogstashConfig holds the configuration for all Logstash servers
 type LogstashConfig struct {
-	Servers []*LogstashServer `yaml:"servers"`
-    HttpTimeout time.Duration `yaml:"httpTimeout"`
+	Servers     []*LogstashServer `yaml:"servers"`
+	HttpTimeout time.Duration     `yaml:"httpTimeout"`
 }
 
 // ServerConfig represents the server configuration
@@ -58,6 +66,78 @@ type Config struct {
 	Logging  LoggingConfig  `yaml:"logging"`
 }
 
+type environmentMetadata struct {
+	envName    string
+	defaultVal string
+	value      string
+	isSetInEnv bool
+}
+
+// IsSet returns true if the value is set by the user in the environment
+func (e *environmentMetadata) IsSet() bool {
+	return e.isSetInEnv
+}
+
+// Value returns the value of the environment variable, or the default value if not set
+func (e *environmentMetadata) Value() string {
+	return e.value
+}
+
+// Load loads the value from the environment variable, or sets the default value if not set
+func (e *environmentMetadata) Load() {
+	envVal, isSet := os.LookupEnv(e.envName)
+	if isSet {
+		e.value = envVal
+		e.isSetInEnv = true
+	} else {
+		e.value = e.defaultVal
+	}
+}
+
+// environmentConfig represents the configuration loaded from the environment variables.
+// The configuration is used when properties are not set in the YAML file.
+// In case the properties are set in the YAML file, the environment variables are ignored.
+type environmentConfig struct {
+	Port        *environmentMetadata
+	LogLevel    *environmentMetadata
+	LogFormat   *environmentMetadata
+	LogstashURL *environmentMetadata
+	HttpTimeout *environmentMetadata
+}
+
+func loadEnvironmentConfig() *environmentConfig {
+	envConfig := &environmentConfig{
+		Port: &environmentMetadata{
+			envName:    envPort,
+			defaultVal: defaultPort,
+		},
+		LogLevel: &environmentMetadata{
+			envName:    envLogLevel,
+			defaultVal: defaultLogLevel,
+		},
+		LogFormat: &environmentMetadata{
+			envName:    envLogFormat,
+			defaultVal: defaultLogFormat,
+		},
+		LogstashURL: &environmentMetadata{
+			envName:    envLogstashURL,
+			defaultVal: defaultLogstashURL,
+		},
+		HttpTimeout: &environmentMetadata{
+			envName:    envHttpTimeout,
+			defaultVal: defaultHttpTimeout,
+		},
+	}
+
+	envConfig.Port.Load()
+	envConfig.LogLevel.Load()
+	envConfig.LogFormat.Load()
+	envConfig.LogstashURL.Load()
+	envConfig.HttpTimeout.Load()
+
+	return envConfig
+}
+
 // loadConfig loads the configuration from the YAML file.
 func loadConfig(location string) (*Config, error) {
 	data, err := os.ReadFile(location)
@@ -74,40 +154,67 @@ func loadConfig(location string) (*Config, error) {
 	return &config, nil
 }
 
+func printWarningIfDoubleSetString(name, configFileValue string, envMetadata *environmentMetadata) {
+	if configFileValue != "" && envMetadata.IsSet() {
+		slog.Warn("value set in both environment and config file, using config file value", "configFileValue", configFileValue, "envValue", envMetadata.Value())
+	}
+}
+
+func printWarningIfDoubleSetInt(name string, configFileValue int, envMetadata *environmentMetadata) {
+	if configFileValue != 0 && envMetadata.IsSet() {
+		slog.Warn("value set in both environment and config file, using config file value", "configFileValue", configFileValue, "envValue", envMetadata.Value())
+	}
+}
+
 // mergeWithDefault merges the loaded configuration with the default configuration values.
-func mergeWithDefault(config *Config) *Config {
+func mergeWithDefault(config *Config) (*Config, error) {
 	if config == nil {
 		config = &Config{}
 	}
 
+	envConfig := loadEnvironmentConfig()
+
+	printWarningIfDoubleSetInt("port", config.Server.Port, envConfig.Port)
+
 	if config.Server.Port == 0 {
-		slog.Debug("using default port", "port", defaultPort)
-		config.Server.Port = defaultPort
+		portString := envConfig.Port.Value()
+		port, err := strconv.Atoi(portString)
+		if err != nil {
+			return nil, err
+		}
+
+		config.Server.Port = port
 	}
 
+	printWarningIfDoubleSetString("log level", config.Logging.Level, envConfig.LogLevel)
 	if config.Logging.Level == "" {
-		slog.Debug("using default log level", "level", defaultLogLevel)
-		config.Logging.Level = defaultLogLevel
+		config.Logging.Level = envConfig.LogLevel.Value()
 	}
 
+	printWarningIfDoubleSetString("log format", config.Logging.Format, envConfig.LogFormat)
 	if config.Logging.Format == "" {
-		slog.Debug("using default log format", "format", defaultLogLevel)
-		config.Logging.Format = defaultLogFormat
+		config.Logging.Format = envConfig.LogFormat.Value()
 	}
 
-	if len(config.Logstash.Servers) == 0 {
-		slog.Debug("using default logstash server", "url", defaultLogstashURL)
+	if config.Logstash.Servers == nil || len(config.Logstash.Servers) == 0 {
 		config.Logstash.Servers = append(config.Logstash.Servers, &LogstashServer{
-			Host: defaultLogstashURL,
+			Host: envConfig.LogstashURL.Value(),
 		})
+	} else if envConfig.LogstashURL.IsSet() {
+		printWarningIfDoubleSetString("logstash url", config.Logstash.Servers[0].Host, envConfig.LogstashURL)
 	}
 
+	printWarningIfDoubleSetString("http timeout", config.Logstash.HttpTimeout.String(), envConfig.HttpTimeout)
 	if config.Logstash.HttpTimeout == 0 {
-        slog.Debug("using default http timeout", "httpTimeout", defaultHttpTimeout)
-        config.Logstash.HttpTimeout = defaultHttpTimeout
+		httpTimeout, err := time.ParseDuration(envConfig.HttpTimeout.Value())
+		if err != nil {
+			return nil, err
+		}
+
+		config.Logstash.HttpTimeout = httpTimeout
 	}
 
-	return config
+	return config, nil
 }
 
 // GetConfig combines loadConfig and mergeWithDefault to get the final configuration.
@@ -117,6 +224,11 @@ func GetConfig(location string) (*Config, error) {
 		return nil, err
 	}
 
-	mergedConfig := mergeWithDefault(config)
+	mergedConfig, err := mergeWithDefault(config)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return mergedConfig, nil
 }
