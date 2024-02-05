@@ -31,9 +31,7 @@ func (w *writerMock) Write(input []byte) (int, error) {
 func (w *writerMock) WriteHeader(statusCode int) {}
 
 func TestHandleVersionInfo(t *testing.T) {
-	t.Parallel()
 	t.Run("normal case", func(t *testing.T) {
-		t.Parallel()
 		ts := httptest.NewServer(http.HandlerFunc(getVersionInfoHandler(config.GetVersionInfo())))
 		defer ts.Close()
 
@@ -69,7 +67,6 @@ func TestHandleVersionInfo(t *testing.T) {
 	})
 
 	t.Run("invalid JSON", func(t *testing.T) {
-		t.Parallel()
 		versionInfo := &config.VersionInfo{
 			Version:   "version",
 			GitCommit: "git commit",
