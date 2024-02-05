@@ -78,7 +78,13 @@ The unstable version of the Docker image can be downloaded from the
 [GitHub Container Registry](https://github.com/users/kuskoman/packages/container/package/logstash-exporter).
 To pull the image from command line simply use:
 
-        docker pull ghcr.io/kuskoman/logstash-exporter:master
+    docker pull ghcr.io/kuskoman/logstash-exporter:master
+
+The Docker image can be run using the following command:
+
+    docker run -d \
+        -v $(pwd)/config.yml:/app/config.yml \
+        kuskoman/logstash-exporter:master
 
 #### Helm Chart
 
