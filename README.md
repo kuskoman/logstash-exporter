@@ -91,7 +91,7 @@ The Helm chart has its own [README](./chart/README.md).
 
 ### Configuration
 
-The application is now configured using a YAML file instead of environment variables. An example configuration is as follows:
+The application supports configuration via a YAML file or environment variables. Below is an example of the YAML configuration and a table listing the equivalent environment variables.
 
 ```yaml
 logstash:
@@ -107,9 +107,19 @@ logging:
 
 All configuration variables can be checked in the [config directory](./config/).
 
-Previously the application was configured using environment variables. The old configuration is no longer supported,
-however a [migration script](./scripts/migrate_env_to_yaml.sh) is provided to migrate the old configuration to the new one.
-See more in the [Migration](#migration) section.
+Environment Variables Configuration
+
+As an alternative to the YAML configuration file, the application can also be configured using the following environment variables:
+| Environment Variable | Description | YAML Path |
+| ----------- | ----------- | ----------- |
+| EXPORTER_CONFIG_LOCATION | Path to the YAML configuration file (optional) | N/A |
+| EXPORTER_ALLOW_EMPTY_CONFIG |	Allow the application to start with an empty YAML configuration file | N/A |
+| LOGSTASH_URL | Comma-separated URLs to Logstash APIs | logstash.servers[].url |
+| HOST | Host on which the application will be exposed | server.host |
+| PORT | Port on which the application will be exposed | server.port |
+| LOG_LEVEL | Log level (debug, info, warn, error) | logging.level |
+
+**Please note that if both the YAML configuration file and environment variables are provided, the settings from the YAML file will take precedence.**
 
 ## Migration
 
