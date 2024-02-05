@@ -112,3 +112,103 @@ func TestExtractValueFromMetric(t *testing.T) {
 		}
 	})
 }
+
+func TestSimpleMetricsHelper(t *testing.T) {
+	t.Run("should create a new metric", func(t *testing.T) {
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricValue := 42.0
+		
+		ch := make(chan prometheus.Metric)
+
+		go func() {
+			helper := &SimpleMetricsHelper{
+				Channel: ch,
+				Labels: []string{},
+			}
+			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
+		}()
+
+		metric := <- ch
+
+		fqName, err := ExtractFqName(metric.Desc().String())
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if metricName != fqName {
+			t.Errorf("Expected extracted name to be %s, got %s", metricName, fqName)
+		}
+
+		val, err := ExtractValueFromMetric(metric)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if val != metricValue {
+			t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+		}
+	})
+
+	t.Run("should create a new metric with labels", func(t *testing.T) {
+		helper := &SimpleDescHelper{
+			Namespace: "logstash_exporter",
+			Subsystem: "test",
+		}
+
+		metricDesc := helper.NewDesc("metric", "help", "customLabel")
+		metricValue := 42.0
+		
+		ch := make(chan prometheus.Metric)
+
+		go func() {
+			helper := &SimpleMetricsHelper{
+				Channel: ch,
+				Labels: []string{"customLabelValue", "hostnameEndpoint"},
+			}
+			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
+		}()
+
+		metric := <- ch
+
+		desc := metric.Desc()
+		if metricDesc.String() != desc.String() {
+			t.Errorf("incorrect metric description, expected %s but got %s", metricDesc, desc.String())
+		}
+
+		val, err := ExtractValueFromMetric(metric)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if val != metricValue {
+			t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+		}
+	})
+
+	t.Run("should create metrics with different value types", func(t *testing.T) {
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricValue := 42.0
+		
+		ch := make(chan prometheus.Metric, 3)
+
+		helper := &SimpleMetricsHelper{
+			Channel: ch,
+			Labels: []string{},
+		}
+		helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
+		helper.NewIntMetric(metricDesc, prometheus.GaugeValue, int(metricValue))
+		helper.NewInt64Metric(metricDesc, prometheus.GaugeValue, int64(metricValue))
+
+		close(ch)
+
+		for metric := range ch {
+			val, err := ExtractValueFromMetric(metric)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if val != metricValue {
+				t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+			}
+		}
+	})
+}
+

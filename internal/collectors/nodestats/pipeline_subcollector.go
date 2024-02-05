@@ -73,10 +73,10 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		EventsDuration:          descHelper.NewDesc("events_duration", "Time needed to process event.", "pipeline"),
 		EventsQueuePushDuration: descHelper.NewDesc("events_queue_push_duration", "Time needed to push event to queue.", "pipeline"),
 
-		ReloadsSuccesses: descHelper.NewDesc("reloads_successes", "Number of successful pipeline reloads.", "pipeline"),
-		ReloadsFailures:  descHelper.NewDesc("reloads_failures", "Number of failed pipeline reloads.", "pipeline"),
+		ReloadsSuccesses:       descHelper.NewDesc("reloads_successes", "Number of successful pipeline reloads.", "pipeline"),
+		ReloadsFailures:        descHelper.NewDesc("reloads_failures", "Number of failed pipeline reloads.", "pipeline"),
 
-		ReloadsLastSuccessTimestamp: descHelper.NewDesc("reloads_last_success_timestamp", "Timestamp of last successful pipeline reload.", "pipeline"),
+		ReloadsLastSuccessTimestamp:    descHelper.NewDesc("reloads_last_success_timestamp", "Timestamp of last successful pipeline reload.", "pipeline"),
 		ReloadsLastFailureTimestamp: descHelper.NewDesc("reloads_last_failure_timestamp", "Timestamp of last failed pipeline reload.", "pipeline"),
 
 		QueueEventsCount:         descHelper.NewDesc("queue_events_count", "Number of events in the queue.", "pipeline"),

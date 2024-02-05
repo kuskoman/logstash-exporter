@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"slices"
 	"testing"
 	"time"
 
@@ -94,15 +95,7 @@ func TestCollectNotNil(t *testing.T) {
 		}
 
 		for _, expectedMetric := range expectedMetrics {
-			found := false
-			for _, foundMetric := range foundMetrics {
-				if foundMetric == expectedMetric {
-					found = true
-					break
-				}
-			}
-
-			if !found {
+			if !slices.Contains(foundMetrics, expectedMetric) {
 				t.Errorf("Expected metric %s to be found", expectedMetric)
 			}
 		}
@@ -170,7 +163,7 @@ func TestGetUpStatus(t *testing.T) {
 		name     string
 		nodeInfo *responses.NodeInfoResponse
 		err      error
-		expected float64
+		expected int
 	}{
 		{
 			name:     "nil error and green status",
@@ -200,15 +193,10 @@ func TestGetUpStatus(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			metric := collector.getUpStatus(test.nodeInfo, test.err, "test_endpoint")
-			metricValue, err := prometheus_helper.ExtractValueFromMetric(metric)
+			status := collector.getUpStatus(test.nodeInfo, test.err)
 
-			if err != nil {
-				t.Errorf("Expected no error, got %v", err)
-			}
-
-			if metricValue != test.expected {
-				t.Errorf("Expected metric value to be %v, got %v", test.expected, metricValue)
+			if status != test.expected {
+				t.Errorf("Expected up value to be %v, got %v", test.expected, status)
 			}
 		})
 	}

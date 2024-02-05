@@ -9,77 +9,60 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
+)
+
+const subsystem = "info"
+
+var (
+	namespace = config.PrometheusNamespace
 )
 
 // NodeinfoCollector is a custom collector for the /_node/stats endpoint
 type NodeinfoCollector struct {
 	clients []logstash_client.Client
 
-	NodeInfos  *prometheus.Desc
-	BuildInfos *prometheus.Desc
+	NodeInfos          *prometheus.Desc
+	BuildInfos         *prometheus.Desc
 
-	Up *prometheus.Desc
+	Up                 *prometheus.Desc
 
 	PipelineWorkers    *prometheus.Desc
 	PipelineBatchSize  *prometheus.Desc
 	PipelineBatchDelay *prometheus.Desc
 
-	Status *prometheus.Desc
+	Status             *prometheus.Desc
 }
 
 func NewNodeinfoCollector(clients []logstash_client.Client) *NodeinfoCollector {
-	const subsystem = "info"
-	namespace := config.PrometheusNamespace
+	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodeinfoCollector{
-		clients: clients,
-		NodeInfos: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "node"),
+		clients:            clients,
+		NodeInfos:          descHelper.NewDesc("node",
 			"A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance.",
-			[]string{"name", "version", "http_address", "host", "id", "hostname"},
-			nil,
+			"name", "version", "http_address", "host", "id",
 		),
-		BuildInfos: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "build"),
+		BuildInfos:         descHelper.NewDesc("build",
 			"A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance.",
-			[]string{"date", "sha", "snapshot", "hostname"},
-			nil,
-		),
+			"date", "sha", "snapshot"),
 
-		Up: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "up"),
-			"A metric that returns 1 if the node is up, 0 otherwise.",
-			[]string{"hostname"},
-			nil,
-		),
-		PipelineWorkers: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "pipeline_workers"),
+		Up:                 descHelper.NewDesc("up",
+			"A metric that returns 1 if the node is up, 0 otherwise."),
+		PipelineWorkers:    descHelper.NewDesc("pipeline_workers",
 			"Number of worker threads that will process pipeline events.",
-			[]string{"hostname"},
-			nil,
 		),
-		PipelineBatchSize: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "pipeline_batch_size"),
-			"Number of events to retrieve from the input queue before sending to the filter and output stages.",
-			[]string{"hostname"},
-			nil,
-		),
-		PipelineBatchDelay: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "pipeline_batch_delay"),
-			"Amount of time to wait for events to fill the batch before sending to the filter and output stages.",
-			[]string{"hostname"},
-			nil,
-		),
+		PipelineBatchSize:  descHelper.NewDesc("pipeline_batch_size",
+			"Number of events to retrieve from the input queue before sending to the filter and output stages."),
+		PipelineBatchDelay: descHelper.NewDesc("pipeline_batch_delay",
+			"Amount of time to wait for events to fill the batch before sending to the filter and output stages."),
 
-		Status: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "status"),
+		Status:             descHelper.NewDesc("status",
 			"A metric with a constant '1' value labeled by status.",
-			[]string{"status", "hostname"},
-			nil,
-		),
+			"status"),
 	}
 }
 
@@ -119,77 +102,51 @@ func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Me
 }
 
 func (c *NodeinfoCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
+	endpoint := client.GetEndpoint()
+	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
+
 	nodeInfo, err := client.GetNodeInfo(ctx)
 	if err != nil {
-		ch <- c.getUpStatus(nodeInfo, err, client.GetEndpoint())
+		status := c.getUpStatus(nodeInfo, err)
+
+		// ***** UP *****
+		mh.NewIntMetric(c.Up, prometheus.GaugeValue, status)
+		// **************
 
 		return err
 	}
 
-	endpoint := client.GetEndpoint()
+	// ***** NODE *****
+	mh.Labels = []string{nodeInfo.Name, nodeInfo.Version, nodeInfo.Host, nodeInfo.HTTPAddress, nodeInfo.ID, endpoint}
+	mh.NewIntMetric(c.NodeInfos, prometheus.CounterValue, 1)
+	// ****************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.NodeInfos,
-		prometheus.CounterValue,
-		float64(1),
-		nodeInfo.Name,
-		nodeInfo.Version,
-		nodeInfo.Host,
-		nodeInfo.HTTPAddress,
-		nodeInfo.ID,
-		endpoint,
-	)
+	// ***** BUILD *****
+	mh.Labels = []string{nodeInfo.BuildDate, nodeInfo.BuildSHA, strconv.FormatBool(nodeInfo.BuildSnapshot), endpoint}
+	mh.NewIntMetric(c.BuildInfos, prometheus.CounterValue, 1)
+	// *****************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.BuildInfos,
-		prometheus.CounterValue,
-		float64(1),
-		nodeInfo.BuildDate,
-		nodeInfo.BuildSHA,
-		strconv.FormatBool(nodeInfo.BuildSnapshot),
-		endpoint,
-	)
+	mh.Labels = []string{endpoint}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.Up,
-		prometheus.GaugeValue,
-		float64(1),
-		endpoint,
-	)
+	// ***** UP *****
+	mh.NewIntMetric(c.Up, prometheus.GaugeValue, 1)
+	// **************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.PipelineWorkers,
-		prometheus.CounterValue,
-		float64(nodeInfo.Pipeline.Workers),
-		endpoint,
-	)
+	// ***** PIPELINE *****
+	mh.NewIntMetric(c.PipelineWorkers, prometheus.CounterValue, nodeInfo.Pipeline.Workers)
+	mh.NewIntMetric(c.PipelineBatchSize, prometheus.CounterValue, nodeInfo.Pipeline.BatchSize)
+	mh.NewIntMetric( c.PipelineBatchDelay, prometheus.CounterValue, nodeInfo.Pipeline.BatchDelay)
+	// ********************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.PipelineBatchSize,
-		prometheus.CounterValue,
-		float64(nodeInfo.Pipeline.BatchSize),
-		endpoint,
-	)
-
-	ch <- prometheus.MustNewConstMetric(
-		c.PipelineBatchDelay,
-		prometheus.CounterValue,
-		float64(nodeInfo.Pipeline.BatchDelay),
-		endpoint,
-	)
-
-	ch <- prometheus.MustNewConstMetric(
-		c.Status,
-		prometheus.CounterValue,
-		float64(1),
-		nodeInfo.Status,
-		endpoint,
-	)
+	// ***** STATUS *****
+	mh.Labels = []string{nodeInfo.Status, endpoint}
+	mh.NewIntMetric(c.Status, prometheus.CounterValue, 1)
+	// ******************  
 
 	return nil
 }
 
-func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error, endpoint string) prometheus.Metric {
+func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) int{
 	status := 1
 	if err != nil {
 		status = 0
@@ -197,10 +154,5 @@ func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, er
 		status = 0
 	}
 
-	return prometheus.MustNewConstMetric(
-		c.Up,
-		prometheus.GaugeValue,
-		float64(status),
-		endpoint,
-	)
+	return status
 }

@@ -27,7 +27,7 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("returns error for non-existent file", func(t *testing.T) {
 		t.Parallel()
 
-		location := "../fixtures/non_existent.yml"
+		location := "../../fixtures/non_existent.yml"
 		config, err := loadConfig(location)
 
 		if err == nil {
@@ -41,7 +41,7 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("returns error for invalid config", func(t *testing.T) {
 		t.Parallel()
 
-		location := "../fixtures/invalid_config.toml"
+		location := "../../fixtures/invalid_config.toml"
 		config, err := loadConfig(location)
 
 		if err == nil {
@@ -164,7 +164,7 @@ func TestGetConfig(t *testing.T) {
 	})
 
 	t.Run("returns error for invalid config", func(t *testing.T) {
-		location := "../fixtures/invalid_config.yml"
+		location := "../../fixtures/invalid_config.yml"
 		config, err := GetConfig(location)
 
 		if err == nil {

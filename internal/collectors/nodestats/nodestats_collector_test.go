@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"slices"
 	"testing"
 	"time"
 
@@ -130,30 +131,13 @@ func TestCollectNotNil(t *testing.T) {
 			t.Errorf("failed to extract fqName from metric %s", foundMetricDesc)
 		}
 
-		// todo: optimize this
-		found := false
-		for _, foundMetric := range foundMetrics {
-			if foundMetric == foundMetricFqName {
-				found = true
-				break
-			}
-		}
-
-		if !found {
+		if !slices.Contains(foundMetrics, foundMetricFqName) {
 			foundMetrics = append(foundMetrics, foundMetricFqName)
 		}
 	}
 
 	for _, expectedMetric := range expectedBaseMetrics {
-		found := false
-		for _, foundMetric := range foundMetrics {
-			if foundMetric == expectedMetric {
-				found = true
-				break
-			}
-		}
-
-		if !found {
+		if !slices.Contains(foundMetrics, expectedMetric) {
 			t.Errorf("Expected metric %s to be found", expectedMetric)
 		}
 	}
