@@ -102,77 +102,51 @@ func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Me
 }
 
 func (c *NodeinfoCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
+	endpoint := client.GetEndpoint()
+	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
+
 	nodeInfo, err := client.GetNodeInfo(ctx)
 	if err != nil {
-		ch <- c.getUpStatus(nodeInfo, err, client.GetEndpoint())
+		status := c.getUpStatus(nodeInfo, err)
+
+		// ***** UP *****
+		mh.NewIntMetric(c.Up, prometheus.GaugeValue, status)
+		// **************
 
 		return err
 	}
 
-	endpoint := client.GetEndpoint()
+	// ***** NODE *****
+	mh.Labels = []string{nodeInfo.Name, nodeInfo.Version, nodeInfo.Host, nodeInfo.HTTPAddress, nodeInfo.ID, endpoint}
+	mh.NewIntMetric(c.NodeInfos, prometheus.CounterValue, 1)
+	// ****************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.NodeInfos,
-		prometheus.CounterValue,
-		float64(1),
-		nodeInfo.Name,
-		nodeInfo.Version,
-		nodeInfo.Host,
-		nodeInfo.HTTPAddress,
-		nodeInfo.ID,
-		endpoint,
-	)
+	// ***** BUILD *****
+	mh.Labels = []string{nodeInfo.BuildDate, nodeInfo.BuildSHA, strconv.FormatBool(nodeInfo.BuildSnapshot), endpoint}
+	mh.NewIntMetric(c.BuildInfos, prometheus.CounterValue, 1)
+	// *****************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.BuildInfos,
-		prometheus.CounterValue,
-		float64(1),
-		nodeInfo.BuildDate,
-		nodeInfo.BuildSHA,
-		strconv.FormatBool(nodeInfo.BuildSnapshot),
-		endpoint,
-	)
+	mh.Labels = []string{endpoint}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.Up,
-		prometheus.GaugeValue,
-		float64(1),
-		endpoint,
-	)
+	// ***** UP *****
+	mh.NewIntMetric(c.Up, prometheus.GaugeValue, 1)
+	// **************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.PipelineWorkers,
-		prometheus.CounterValue,
-		float64(nodeInfo.Pipeline.Workers),
-		endpoint,
-	)
+	// ***** PIPELINE *****
+	mh.NewIntMetric(c.PipelineWorkers, prometheus.CounterValue, nodeInfo.Pipeline.Workers)
+	mh.NewIntMetric(c.PipelineBatchSize, prometheus.CounterValue, nodeInfo.Pipeline.BatchSize)
+	mh.NewIntMetric( c.PipelineBatchDelay, prometheus.CounterValue, nodeInfo.Pipeline.BatchDelay)
+	// ********************
 
-	ch <- prometheus.MustNewConstMetric(
-		c.PipelineBatchSize,
-		prometheus.CounterValue,
-		float64(nodeInfo.Pipeline.BatchSize),
-		endpoint,
-	)
-
-	ch <- prometheus.MustNewConstMetric(
-		c.PipelineBatchDelay,
-		prometheus.CounterValue,
-		float64(nodeInfo.Pipeline.BatchDelay),
-		endpoint,
-	)
-
-	ch <- prometheus.MustNewConstMetric(
-		c.Status,
-		prometheus.CounterValue,
-		float64(1),
-		nodeInfo.Status,
-		endpoint,
-	)
+	// ***** STATUS *****
+	mh.Labels = []string{nodeInfo.Status, endpoint}
+	mh.NewIntMetric(c.Status, prometheus.CounterValue, 1)
+	// ******************  
 
 	return nil
 }
 
-func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error, endpoint string) prometheus.Metric {
+func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) int{
 	status := 1
 	if err != nil {
 		status = 0
@@ -180,10 +154,5 @@ func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, er
 		status = 0
 	}
 
-	return prometheus.MustNewConstMetric(
-		c.Up,
-		prometheus.GaugeValue,
-		float64(status),
-		endpoint,
-	)
+	return status
 }
