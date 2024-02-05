@@ -55,6 +55,7 @@ func TestDefaultDoubleSetLogger(t *testing.T) {
 }
 
 func TestGetConfig(t *testing.T) {
+
 	t.Run("with invalid path", func(t *testing.T) {
 		t.Parallel()
 		logger := &mockDoubleSetLogger{}
@@ -73,6 +74,7 @@ func TestGetConfig(t *testing.T) {
 	})
 
 	t.Run("with invalid port", func(t *testing.T) {
+		t.Parallel()
 		configContent := ""
 		configFileName, err := createTemporaryConfigFile(configContent)
 		if err != nil {
@@ -91,7 +93,6 @@ func TestGetConfig(t *testing.T) {
 	})
 
 	t.Run("with invalid environment config", func(t *testing.T) {
-		t.Parallel()
 		configContent := ""
 		configFileName, err := createTemporaryConfigFile(configContent)
 		if err != nil {
@@ -111,6 +112,7 @@ func TestGetConfig(t *testing.T) {
 }
 
 func TestMergeWithDefault(t *testing.T) {
+	t.Parallel()
 	t.Run("with nil config", func(t *testing.T) {
 		t.Parallel()
 		logger := &mockDoubleSetLogger{}
@@ -141,7 +143,9 @@ func TestMergeWithDefault(t *testing.T) {
 }
 
 func TestLoggingWarnings(t *testing.T) {
+	t.Parallel()
 	t.Run("with double set port", func(t *testing.T) {
+		t.Parallel()
 		configContent := `
 server:
   port: 8080
@@ -164,6 +168,7 @@ server:
 	})
 
 	t.Run("with double set logstash url", func(t *testing.T) {
+		t.Parallel()
 		configContent := `
 logstash:
   servers:
@@ -187,6 +192,7 @@ logstash:
 	})
 
 	t.Run("with double set log format", func(t *testing.T) {
+		t.Parallel()
 		configContent := `
 logging:
   format: "json"
@@ -209,6 +215,7 @@ logging:
 	})
 
 	t.Run("with double set log level", func(t *testing.T) {
+		t.Parallel()
 		configContent := `
 logging:
   level: "debug"
@@ -232,6 +239,7 @@ logging:
 }
 
 func TestLoadConfig(t *testing.T) {
+	t.Parallel()
 	t.Run("with valid file", func(t *testing.T) {
 		t.Parallel()
 		configContent := `
