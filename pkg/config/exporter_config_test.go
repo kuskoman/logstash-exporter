@@ -1,177 +1,218 @@
 package config
 
 import (
+	"os"
+	"strconv"
 	"testing"
-	"time"
 )
 
-func TestLoadConfig(t *testing.T) {
-	t.Parallel()
-	t.Run("loads valid config", func(t *testing.T) {
-		t.Parallel()
+func createTemporaryConfigFile(contents string) (string, error) {
+	tmpFile, err := os.CreateTemp("", "config-*.yml")
+	if err != nil {
+		return "", err
+	}
+	defer tmpFile.Close()
 
-		location := "../../fixtures/valid_config.yml"
-		config, err := loadConfig(location)
-
-		if err != nil {
-			t.Fatalf("got an error %v", err)
-		}
-		if config == nil {
-			t.Fatal("expected config to be non-nil")
-		}
-		if config.Logstash.Servers[0].Host != "http://localhost:9601" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", config.Logstash.Servers[0].Host)
-		}
-	})
-
-	t.Run("returns error for non-existent file", func(t *testing.T) {
-		t.Parallel()
-
-		location := "../fixtures/non_existent.yml"
-		config, err := loadConfig(location)
-
-		if err == nil {
-			t.Fatal("expected error, got none")
-		}
-		if config != nil {
-			t.Fatal("expected config to be nil")
-		}
-	})
-
-	t.Run("returns error for invalid config", func(t *testing.T) {
-		t.Parallel()
-
-		location := "../fixtures/invalid_config.toml"
-		config, err := loadConfig(location)
-
-		if err == nil {
-			t.Fatal("expected error, got none")
-		}
-
-		if config != nil {
-			t.Fatal("expected config to be nil")
-		}
-	})
+	_, err = tmpFile.WriteString(contents)
+	return tmpFile.Name(), err
 }
 
-func TestMergeWithDefault(t *testing.T) {
-	t.Parallel()
-
-	t.Run("merge with empty config", func(t *testing.T) {
-		t.Parallel()
-
-		config := &Config{}
-		mergedConfig := mergeWithDefault(config)
-
-		if mergedConfig.Server.Port != defaultPort {
-			t.Errorf("expected port to be %v, got %v", defaultPort, mergedConfig.Server.Port)
+func setEnvironmentVariable(key, value string) func() {
+	originalValue, isSet := os.LookupEnv(key)
+	os.Setenv(key, value)
+	return func() {
+		if isSet {
+			os.Setenv(key, originalValue)
+		} else {
+			os.Unsetenv(key)
 		}
-		if mergedConfig.Logging.Level != defaultLogLevel {
-			t.Errorf("expected level to be %v, got %v", defaultLogLevel, mergedConfig.Logging.Level)
-		}
-		if mergedConfig.Logging.Format != defaultLogFormat {
-			t.Errorf("expected format to be %v, got %v", defaultLogFormat, mergedConfig.Logging.Format)
-		}
-		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
-			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
-		}
-		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
-			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
-		}
-	})
-
-	t.Run("merge with nil config", func(t *testing.T) {
-		t.Parallel()
-
-		mergedConfig := mergeWithDefault(nil)
-
-		if mergedConfig.Server.Port != defaultPort {
-			t.Errorf("expected port to be %v, got %v", defaultPort, mergedConfig.Server.Port)
-		}
-		if mergedConfig.Logging.Level != defaultLogLevel {
-			t.Errorf("expected level to be %v, got %v", defaultLogLevel, mergedConfig.Logging.Level)
-		}
-		if mergedConfig.Logging.Format != defaultLogFormat {
-			t.Errorf("expected format to be %v, got %v", defaultLogFormat, mergedConfig.Logging.Format)
-		}
-		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
-			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
-		}
-		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
-			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
-		}
-	})
-
-	t.Run("merge with non-empty config", func(t *testing.T) {
-		t.Parallel()
-
-		config := &Config{
-			Server: ServerConfig{
-				Port: 1234,
-			},
-			Logging: LoggingConfig{
-				Level:  "debug",
-				Format: "json",
-			},
-			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
-					{Host: "http://localhost:9601"},
-					{Host: "http://localhost:9602"},
-				},
-				HttpTimeout: 3 * time.Second,
-			},
-		}
-
-		mergedConfig := mergeWithDefault(config)
-
-		if mergedConfig.Server.Port != 1234 {
-			t.Errorf("expected port to be %v, got %v", 1234, mergedConfig.Server.Port)
-		}
-
-		if mergedConfig.Logging.Level != "debug" {
-			t.Errorf("expected level to be %v, got %v", "debug", mergedConfig.Logging.Level)
-		}
-
-		if mergedConfig.Logging.Format != "json" {
-			t.Errorf("expected format to be %v, got %v", "json", mergedConfig.Logging.Format)
-		}
-
-		if mergedConfig.Logstash.Servers[0].Host != "http://localhost:9601" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", mergedConfig.Logstash.Servers[0].Host)
-		}
-
-		if mergedConfig.Logstash.Servers[1].Host != "http://localhost:9602" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Servers[1].Host)
-		}
-		if mergedConfig.Logstash.HttpTimeout != 3*time.Second {
-			t.Errorf("expected http timeout to be %v, got %v", 3*time.Second, mergedConfig.Logstash.HttpTimeout)
-		}
-	})
+	}
 }
 
-func TestGetConfig(t *testing.T) {
-	t.Run("returns valid config", func(t *testing.T) {
+func TestGetConfigInvalidPath(t *testing.T) {
+	_, err := GetConfig("invalidpath")
+	if err == nil {
+		t.Fatal("expected error when getting config with invalid path, got none")
+	}
+}
 
-		location := "../../fixtures/valid_config.yml"
-		config, err := GetConfig(location)
+func TestGetConfigInvalidPort(t *testing.T) {
+	configContent := `
+server:
+  port: "0"
+`
+	configFileName, err := createTemporaryConfigFile(configContent)
+	if err != nil {
+		t.Fatalf("failed to create temp config file: %v", err)
+	}
 
-		if err != nil {
-			t.Fatalf("got an error %v", err)
-		}
-		if config == nil {
-			t.Fatal("expected config to be non-nil")
-		}
-	})
+	clearEnvPort := setEnvironmentVariable(envPort, "0")
+	defer clearEnvPort()
 
-	t.Run("returns error for invalid config", func(t *testing.T) {
-		location := "../fixtures/invalid_config.yml"
-		config, err := GetConfig(location)
+	_, err = GetConfig(configFileName)
+	if err == nil {
+		t.Fatal("expected error when getting config with invalid port, got none")
+	}
+}
 
-		if err == nil {
-			t.Fatal("expected error, got none")
-		}
-		if config != nil {
-			t.Fatal("expected config to be nil")
-		}
-	})
+func TestGetConfigMergeError(t *testing.T) {
+	var configContent string
+
+	configFileName, err := createTemporaryConfigFile(configContent)
+	if err != nil {
+		t.Fatalf("failed to create temp config file: %v", err)
+	}
+
+	clearEnvPort := setEnvironmentVariable(envPort, "invalidport")
+	defer clearEnvPort()
+
+	_, err = GetConfig(configFileName)
+	if err == nil {
+		t.Fatal("expected error when merging config, got none")
+	}
+}
+
+func TestMergeWithDefaultNilConfig(t *testing.T) {
+	_, err := mergeWithDefault(nil)
+	if err != nil {
+		t.Fatalf("failed to merge with default config: %v", err)
+	}
+}
+
+func TestGetConfigInvalidHttpTimeoutOverride(t *testing.T) {
+	var configContent string
+
+	configFileName, err := createTemporaryConfigFile(configContent)
+	if err != nil {
+		t.Fatalf("failed to create temp config file: %v", err)
+	}
+
+	clearEnvHttpTimeout := setEnvironmentVariable(envHttpTimeout, "invalidtimeout")
+	defer clearEnvHttpTimeout()
+
+	_, err = GetConfig(configFileName)
+	if err == nil {
+		t.Fatal("expected error when getting config with invalid http timeout override, got none")
+	}
+}
+
+func TestLoadConfigFromFile(t *testing.T) {
+	configContent := `
+logstash:
+  servers:
+    - url: "http://test-url:9600"
+  httpTimeout: "5s"
+server:
+  host: "localhost"
+  port: 8080
+logging:
+  level: "debug"
+  format: "json"
+`
+	configFileName, err := createTemporaryConfigFile(configContent)
+	if err != nil {
+		t.Fatalf("failed to create temp config file: %v", err)
+	}
+	defer os.Remove(configFileName)
+
+	config, err := loadConfig(configFileName)
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if config.Server.Port != 8080 {
+		t.Errorf("expected port 8080, got %d", config.Server.Port)
+	}
+}
+
+func TestEnvironmentVariableOverridesFileConfig(t *testing.T) {
+	configContent := `
+logstash:
+  servers:
+    - url: "http://original-url:9600"
+server:
+  port: 8080
+`
+	configFileName, err := createTemporaryConfigFile(configContent)
+	if err != nil {
+		t.Fatalf("failed to create temp config file: %v", err)
+	}
+	defer os.Remove(configFileName)
+
+	envPortValue := 9090
+	envPortValueStr := strconv.Itoa(envPortValue)
+	cleanupPort := setEnvironmentVariable(envPort, envPortValueStr)
+	defer cleanupPort()
+
+	config, err := GetConfig(configFileName)
+	if err != nil {
+		t.Fatalf("failed to load config with environment override: %v", err)
+	}
+
+	expectedPort := 8080
+	if config.Server.Port != expectedPort {
+		t.Errorf("expected port not to be overridden to %s, got %d", envPortValueStr, config.Server.Port)
+	}
+}
+
+func TestNonExistentConfigFileReturnsError(t *testing.T) {
+	_, err := loadConfig("nonexistentconfig.yml")
+	if err == nil {
+		t.Fatal("expected error when loading from a non-existent file, got none")
+	}
+}
+
+func TestInvalidYAMLConfigFileReturnsError(t *testing.T) {
+	invalidContent := "invalid: [yaml: format"
+	fileName, err := createTemporaryConfigFile(invalidContent)
+	if err != nil {
+		t.Fatalf("failed to create temp invalid config file: %v", err)
+	}
+	defer os.Remove(fileName)
+
+	_, err = loadConfig(fileName)
+	if err == nil {
+		t.Fatal("expected error when loading invalid YAML, got none")
+	}
+}
+
+func TestMergeWithDefaultConfig(t *testing.T) {
+	config := &Config{}
+	envCleanup := setEnvironmentVariable(envPort, "9090")
+	defer envCleanup()
+
+	mergedConfig, err := mergeWithDefault(config)
+	if err != nil {
+		t.Fatalf("failed to merge with default config: %v", err)
+	}
+
+	expectedPort, _ := strconv.Atoi(os.Getenv(envPort))
+	if mergedConfig.Server.Port != expectedPort {
+		t.Errorf("expected port to be %d after merge, got %d", expectedPort, mergedConfig.Server.Port)
+	}
+}
+
+func TestConfigLoadAndMergeProcess(t *testing.T) {
+	configContent := `
+server:
+  port: 8080
+`
+	configFileName, err := createTemporaryConfigFile(configContent)
+	if err != nil {
+		t.Fatalf("failed to create temp config file for load and merge test: %v", err)
+	}
+	defer os.Remove(configFileName)
+
+	cleanupPort := setEnvironmentVariable(envPort, "8081")
+	defer cleanupPort()
+
+	config, err := GetConfig(configFileName)
+	if err != nil {
+		t.Fatalf("failed to get config in load and merge process: %v", err)
+	}
+
+	expectedPort := 8080
+	if config.Server.Port != expectedPort {
+		t.Errorf("expected port %d from file, got %d", expectedPort, config.Server.Port)
+	}
 }

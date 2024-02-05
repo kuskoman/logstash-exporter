@@ -154,12 +154,14 @@ func loadConfig(location string) (*Config, error) {
 	return &config, nil
 }
 
+// printWarningIfDoubleSetString prints a warning if the value is set in both the environment and the config file.
 func printWarningIfDoubleSetString(name, configFileValue string, envMetadata *environmentMetadata) {
 	if configFileValue != "" && envMetadata.IsSet() {
 		slog.Warn("value set in both environment and config file, using config file value", "configFileValue", configFileValue, "envValue", envMetadata.Value())
 	}
 }
 
+// printWarningIfDoubleSetInt prints a warning if the value is set in both the environment and the config file.
 func printWarningIfDoubleSetInt(name string, configFileValue int, envMetadata *environmentMetadata) {
 	if configFileValue != 0 && envMetadata.IsSet() {
 		slog.Warn("value set in both environment and config file, using config file value", "configFileValue", configFileValue, "envValue", envMetadata.Value())
