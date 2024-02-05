@@ -110,14 +110,15 @@ All configuration variables can be checked in the [config directory](./config/).
 Environment Variables Configuration
 
 As an alternative to the YAML configuration file, the application can also be configured using the following environment variables:
-| Environment Variable | Description | YAML Path |
-| ----------- | ----------- | ----------- |
-| EXPORTER_CONFIG_LOCATION | Path to the YAML configuration file (optional) | N/A |
-| EXPORTER_ALLOW_EMPTY_CONFIG |	Allow the application to start with an empty YAML configuration file | N/A |
-| LOGSTASH_URL | Comma-separated URLs to Logstash APIs | logstash.servers[].url |
-| HOST | Host on which the application will be exposed | server.host |
-| PORT | Port on which the application will be exposed | server.port |
-| LOG_LEVEL | Log level (debug, info, warn, error) | logging.level |
+| Environment Variable | Description | Default | YAML Path |
+| ----------- | ----------- | ----------- | ----------- |
+| EXPORTER_CONFIG_LOCATION | Path to the YAML configuration file (optional) | `config.yml` | N/A |
+| EXPORTER_ALLOW_EMPTY_CONFIG |	Allow the application to start with an empty YAML configuration file | `0` | N/A |
+| LOGSTASH_URL | Comma-separated URLs to Logstash APIs | `http://localhost:9600` | logstash.servers[].url |
+| HOST | Host on which the application will be exposed | `0.0.0.0` | server.host |
+| PORT | Port on which the application will be exposed | `9198` | server.port |
+| LOG_LEVEL | Log level (debug, info, warn, error) | `info` | logging.level |
+| LOG_FORMAT | Log format (json, text) | `text` | logging.format |
 
 **Please note that if both the YAML configuration file and environment variables are provided, the settings from the YAML file will take precedence.**
 
