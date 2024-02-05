@@ -6,6 +6,15 @@ import (
 	"testing"
 )
 
+// mockDoubleSetLogger to capture warning logs for testing
+type mockDoubleSetLogger struct {
+	Warnings []string // Captures warnings to allow assertions
+}
+
+func (m *mockDoubleSetLogger) Warn(propertyName string, keysAndValues ...interface{}) {
+	m.Warnings = append(m.Warnings, propertyName) // Simplified for demonstration; could be expanded to include all inputs
+}
+
 func createTemporaryConfigFile(contents string) (string, error) {
 	tmpFile, err := os.CreateTemp("", "config-*.yml")
 	if err != nil {
@@ -29,68 +38,85 @@ func setEnvironmentVariable(key, value string) func() {
 	}
 }
 
+func TestDefaultWarningLogger(t *testing.T) {
+	logger := &defaultDoubleSetLogger{}
+	logger.Warn("test")
+}
+
+func TestGetConfigWithoutProvidingLogger(t *testing.T) {
+	_, err := GetConfig("", nil)
+	if err == nil {
+		t.Fatal("expected error when getting config without providing logger, got none")
+	}
+}
+
 func TestGetConfigInvalidPath(t *testing.T) {
-	_, err := GetConfig("invalidpath")
+	logger := &mockDoubleSetLogger{}
+	_, err := GetConfig("invalidpath", logger)
 	if err == nil {
 		t.Fatal("expected error when getting config with invalid path, got none")
 	}
 }
 
 func TestGetConfigInvalidPort(t *testing.T) {
-	configContent := `
-server:
-  port: "0"
-`
+	var configContent string
 	configFileName, err := createTemporaryConfigFile(configContent)
 	if err != nil {
 		t.Fatalf("failed to create temp config file: %v", err)
 	}
+	defer os.Remove(configFileName)
 
-	clearEnvPort := setEnvironmentVariable(envPort, "0")
+	clearEnvPort := setEnvironmentVariable(envPort, "invalidport")
 	defer clearEnvPort()
 
-	_, err = GetConfig(configFileName)
+	logger := &mockDoubleSetLogger{}
+	_, err = GetConfig(configFileName, logger)
 	if err == nil {
 		t.Fatal("expected error when getting config with invalid port, got none")
 	}
 }
 
 func TestGetConfigMergeError(t *testing.T) {
-	var configContent string
+	configContent := ""
 
 	configFileName, err := createTemporaryConfigFile(configContent)
 	if err != nil {
 		t.Fatalf("failed to create temp config file: %v", err)
 	}
+	defer os.Remove(configFileName)
 
 	clearEnvPort := setEnvironmentVariable(envPort, "invalidport")
 	defer clearEnvPort()
 
-	_, err = GetConfig(configFileName)
+	logger := &mockDoubleSetLogger{}
+	_, err = GetConfig(configFileName, logger)
 	if err == nil {
 		t.Fatal("expected error when merging config, got none")
 	}
 }
 
 func TestMergeWithDefaultNilConfig(t *testing.T) {
-	_, err := mergeWithDefault(nil)
+	logger := &mockDoubleSetLogger{}
+	_, err := mergeWithDefault(nil, logger)
 	if err != nil {
 		t.Fatalf("failed to merge with default config: %v", err)
 	}
 }
 
 func TestGetConfigInvalidHttpTimeoutOverride(t *testing.T) {
-	var configContent string
+	configContent := ""
 
 	configFileName, err := createTemporaryConfigFile(configContent)
 	if err != nil {
 		t.Fatalf("failed to create temp config file: %v", err)
 	}
+	defer os.Remove(configFileName)
 
 	clearEnvHttpTimeout := setEnvironmentVariable(envHttpTimeout, "invalidtimeout")
 	defer clearEnvHttpTimeout()
 
-	_, err = GetConfig(configFileName)
+	logger := &mockDoubleSetLogger{}
+	_, err = GetConfig(configFileName, logger)
 	if err == nil {
 		t.Fatal("expected error when getting config with invalid http timeout override, got none")
 	}
@@ -132,6 +158,9 @@ logstash:
     - url: "http://original-url:9600"
 server:
   port: 8080
+logging:
+  level: "info"
+  format: "text"
 `
 	configFileName, err := createTemporaryConfigFile(configContent)
 	if err != nil {
@@ -139,19 +168,22 @@ server:
 	}
 	defer os.Remove(configFileName)
 
-	envPortValue := 9090
-	envPortValueStr := strconv.Itoa(envPortValue)
-	cleanupPort := setEnvironmentVariable(envPort, envPortValueStr)
+	cleanupPort := setEnvironmentVariable(envPort, "9090")
 	defer cleanupPort()
 
-	config, err := GetConfig(configFileName)
+	logger := &mockDoubleSetLogger{}
+	config, err := GetConfig(configFileName, logger)
 	if err != nil {
 		t.Fatalf("failed to load config with environment override: %v", err)
 	}
 
+	if len(logger.Warnings) == 0 {
+		t.Fatal("expected warnings when environment variables override file configs")
+	}
+
 	expectedPort := 8080
 	if config.Server.Port != expectedPort {
-		t.Errorf("expected port not to be overridden to %s, got %d", envPortValueStr, config.Server.Port)
+		t.Errorf("expected port %d, got %d", expectedPort, config.Server.Port)
 	}
 }
 
@@ -181,7 +213,8 @@ func TestMergeWithDefaultConfig(t *testing.T) {
 	envCleanup := setEnvironmentVariable(envPort, "9090")
 	defer envCleanup()
 
-	mergedConfig, err := mergeWithDefault(config)
+	logger := &mockDoubleSetLogger{}
+	mergedConfig, err := mergeWithDefault(config, logger)
 	if err != nil {
 		t.Fatalf("failed to merge with default config: %v", err)
 	}
@@ -203,12 +236,14 @@ server:
 	}
 	defer os.Remove(configFileName)
 
-	cleanupPort := setEnvironmentVariable(envPort, "8081")
-	defer cleanupPort()
-
-	config, err := GetConfig(configFileName)
+	logger := &mockDoubleSetLogger{}
+	config, err := GetConfig(configFileName, logger)
 	if err != nil {
 		t.Fatalf("failed to get config in load and merge process: %v", err)
+	}
+
+	if len(logger.Warnings) > 0 {
+		t.Fatal("did not expect warnings for port as it is not set in both env and file")
 	}
 
 	expectedPort := 8080

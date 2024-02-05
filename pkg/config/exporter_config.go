@@ -29,6 +29,20 @@ var (
 	ExporterConfigLocation = getEnvWithDefault("EXPORTER_CONFIG_LOCATION", defaultConfigLocation)
 )
 
+// doubleSetLogger interface for logging double set value warnings
+type doubleSetLogger interface {
+	Warn(msg string, keysAndValues ...interface{})
+}
+
+// defaultDoubleSetLogger using slog for logging double set value warnings
+type defaultDoubleSetLogger struct{}
+
+func (l defaultDoubleSetLogger) Warn(propertyName string, keysAndValues ...interface{}) {
+	msg := "value set in both environment and config file, using config file value"
+	keysAndValues = append(keysAndValues, "propertyName", propertyName)
+	slog.Warn(msg, keysAndValues...)
+}
+
 // LogstashServer represents individual Logstash server configuration
 type LogstashServer struct {
 	Host string `yaml:"url"`
@@ -42,13 +56,6 @@ type LogstashConfig struct {
 
 // ServerConfig represents the server configuration
 type ServerConfig struct {
-	// Host is the host the exporter will listen on.
-	// Defaults to an empty string, which will listen on all interfaces
-	// Can be overridden by setting the HOST environment variable
-	// For windows, use "localhost", because an empty string will not work
-	// with the default windows firewall configuration.
-	// Alternatively you can change the firewall configuration to allow
-	// connections to the port from all interfaces.
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
 }
@@ -94,9 +101,6 @@ func (e *environmentMetadata) Load() {
 	}
 }
 
-// environmentConfig represents the configuration loaded from the environment variables.
-// The configuration is used when properties are not set in the YAML file.
-// In case the properties are set in the YAML file, the environment variables are ignored.
 type environmentConfig struct {
 	Port        *environmentMetadata
 	LogLevel    *environmentMetadata
@@ -107,26 +111,11 @@ type environmentConfig struct {
 
 func loadEnvironmentConfig() *environmentConfig {
 	envConfig := &environmentConfig{
-		Port: &environmentMetadata{
-			envName:    envPort,
-			defaultVal: defaultPort,
-		},
-		LogLevel: &environmentMetadata{
-			envName:    envLogLevel,
-			defaultVal: defaultLogLevel,
-		},
-		LogFormat: &environmentMetadata{
-			envName:    envLogFormat,
-			defaultVal: defaultLogFormat,
-		},
-		LogstashURL: &environmentMetadata{
-			envName:    envLogstashURL,
-			defaultVal: defaultLogstashURL,
-		},
-		HttpTimeout: &environmentMetadata{
-			envName:    envHttpTimeout,
-			defaultVal: defaultHttpTimeout,
-		},
+		Port:        &environmentMetadata{envName: envPort, defaultVal: defaultPort},
+		LogLevel:    &environmentMetadata{envName: envLogLevel, defaultVal: defaultLogLevel},
+		LogFormat:   &environmentMetadata{envName: envLogFormat, defaultVal: defaultLogFormat},
+		LogstashURL: &environmentMetadata{envName: envLogstashURL, defaultVal: defaultLogstashURL},
+		HttpTimeout: &environmentMetadata{envName: envHttpTimeout, defaultVal: defaultHttpTimeout},
 	}
 
 	envConfig.Port.Load()
@@ -138,7 +127,6 @@ func loadEnvironmentConfig() *environmentConfig {
 	return envConfig
 }
 
-// loadConfig loads the configuration from the YAML file.
 func loadConfig(location string) (*Config, error) {
 	data, err := os.ReadFile(location)
 	if err != nil {
@@ -154,29 +142,25 @@ func loadConfig(location string) (*Config, error) {
 	return &config, nil
 }
 
-// printWarningIfDoubleSetString prints a warning if the value is set in both the environment and the config file.
-func printWarningIfDoubleSetString(name, configFileValue string, envMetadata *environmentMetadata) {
-	if configFileValue != "" && envMetadata.IsSet() {
-		slog.Warn("value set in both environment and config file, using config file value", "configFileValue", configFileValue, "envValue", envMetadata.Value())
-	}
+// Refactored warning logic to return boolean instead of logging directly
+func shouldWarnIfDoubleSetString(configFileValue string, envMetadata *environmentMetadata) bool {
+	return configFileValue != "" && envMetadata.IsSet()
 }
 
-// printWarningIfDoubleSetInt prints a warning if the value is set in both the environment and the config file.
-func printWarningIfDoubleSetInt(name string, configFileValue int, envMetadata *environmentMetadata) {
-	if configFileValue != 0 && envMetadata.IsSet() {
-		slog.Warn("value set in both environment and config file, using config file value", "configFileValue", configFileValue, "envValue", envMetadata.Value())
-	}
+func shouldWarnIfDoubleSetInt(configFileValue int, envMetadata *environmentMetadata) bool {
+	return configFileValue != 0 && envMetadata.IsSet()
 }
 
-// mergeWithDefault merges the loaded configuration with the default configuration values.
-func mergeWithDefault(config *Config) (*Config, error) {
+func mergeWithDefault(config *Config, logger doubleSetLogger) (*Config, error) {
 	if config == nil {
 		config = &Config{}
 	}
 
 	envConfig := loadEnvironmentConfig()
 
-	printWarningIfDoubleSetInt("port", config.Server.Port, envConfig.Port)
+	if shouldWarnIfDoubleSetInt(config.Server.Port, envConfig.Port) {
+		logger.Warn("port", "configFileValue", config.Server.Port, "envValue", envConfig.Port.Value())
+	}
 
 	if config.Server.Port == 0 {
 		portString := envConfig.Port.Value()
@@ -188,12 +172,16 @@ func mergeWithDefault(config *Config) (*Config, error) {
 		config.Server.Port = port
 	}
 
-	printWarningIfDoubleSetString("log level", config.Logging.Level, envConfig.LogLevel)
+	if shouldWarnIfDoubleSetString(config.Logging.Level, envConfig.LogLevel) {
+		logger.Warn("log level", "configFileValue", config.Logging.Level, "envValue", envConfig.LogLevel.Value())
+	}
 	if config.Logging.Level == "" {
 		config.Logging.Level = envConfig.LogLevel.Value()
 	}
 
-	printWarningIfDoubleSetString("log format", config.Logging.Format, envConfig.LogFormat)
+	if shouldWarnIfDoubleSetString(config.Logging.Format, envConfig.LogFormat) {
+		logger.Warn("log format", "configFileValue", config.Logging.Format, "envValue", envConfig.LogFormat.Value())
+	}
 	if config.Logging.Format == "" {
 		config.Logging.Format = envConfig.LogFormat.Value()
 	}
@@ -202,11 +190,13 @@ func mergeWithDefault(config *Config) (*Config, error) {
 		config.Logstash.Servers = append(config.Logstash.Servers, &LogstashServer{
 			Host: envConfig.LogstashURL.Value(),
 		})
-	} else if envConfig.LogstashURL.IsSet() {
-		printWarningIfDoubleSetString("logstash url", config.Logstash.Servers[0].Host, envConfig.LogstashURL)
+	} else if shouldWarnIfDoubleSetString(config.Logstash.Servers[0].Host, envConfig.LogstashURL) {
+		logger.Warn("logstash URL", "configFileValue", config.Logstash.Servers[0].Host, "envValue", envConfig.LogstashURL.Value())
 	}
 
-	printWarningIfDoubleSetString("http timeout", config.Logstash.HttpTimeout.String(), envConfig.HttpTimeout)
+	if shouldWarnIfDoubleSetString(config.Logstash.HttpTimeout.String(), envConfig.HttpTimeout) {
+		logger.Warn("logstash http timeout", "configFileValue", config.Logstash.HttpTimeout.String(), "envValue", envConfig.HttpTimeout.Value())
+	}
 	if config.Logstash.HttpTimeout == 0 {
 		httpTimeout, err := time.ParseDuration(envConfig.HttpTimeout.Value())
 		if err != nil {
@@ -220,14 +210,17 @@ func mergeWithDefault(config *Config) (*Config, error) {
 }
 
 // GetConfig combines loadConfig and mergeWithDefault to get the final configuration.
-func GetConfig(location string) (*Config, error) {
+func GetConfig(location string, logger doubleSetLogger) (*Config, error) {
+	if logger == nil {
+		logger = defaultDoubleSetLogger{} // Use default logger if none provided
+	}
+
 	config, err := loadConfig(location)
 	if err != nil {
 		return nil, err
 	}
 
-	mergedConfig, err := mergeWithDefault(config)
-
+	mergedConfig, err := mergeWithDefault(config, logger)
 	if err != nil {
 		return nil, err
 	}

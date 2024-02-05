@@ -30,7 +30,7 @@ func main() {
 		log.Printf("failed to load .env file: %s", warn)
 	}
 
-	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
+	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation, nil)
 	if err != nil {
 		log.Fatalf("failed to get exporter config: %s", err)
 		os.Exit(1)
