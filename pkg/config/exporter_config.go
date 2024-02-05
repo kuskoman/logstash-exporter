@@ -4,18 +4,20 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	envConfigLocation = "EXPORTER_CONFIG_LOCATION"
-	envPort           = "PORT"
-	envLogLevel       = "LOG_LEVEL"
-	envLogFormat      = "LOG_FORMAT"
-	envLogstashURL    = "LOGSTASH_URL"
-	envHttpTimeout    = "HTTP_TIMEOUT"
+	envConfigLocation       = "EXPORTER_CONFIG_LOCATION"
+	envPort                 = "PORT"
+	envLogLevel             = "LOG_LEVEL"
+	envLogFormat            = "LOG_FORMAT"
+	envLogstashURL          = "LOGSTASH_URL"
+	envHttpTimeout          = "HTTP_TIMEOUT"
+	envAllowEmptyConfigFile = "ALLOW_EMPTY_CONFIG_FILE"
 
 	defaultConfigLocation = "config.yml"
 	defaultPort           = "9198"
@@ -23,10 +25,12 @@ const (
 	defaultLogFormat      = "text"
 	defaultLogstashURL    = "http://localhost:9600"
 	defaultHttpTimeout    = "2s"
+	defaultAllowEmpty     = "0"
 )
 
 var (
 	ExporterConfigLocation = getEnvWithDefault("EXPORTER_CONFIG_LOCATION", defaultConfigLocation)
+	allowEmptyConfigFile   = getEnvWithDefault("ALLOW_EMPTY_CONFIG_FILE", defaultAllowEmpty)
 )
 
 // doubleSetLogger interface for logging double set value warnings
@@ -209,15 +213,25 @@ func mergeWithDefault(config *Config, logger doubleSetLogger) (*Config, error) {
 	return config, nil
 }
 
+func isNotAccessibleError(err error) bool {
+	return strings.Contains(err.Error(), "no such file or directory") || os.IsNotExist(err) || os.IsPermission(err)
+}
+
 // GetConfig combines loadConfig and mergeWithDefault to get the final configuration.
 func GetConfig(location string, logger doubleSetLogger) (*Config, error) {
 	if logger == nil {
 		logger = defaultDoubleSetLogger{} // Use default logger if none provided
 	}
 
-	config, err := loadConfig(location)
-	if err != nil {
+	var config *Config
+	loadedConfig, err := loadConfig(location)
+	if allowEmptyConfigFile == "1" && isNotAccessibleError(err) {
+		slog.Warn("config file not found, using default (env based) configuration", "location", location)
+		config = &Config{}
+	} else if err != nil {
 		return nil, err
+	} else {
+		config = loadedConfig
 	}
 
 	mergedConfig, err := mergeWithDefault(config, logger)

@@ -57,7 +57,6 @@ func TestDefaultDoubleSetLogger(t *testing.T) {
 func TestGetConfig(t *testing.T) {
 
 	t.Run("with invalid path", func(t *testing.T) {
-		t.Parallel()
 		logger := &mockDoubleSetLogger{}
 		_, err := GetConfig("invalidpath", logger)
 		if err == nil {
@@ -65,16 +64,40 @@ func TestGetConfig(t *testing.T) {
 		}
 	})
 
+	t.Run("with invalid path and ALLOW_EMPTY_CONFIG_FILE set to 1", func(t *testing.T) {
+		clearEnvAllowEmptyConfigFile := setEnvironmentVariable(envAllowEmptyConfigFile, "1")
+		defer clearEnvAllowEmptyConfigFile()
+
+		logger := &mockDoubleSetLogger{}
+		config, err := GetConfig("invalidpath", logger)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if config == nil {
+			t.Fatal("expected config, got none")
+		}
+	})
+
 	t.Run("without providing logger", func(t *testing.T) {
-		t.Parallel()
-		_, err := GetConfig("", nil)
-		if err == nil {
-			t.Fatal("expected error, got none")
+		var configContent string
+		configFileName, err := createTemporaryConfigFile(configContent)
+		if err != nil {
+			t.Fatalf("failed to create temp config file: %v", err)
+		}
+		defer os.Remove(configFileName)
+
+		config, err := GetConfig(configFileName, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if config == nil {
+			t.Fatal("expected config, got none")
 		}
 	})
 
 	t.Run("with invalid port", func(t *testing.T) {
-		t.Parallel()
 		configContent := ""
 		configFileName, err := createTemporaryConfigFile(configContent)
 		if err != nil {
@@ -112,7 +135,6 @@ func TestGetConfig(t *testing.T) {
 }
 
 func TestMergeWithDefault(t *testing.T) {
-	t.Parallel()
 	t.Run("with nil config", func(t *testing.T) {
 		t.Parallel()
 		logger := &mockDoubleSetLogger{}
@@ -215,7 +237,6 @@ logging:
 	})
 
 	t.Run("with double set log level", func(t *testing.T) {
-		t.Parallel()
 		configContent := `
 logging:
   level: "debug"
