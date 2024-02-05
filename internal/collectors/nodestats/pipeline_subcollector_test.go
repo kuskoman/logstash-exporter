@@ -74,7 +74,7 @@ func TestIsPipelineHealthy(t *testing.T) {
 			t.Parallel()
 			result := collector.isPipelineHealthy(localTestCase.stats)
 			if result != localTestCase.expected {
-				t.Errorf("Expected %v, but got %v", localTestCase.expected, result)
+				t.Errorf("expected %v, but got %v", localTestCase.expected, result)
 				return
 			}
 		})
