@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -74,4 +75,23 @@ func (mh *SimpleMetricsHelper) NewIntMetric(desc *prometheus.Desc, metricType pr
 // NewInt64Metric same as NewFloatMetric but for 'int64' type
 func (mh *SimpleMetricsHelper) NewInt64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value int64) {
     mh.NewFloatMetric(desc, metricType, float64(value))
+}
+
+// newTimestampMetric same as NewFloatMetric but for setting Timestamp value 
+func (mh *SimpleMetricsHelper) NewTimestampMetric (desc *prometheus.Desc, metricType prometheus.ValueType, value time.Time) {
+	metric := prometheus.NewMetricWithTimestamp(value, prometheus.MustNewConstMetric(desc, metricType, 1, mh.Labels...))
+	mh.Channel <- metric
+}
+
+// ExtractValueFromMetric extracts the timestamp from a prometheus.Metric object.
+// Useful for testing NewTimestampMetric method of SimpleMetricsHelper
+// Returns the extracted int64 timestamp
+func ExtractTimestampMsFromMetric(metric prometheus.Metric) (int64, error) {
+	var dtoMetric dto.Metric
+	err := metric.Write(&dtoMetric)
+	if err != nil {
+		return 0, fmt.Errorf("error writing metric: %v", err)
+	}
+
+	return dtoMetric.GetTimestampMs(), nil
 }

@@ -115,6 +115,8 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 	collectingStart := time.Now()
 	slog.Debug("collecting pipeline stats for pipeline", "pipelineID", pipelineID)
 
+	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
+
 	newFloatMetric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value float64, labels ...string) {
 		labels = append(labels, pipelineID, endpoint)
 		metric := prometheus.MustNewConstMetric(desc, metricType, value, labels...)
@@ -137,16 +139,16 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 		newFloatMetric(desc, metricType, float64(value), labels...)
 	}
 
-	newIntMetric(collector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
-	newIntMetric(collector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
-	newIntMetric(collector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
-	newIntMetric(collector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
-	newIntMetric(collector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
+	mh.NewIntMetric(collector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
+	mh.NewIntMetric(collector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
+	mh.NewIntMetric(collector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
+	mh.NewIntMetric(collector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
+	mh.NewIntMetric(collector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
 
-	newFloatMetric(collector.Up, prometheus.GaugeValue, collector.isPipelineHealthy(pipeStats.Reloads))
+	mh.NewFloatMetric(collector.Up, prometheus.GaugeValue, collector.isPipelineHealthy(pipeStats.Reloads))
 
-	newIntMetric(collector.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
-	newIntMetric(collector.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
+	mh.NewIntMetric(collector.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
+	mh.NewIntMetric(collector.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
 
 	if pipeStats.Reloads.LastSuccessTimestamp != nil {
 		newTimestampMetric(collector.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)

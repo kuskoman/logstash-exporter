@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -188,7 +189,7 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
 		
-		ch := make(chan prometheus.Metric, 3)
+		ch := make(chan prometheus.Metric, 4)
 
 		helper := &SimpleMetricsHelper{
 			Channel: ch,
@@ -212,3 +213,34 @@ func TestSimpleMetricsHelper(t *testing.T) {
 	})
 }
 
+func TestExtractTimestampMsFromMetric(t *testing.T) {
+	t.Run("should extract timestamp from a metric", func(t *testing.T) {
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metricType := prometheus.GaugeValue
+		metricValue := time.UnixMilli(42)
+		metric := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
+
+		extractedValue, err := ExtractTimestampMsFromMetric(metric)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+
+		if extractedValue != metricValue.UnixMilli() {
+			t.Errorf("Expected extracted value to be %d, got %d", metricValue.UnixMilli(), extractedValue)
+		}
+	})
+
+	t.Run("should return error if writing metric fails", func(t *testing.T) {
+		badMetric := &badMetricStub{}
+		val, err := ExtractTimestampMsFromMetric(badMetric)
+
+		if err == nil {
+			t.Errorf("Expected error, but got nil")
+		}
+
+		if val != 0 {
+			t.Errorf("Expected value to be 0, got %d", val)
+		}
+	})
+
+}
