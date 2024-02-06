@@ -29,3 +29,5 @@ COPY --from=build /app/user /etc/passwd
 EXPOSE 9198
 USER 65534
 ENTRYPOINT ["/app/main"]
+
+ENV EXPORTER_CONFIG_LOCATION=/app/config.yml
