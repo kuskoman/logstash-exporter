@@ -69,7 +69,7 @@ The Docker image can be run using the following command:
 
     docker run -d \
         -p 9198:9198 \
-        -e LOGSTASH_URL=http://logstash:9600 \
+        -v $(pwd)/config.yml:/app/config.yml \
         kuskoman/logstash-exporter:<tag>
 
 ##### Unstable (master) image
@@ -83,8 +83,9 @@ To pull the image from command line simply use:
 The Docker image can be run using the following command:
 
     docker run -d \
+        -p 9198:9198 \
         -v $(pwd)/config.yml:/app/config.yml \
-        kuskoman/logstash-exporter:master
+        ghcr.io/kuskoman/logstash-exporter:master
 
 #### Helm Chart
 
