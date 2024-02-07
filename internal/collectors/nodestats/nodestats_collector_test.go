@@ -66,7 +66,7 @@ func TestCollectNotNil(t *testing.T) {
 	go func() {
 		err := collector.Collect(ctx, ch)
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			t.Errorf("expected no error, got %v", err)
 		}
 		close(ch)
 	}()
@@ -138,7 +138,7 @@ func TestCollectNotNil(t *testing.T) {
 
 	for _, expectedMetric := range expectedBaseMetrics {
 		if !slices.Contains(foundMetrics, expectedMetric) {
-			t.Errorf("Expected metric %s to be found", expectedMetric)
+			t.Errorf("expected metric %s to be found", expectedMetric)
 		}
 	}
 }
@@ -163,7 +163,7 @@ func TestCollectsErrors(t *testing.T) {
 		close(ch)
 
 		if err == nil {
-			t.Error("Expected err not to be nil")
+			t.Error("expected err not to be nil")
 		}
 	}
 

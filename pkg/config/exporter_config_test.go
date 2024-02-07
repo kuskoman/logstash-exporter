@@ -163,8 +163,21 @@ func TestGetConfig(t *testing.T) {
 		}
 	})
 
+	t.Run("returns error for non-existent file", func(t *testing.T) {
+		location := "../../fixtures/non_existent.yml"
+		config, err := GetConfig(location)
+
+		if err == nil {
+			t.Fatal("expected error, got none")
+		}
+
+		if config != nil {
+			t.Fatal("expected config to be nil")
+		}
+	})
+
 	t.Run("returns error for invalid config", func(t *testing.T) {
-		location := "../../fixtures/invalid_config.yml"
+		location := "../../fixtures/invalid_config.toml"
 		config, err := GetConfig(location)
 
 		if err == nil {

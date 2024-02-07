@@ -79,7 +79,7 @@ func TestCollect(t *testing.T) {
 
 		select {
 		case <-ch:
-			t.Error("Expected no metric to be sent to the channel")
+			t.Error("expected no metric to be sent to the channel")
 		case <-func() chan struct{} {
 			done := make(chan struct{})
 			go func() {
@@ -108,7 +108,7 @@ func TestCollect(t *testing.T) {
 		desc := metric.Desc()
 		expectedDesc := "Desc{fqName: \"mock_metric\", help: \"mock metric description\", constLabels: {}, variableLabels: {}}"
 		if desc.String() != expectedDesc {
-			t.Errorf("Expected metric description to be '%s', got %s", expectedDesc, desc.String())
+			t.Errorf("expected metric description to be '%s', got %s", expectedDesc, desc.String())
 		}
 	})
 }
@@ -127,6 +127,6 @@ func TestDescribe(t *testing.T) {
 	desc := <-ch
 	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: {collector,result}}"
 	if desc.String() != expectedDesc {
-		t.Errorf("Expected metric description to be '%s', got %s", expectedDesc, desc.String())
+		t.Errorf("expected metric description to be '%s', got %s", expectedDesc, desc.String())
 	}
 }
