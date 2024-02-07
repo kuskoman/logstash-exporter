@@ -134,18 +134,18 @@ func TestSimpleMetricsHelper(t *testing.T) {
 
 		fqName, err := ExtractFqName(metric.Desc().String())
 		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
+			t.Errorf("unexpected error: %v", err)
 		}
 		if metricName != fqName {
-			t.Errorf("Expected extracted name to be %s, got %s", metricName, fqName)
+			t.Errorf("expected extracted name to be %s, got %s", metricName, fqName)
 		}
 
 		val, err := ExtractValueFromMetric(metric)
 		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
+			t.Errorf("unexpected error: %v", err)
 		}
 		if val != metricValue {
-			t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+			t.Errorf("expected extracted value to be %f, got %f", metricValue, val)
 		}
 	})
 
@@ -177,10 +177,10 @@ func TestSimpleMetricsHelper(t *testing.T) {
 
 		val, err := ExtractValueFromMetric(metric)
 		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
+			t.Errorf("unexpected error: %v", err)
 		}
 		if val != metricValue {
-			t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+			t.Errorf("expected extracted value to be %f, got %f", metricValue, val)
 		}
 	})
 
@@ -189,7 +189,7 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
 		
-		ch := make(chan prometheus.Metric, 4)
+		ch := make(chan prometheus.Metric, 3)
 
 		helper := &SimpleMetricsHelper{
 			Channel: ch,
@@ -204,29 +204,55 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		for metric := range ch {
 			val, err := ExtractValueFromMetric(metric)
 			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
+				t.Errorf("unexpected error: %v", err)
 			}
 			if val != metricValue {
-				t.Errorf("Expected extracted value to be %f, got %f", metricValue, val)
+				t.Errorf("expected extracted value to be %f, got %f", metricValue, val)
 			}
+		}
+	})
+
+	t.Run("should create timestamp metric", func(t *testing.T) {
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricValue := time.UnixMilli(42)
+		
+		ch := make(chan prometheus.Metric)
+
+		go func() {
+			helper := &SimpleMetricsHelper{
+				Channel: ch,
+				Labels: []string{},
+			}
+			helper.NewTimestampMetric(metricDesc, prometheus.CounterValue, metricValue)
+		}()
+
+		metric := <- ch
+
+		val, err := ExtractTimestampMsFromMetric(metric)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if val != metricValue.UnixMilli() {
+			t.Errorf("expected extracted value to be %d, got %d", metricValue.UnixMilli(), val)
 		}
 	})
 }
 
 func TestExtractTimestampMsFromMetric(t *testing.T) {
 	t.Run("should extract timestamp from a metric", func(t *testing.T) {
-		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
-		metricType := prometheus.GaugeValue
+		metricDesc  := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metricType  := prometheus.GaugeValue
 		metricValue := time.UnixMilli(42)
-		metric := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
+		metric      := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
 
 		extractedValue, err := ExtractTimestampMsFromMetric(metric)
 		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
+			t.Errorf("unexpected error: %v", err)
 		}
 
 		if extractedValue != metricValue.UnixMilli() {
-			t.Errorf("Expected extracted value to be %d, got %d", metricValue.UnixMilli(), extractedValue)
+			t.Errorf("expected extracted value to be %d, got %d", metricValue.UnixMilli(), extractedValue)
 		}
 	})
 
@@ -235,11 +261,11 @@ func TestExtractTimestampMsFromMetric(t *testing.T) {
 		val, err := ExtractTimestampMsFromMetric(badMetric)
 
 		if err == nil {
-			t.Errorf("Expected error, but got nil")
+			t.Errorf("expected error, but got nil")
 		}
 
 		if val != 0 {
-			t.Errorf("Expected value to be 0, got %d", val)
+			t.Errorf("expected value to be 0, got %d", val)
 		}
 	})
 
