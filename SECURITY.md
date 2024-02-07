@@ -10,8 +10,6 @@
 
 ## Reporting a Vulnerability
 
-## Reporting a Vulnerability
-
 If you believe you have found a security vulnerability in any version of our project, we encourage you to let us know as soon as possible. We will investigate all legitimate reports and do our best to quickly fix the problem.
 
 Please report vulnerabilities by sending an email to [kubasurdej@gmail.com](mailto:kubasurdej@gmail.com). Include the following information in your report:
