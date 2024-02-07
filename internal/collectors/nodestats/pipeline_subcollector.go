@@ -83,15 +83,15 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		QueueEventsQueueSize:     descHelper.NewDesc("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline"),
 		QueueMaxQueueSizeInBytes: descHelper.NewDesc("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline"),
 
-		PipelinePluginEventsIn:                descHelper.NewDesc("plugin_events_in", "Number of events received this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsOut:               descHelper.NewDesc("plugin_events_out", "Number of events output by this pipeline.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsDuration:          descHelper.NewDesc("plugin_events_duration", "Time spent processing events in this plugin.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginEventsQueuePushDuration: descHelper.NewDesc("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "pipeline", "plugin_type", "plugin", "plugin_id"),
+		PipelinePluginEventsIn:                descHelper.NewDesc("plugin_events_in", "Number of events received this pipeline.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsOut:               descHelper.NewDesc("plugin_events_out", "Number of events output by this pipeline.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsDuration:          descHelper.NewDesc("plugin_events_duration", "Time spent processing events in this plugin.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsQueuePushDuration: descHelper.NewDesc("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "plugin_type", "plugin", "plugin_id", "pipeline"),
 
-		PipelinePluginDocumentsSuccesses:            descHelper.NewDesc("plugin_documents_successes", "Number of successful bulk requests.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginDocumentsNonRetryableFailures: descHelper.NewDesc("plugin_documents_non_retryable_failures", "Number of output events with non-retryable failures.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginBulkRequestErrors:             descHelper.NewDesc("plugin_bulk_requests_errors", "Number of bulk request errors.", "pipeline", "plugin_type", "plugin", "plugin_id"),
-		PipelinePluginBulkRequestResponses:          descHelper.NewDesc("plugin_bulk_requests_responses", "Bulk request HTTP response counts by code.", "pipeline", "plugin_type", "plugin", "plugin_id", "code"),
+		PipelinePluginDocumentsSuccesses:            descHelper.NewDesc("plugin_documents_successes", "Number of successful bulk requests.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginDocumentsNonRetryableFailures: descHelper.NewDesc("plugin_documents_non_retryable_failures", "Number of output events with non-retryable failures.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginBulkRequestErrors:             descHelper.NewDesc("plugin_bulk_requests_errors", "Number of bulk request errors.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginBulkRequestResponses:          descHelper.NewDesc("plugin_bulk_requests_responses", "Bulk request HTTP response counts by code.", "plugin_type", "plugin", "plugin_id", "code", "pipeline"),
 
 		FlowInputCurrent:              descHelper.NewDesc("flow_input_current", "Current number of events in the input queue.", "pipeline"),
 		FlowInputLifetime:             descHelper.NewDesc("flow_input_lifetime", "Lifetime number of events in the input queue.", "pipeline"),
@@ -111,125 +111,139 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 	}
 }
 
-func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric, endpoint string) {
+func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric, endpoint string) {
 	collectingStart := time.Now()
 	slog.Debug("collecting pipeline stats for pipeline", "pipelineID", pipelineID)
 
 	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
 
-	newFloatMetric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value float64, labels ...string) {
-		labels = append(labels, pipelineID, endpoint)
-		metric := prometheus.MustNewConstMetric(desc, metricType, value, labels...)
+	// ***** EVENTS *****
+	mh.NewIntMetric(c.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
+	mh.NewIntMetric(c.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
+	mh.NewIntMetric(c.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
+	mh.NewIntMetric(c.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
+	mh.NewIntMetric(c.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
+	// ****************** 
 
-		ch <- metric
-	}
+	// ***** UP *****
+	mh.NewFloatMetric(c.Up, prometheus.GaugeValue, c.isPipelineHealthy(pipeStats.Reloads))
+	// **************
 
-	newTimestampMetric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value time.Time, labels ...string) {
-		labels = append(labels, pipelineID, endpoint)
-		metric := prometheus.NewMetricWithTimestamp(value, prometheus.MustNewConstMetric(desc, metricType, 1, labels...))
-
-		ch <- metric
-	}
-
-	newIntMetric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value int, labels ...string) {
-		newFloatMetric(desc, metricType, float64(value), labels...)
-	}
-
-	newInt64Metric := func(desc *prometheus.Desc, metricType prometheus.ValueType, value int64, labels ...string) {
-		newFloatMetric(desc, metricType, float64(value), labels...)
-	}
-
-	mh.NewIntMetric(collector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
-	mh.NewIntMetric(collector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
-	mh.NewIntMetric(collector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
-	mh.NewIntMetric(collector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
-	mh.NewIntMetric(collector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
-
-	mh.NewFloatMetric(collector.Up, prometheus.GaugeValue, collector.isPipelineHealthy(pipeStats.Reloads))
-
-	mh.NewIntMetric(collector.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
-	mh.NewIntMetric(collector.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
+	// ***** RELOADS *****
+	mh.NewIntMetric(c.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
+	mh.NewIntMetric(c.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
 
 	if pipeStats.Reloads.LastSuccessTimestamp != nil {
-		newTimestampMetric(collector.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)
+		mh.NewTimestampMetric(c.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)
 	}
 	if pipeStats.Reloads.LastFailureTimestamp != nil {
-		newTimestampMetric(collector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
+		mh.NewTimestampMetric(c.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
 	}
+	// *******************
 
-	newInt64Metric(collector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
-	newInt64Metric(collector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
-	newInt64Metric(collector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	// ***** QUEUE *****
+	mh.NewInt64Metric(c.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
+	mh.NewInt64Metric(c.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
+	mh.NewInt64Metric(c.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	// *****************
 
+	// ***** FLOW *****
 	flowStats := pipeStats.Flow
-	newFloatMetric(collector.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
-	newFloatMetric(collector.FlowInputLifetime, prometheus.CounterValue, flowStats.InputThroughput.Lifetime)
-	newFloatMetric(collector.FlowFilterCurrent, prometheus.GaugeValue, flowStats.FilterThroughput.Current)
-	newFloatMetric(collector.FlowFilterLifetime, prometheus.CounterValue, flowStats.FilterThroughput.Lifetime)
-	newFloatMetric(collector.FlowOutputCurrent, prometheus.GaugeValue, flowStats.OutputThroughput.Current)
-	newFloatMetric(collector.FlowOutputLifetime, prometheus.CounterValue, flowStats.OutputThroughput.Lifetime)
-	newFloatMetric(collector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, flowStats.QueueBackpressure.Current)
-	newFloatMetric(collector.FlowQueueBackpressureLifetime, prometheus.CounterValue, flowStats.QueueBackpressure.Lifetime)
-	newFloatMetric(collector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, flowStats.WorkerConcurrency.Current)
-	newFloatMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, flowStats.WorkerConcurrency.Lifetime)
+	mh.NewFloatMetric(c.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
+	mh.NewFloatMetric(c.FlowInputLifetime, prometheus.CounterValue, flowStats.InputThroughput.Lifetime)
+	mh.NewFloatMetric(c.FlowFilterCurrent, prometheus.GaugeValue, flowStats.FilterThroughput.Current)
+	mh.NewFloatMetric(c.FlowFilterLifetime, prometheus.CounterValue, flowStats.FilterThroughput.Lifetime)
+	mh.NewFloatMetric(c.FlowOutputCurrent, prometheus.GaugeValue, flowStats.OutputThroughput.Current)
+	mh.NewFloatMetric(c.FlowOutputLifetime, prometheus.CounterValue, flowStats.OutputThroughput.Lifetime)
+	mh.NewFloatMetric(c.FlowQueueBackpressureCurrent, prometheus.GaugeValue, flowStats.QueueBackpressure.Current)
+	mh.NewFloatMetric(c.FlowQueueBackpressureLifetime, prometheus.CounterValue, flowStats.QueueBackpressure.Lifetime)
+	mh.NewFloatMetric(c.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, flowStats.WorkerConcurrency.Current)
+	mh.NewFloatMetric(c.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, flowStats.WorkerConcurrency.Lifetime)
+	// ****************
 
+	// ***** DEAD LETTER QUEUE *****
 	deadLetterQueueStats := pipeStats.DeadLetterQueue
-	newIntMetric(collector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
-	newInt64Metric(collector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
-	newInt64Metric(collector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
-	newInt64Metric(collector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
+	mh.NewIntMetric(c.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
+	mh.NewInt64Metric(c.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
+	mh.NewInt64Metric(c.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
+	mh.NewInt64Metric(c.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
+	// *****************************
 
-	// Output error metrics
-	for _, output := range pipeStats.Plugins.Outputs {
-		pluginID := output.ID
-		pluginType := "output"
-		slog.Debug("collecting output error stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", output.Name, "id", pluginID)
-
-		// Response codes returned by output Bulk Requests
-		for code, count := range output.BulkRequests.Responses {
-			ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, float64(count), pipelineID, pluginType, output.Name, pluginID, code, endpoint)
-		}
-
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, float64(output.Documents.Successes), pipelineID, pluginType, output.Name, pluginID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, float64(output.Documents.NonRetryableFailures), pipelineID, pluginType, output.Name, pluginID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, float64(output.BulkRequests.WithErrors), pipelineID, pluginType, output.Name, pluginID, endpoint)
-	}
-
-	// Pipeline plugins metrics
-	for _, plugin := range pipeStats.Plugins.Inputs {
-		pluginType := "input"
-		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "endpoint", endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, float64(plugin.Events.QueuePushDurationInMillis), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-	}
-
-	for _, plugin := range pipeStats.Plugins.Codecs {
-		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", "codec", "name", plugin.Name, "id", plugin.ID, "endpoint", endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Encode.WritesIn), pipelineID, "codec:encode", plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Decode.WritesIn), pipelineID, "codec:decode", plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Decode.Out), pipelineID, "codec:decode", plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Encode.DurationInMillis), pipelineID, "codec:encode", plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Decode.DurationInMillis), pipelineID, "codec:decode", plugin.Name, plugin.ID, endpoint)
-	}
-
-	for _, plugin := range pipeStats.Plugins.Filters {
-		pluginType := "filter"
-		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "endpoint", endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Events.In), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Events.DurationInMillis), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-	}
-
+	// ===== PLUGINS =====
+	// ***** OUTPUTS *****
 	for _, plugin := range pipeStats.Plugins.Outputs {
 		pluginType := "output"
-		slog.Debug("collecting pipeline plugin stats for pipeline", "pipelineID", pipelineID, "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "endpoint", endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsIn, prometheus.CounterValue, float64(plugin.Events.In), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsOut, prometheus.CounterValue, float64(plugin.Events.Out), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
-		ch <- prometheus.MustNewConstMetric(collector.PipelinePluginEventsDuration, prometheus.CounterValue, float64(plugin.Events.DurationInMillis), pipelineID, pluginType, plugin.Name, plugin.ID, endpoint)
+		slog.Debug("collecting outputs stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
+
+		// Response codes returned by output Bulk Requests
+		for code, count := range plugin.BulkRequests.Responses {
+			mh.Labels = []string{pluginType, plugin.Name, plugin.ID, code, pipelineID, endpoint}
+			mh.NewIntMetric(c.PipelinePluginBulkRequestResponses, prometheus.CounterValue, count)
+		}
+
+		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		mh.NewIntMetric(c.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, plugin.Documents.Successes)
+		mh.NewIntMetric(c.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, plugin.Documents.NonRetryableFailures)
+		mh.NewIntMetric(c.PipelinePluginBulkRequestErrors, prometheus.CounterValue, plugin.BulkRequests.WithErrors)
 	}
+	// *******************
+
+	// ***** INPUTS *****
+	for _, plugin := range pipeStats.Plugins.Inputs {
+		pluginType := "input"
+		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
+
+		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		mh.NewIntMetric(c.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, plugin.Events.QueuePushDurationInMillis)
+	}
+	// ******************
+
+	// ***** CODECS *****
+	for _, plugin := range pipeStats.Plugins.Codecs {
+		pluginType := "codec"
+		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
+
+		pluginType = "codec:encode"
+		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Encode.WritesIn)
+		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Encode.DurationInMillis)
+
+		pluginType = "codec:decode"
+		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Decode.WritesIn)
+		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Decode.Out)
+		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Decode.DurationInMillis)
+	}
+	// ******************
+
+	// ***** FILTERS *****
+	for _, plugin := range pipeStats.Plugins.Filters {
+		pluginType := "filter"
+		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
+
+		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
+		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+	}
+	// *******************
+
+	// ***** OUTPUTS *****
+	for _, plugin := range pipeStats.Plugins.Outputs {
+		pluginType := "output"
+		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
+
+		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
+		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+	}
+	// *******************
+	// ===================
 
 	collectingEnd := time.Now()
-	slog.Debug("collected pipeline stats for pipeline", "pipelineID", pipelineID, "duration", collectingEnd.Sub(collectingStart), "endpoint", endpoint)
+	slog.Debug("collected pipeline stats for pipeline", "duration", collectingEnd.Sub(collectingStart), "pipelineID", pipelineID, "endpoint", endpoint)
 }
 
 // isPipelineHealthy returns 1 if the pipeline is healthy, 0 if it is not
@@ -243,7 +257,7 @@ func (collector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipeli
 // A pipeline is considered unhealthy if:
 //  1. last_failure_timestamp is not nil and last_success_timestamp is nil
 //  2. last_failure_timestamp > last_success_timestamp
-func (collector *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
+func (c *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
 	if pipeReloadStats.LastFailureTimestamp == nil {
 		return CollectorHealthy
 	}

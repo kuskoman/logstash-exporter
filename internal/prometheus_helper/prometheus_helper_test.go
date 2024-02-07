@@ -229,7 +229,15 @@ func TestSimpleMetricsHelper(t *testing.T) {
 
 		metric := <- ch
 
-		val, err := ExtractTimestampMsFromMetric(metric)
+		fqName, err := ExtractFqName(metric.Desc().String())
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if metricName != fqName {
+			t.Errorf("expected extracted name to be %s, got %s", metricName, fqName)
+		}
+
+		val, err := extractTimestampMsFromMetric(metric)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -246,7 +254,7 @@ func TestExtractTimestampMsFromMetric(t *testing.T) {
 		metricValue := time.UnixMilli(42)
 		metric      := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
 
-		extractedValue, err := ExtractTimestampMsFromMetric(metric)
+		extractedValue, err := extractTimestampMsFromMetric(metric)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -258,7 +266,7 @@ func TestExtractTimestampMsFromMetric(t *testing.T) {
 
 	t.Run("should return error if writing metric fails", func(t *testing.T) {
 		badMetric := &badMetricStub{}
-		val, err := ExtractTimestampMsFromMetric(badMetric)
+		val, err := extractTimestampMsFromMetric(badMetric)
 
 		if err == nil {
 			t.Errorf("expected error, but got nil")

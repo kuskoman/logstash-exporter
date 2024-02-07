@@ -85,8 +85,8 @@ func (mh *SimpleMetricsHelper) NewTimestampMetric (desc *prometheus.Desc, metric
 
 // ExtractValueFromMetric extracts the timestamp from a prometheus.Metric object.
 // Useful for testing NewTimestampMetric method of SimpleMetricsHelper
-// Returns the extracted int64 timestamp
-func ExtractTimestampMsFromMetric(metric prometheus.Metric) (int64, error) {
+// Returns the extracted timestamp in milliseconds of 'int64' type 
+func extractTimestampMsFromMetric(metric prometheus.Metric) (int64, error) {
 	var dtoMetric dto.Metric
 	err := metric.Write(&dtoMetric)
 	if err != nil {
