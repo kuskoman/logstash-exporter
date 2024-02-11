@@ -73,10 +73,10 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		EventsDuration:          descHelper.NewDesc("events_duration", "Time needed to process event.", "pipeline"),
 		EventsQueuePushDuration: descHelper.NewDesc("events_queue_push_duration", "Time needed to push event to queue.", "pipeline"),
 
-		ReloadsSuccesses:       descHelper.NewDesc("reloads_successes", "Number of successful pipeline reloads.", "pipeline"),
-		ReloadsFailures:        descHelper.NewDesc("reloads_failures", "Number of failed pipeline reloads.", "pipeline"),
+		ReloadsSuccesses: descHelper.NewDesc("reloads_successes", "Number of successful pipeline reloads.", "pipeline"),
+		ReloadsFailures:  descHelper.NewDesc("reloads_failures", "Number of failed pipeline reloads.", "pipeline"),
 
-		ReloadsLastSuccessTimestamp:    descHelper.NewDesc("reloads_last_success_timestamp", "Timestamp of last successful pipeline reload.", "pipeline"),
+		ReloadsLastSuccessTimestamp: descHelper.NewDesc("reloads_last_success_timestamp", "Timestamp of last successful pipeline reload.", "pipeline"),
 		ReloadsLastFailureTimestamp: descHelper.NewDesc("reloads_last_failure_timestamp", "Timestamp of last failed pipeline reload.", "pipeline"),
 
 		QueueEventsCount:         descHelper.NewDesc("queue_events_count", "Number of events in the queue.", "pipeline"),
@@ -111,62 +111,62 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 	}
 }
 
-func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric, endpoint string) {
+func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric, endpoint string) {
 	collectingStart := time.Now()
 	slog.Debug("collecting pipeline stats for pipeline", "pipelineID", pipelineID)
 
 	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
 
 	// ***** EVENTS *****
-	mh.NewIntMetric(c.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
-	mh.NewIntMetric(c.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
-	mh.NewIntMetric(c.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
-	mh.NewIntMetric(c.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
-	mh.NewIntMetric(c.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
-	// ****************** 
+	mh.NewIntMetric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
+	mh.NewIntMetric(subcollector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
+	mh.NewIntMetric(subcollector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
+	mh.NewIntMetric(subcollector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
+	mh.NewIntMetric(subcollector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
+	// ******************
 
 	// ***** UP *****
-	mh.NewFloatMetric(c.Up, prometheus.GaugeValue, c.isPipelineHealthy(pipeStats.Reloads))
+	mh.NewFloatMetric(subcollector.Up, prometheus.GaugeValue, subcollector.isPipelineHealthy(pipeStats.Reloads))
 	// **************
 
 	// ***** RELOADS *****
-	mh.NewIntMetric(c.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
-	mh.NewIntMetric(c.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
+	mh.NewIntMetric(subcollector.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
+	mh.NewIntMetric(subcollector.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
 
 	if pipeStats.Reloads.LastSuccessTimestamp != nil {
-		mh.NewTimestampMetric(c.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)
+		mh.NewTimestampMetric(subcollector.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)
 	}
 	if pipeStats.Reloads.LastFailureTimestamp != nil {
-		mh.NewTimestampMetric(c.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
+		mh.NewTimestampMetric(subcollector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
 	}
 	// *******************
 
 	// ***** QUEUE *****
-	mh.NewInt64Metric(c.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
-	mh.NewInt64Metric(c.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
-	mh.NewInt64Metric(c.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	mh.NewInt64Metric(subcollector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
+	mh.NewInt64Metric(subcollector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
+	mh.NewInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
 	// *****************
 
 	// ***** FLOW *****
 	flowStats := pipeStats.Flow
-	mh.NewFloatMetric(c.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
-	mh.NewFloatMetric(c.FlowInputLifetime, prometheus.CounterValue, flowStats.InputThroughput.Lifetime)
-	mh.NewFloatMetric(c.FlowFilterCurrent, prometheus.GaugeValue, flowStats.FilterThroughput.Current)
-	mh.NewFloatMetric(c.FlowFilterLifetime, prometheus.CounterValue, flowStats.FilterThroughput.Lifetime)
-	mh.NewFloatMetric(c.FlowOutputCurrent, prometheus.GaugeValue, flowStats.OutputThroughput.Current)
-	mh.NewFloatMetric(c.FlowOutputLifetime, prometheus.CounterValue, flowStats.OutputThroughput.Lifetime)
-	mh.NewFloatMetric(c.FlowQueueBackpressureCurrent, prometheus.GaugeValue, flowStats.QueueBackpressure.Current)
-	mh.NewFloatMetric(c.FlowQueueBackpressureLifetime, prometheus.CounterValue, flowStats.QueueBackpressure.Lifetime)
-	mh.NewFloatMetric(c.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, flowStats.WorkerConcurrency.Current)
-	mh.NewFloatMetric(c.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, flowStats.WorkerConcurrency.Lifetime)
+	mh.NewFloatMetric(subcollector.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
+	mh.NewFloatMetric(subcollector.FlowInputLifetime, prometheus.CounterValue, flowStats.InputThroughput.Lifetime)
+	mh.NewFloatMetric(subcollector.FlowFilterCurrent, prometheus.GaugeValue, flowStats.FilterThroughput.Current)
+	mh.NewFloatMetric(subcollector.FlowFilterLifetime, prometheus.CounterValue, flowStats.FilterThroughput.Lifetime)
+	mh.NewFloatMetric(subcollector.FlowOutputCurrent, prometheus.GaugeValue, flowStats.OutputThroughput.Current)
+	mh.NewFloatMetric(subcollector.FlowOutputLifetime, prometheus.CounterValue, flowStats.OutputThroughput.Lifetime)
+	mh.NewFloatMetric(subcollector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, flowStats.QueueBackpressure.Current)
+	mh.NewFloatMetric(subcollector.FlowQueueBackpressureLifetime, prometheus.CounterValue, flowStats.QueueBackpressure.Lifetime)
+	mh.NewFloatMetric(subcollector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, flowStats.WorkerConcurrency.Current)
+	mh.NewFloatMetric(subcollector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, flowStats.WorkerConcurrency.Lifetime)
 	// ****************
 
 	// ***** DEAD LETTER QUEUE *****
 	deadLetterQueueStats := pipeStats.DeadLetterQueue
-	mh.NewIntMetric(c.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
-	mh.NewInt64Metric(c.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
-	mh.NewInt64Metric(c.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
-	mh.NewInt64Metric(c.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
+	mh.NewIntMetric(subcollector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
+	mh.NewInt64Metric(subcollector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
+	mh.NewInt64Metric(subcollector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
+	mh.NewInt64Metric(subcollector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
 	// *****************************
 
 	// ===== PLUGINS =====
@@ -178,13 +178,13 @@ func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineRespon
 		// Response codes returned by output Bulk Requests
 		for code, count := range plugin.BulkRequests.Responses {
 			mh.Labels = []string{pluginType, plugin.Name, plugin.ID, code, pipelineID, endpoint}
-			mh.NewIntMetric(c.PipelinePluginBulkRequestResponses, prometheus.CounterValue, count)
+			mh.NewIntMetric(subcollector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, count)
 		}
 
 		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(c.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, plugin.Documents.Successes)
-		mh.NewIntMetric(c.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, plugin.Documents.NonRetryableFailures)
-		mh.NewIntMetric(c.PipelinePluginBulkRequestErrors, prometheus.CounterValue, plugin.BulkRequests.WithErrors)
+		mh.NewIntMetric(subcollector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, plugin.Documents.Successes)
+		mh.NewIntMetric(subcollector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, plugin.Documents.NonRetryableFailures)
+		mh.NewIntMetric(subcollector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, plugin.BulkRequests.WithErrors)
 	}
 	// *******************
 
@@ -194,8 +194,8 @@ func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineRespon
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
 		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		mh.NewIntMetric(c.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, plugin.Events.QueuePushDurationInMillis)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, plugin.Events.QueuePushDurationInMillis)
 	}
 	// ******************
 
@@ -206,14 +206,14 @@ func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineRespon
 
 		pluginType = "codec:encode"
 		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Encode.WritesIn)
-		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Encode.DurationInMillis)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Encode.WritesIn)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Encode.DurationInMillis)
 
 		pluginType = "codec:decode"
 		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Decode.WritesIn)
-		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Decode.Out)
-		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Decode.DurationInMillis)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Decode.WritesIn)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Decode.Out)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Decode.DurationInMillis)
 	}
 	// ******************
 
@@ -223,9 +223,9 @@ func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineRespon
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
 		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
-		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
 	}
 	// *******************
 
@@ -235,9 +235,9 @@ func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineRespon
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
 		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(c.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
-		mh.NewIntMetric(c.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		mh.NewIntMetric(c.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
 	}
 	// *******************
 	// ===================
@@ -257,7 +257,7 @@ func (c *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineRespon
 // A pipeline is considered unhealthy if:
 //  1. last_failure_timestamp is not nil and last_success_timestamp is nil
 //  2. last_failure_timestamp > last_success_timestamp
-func (c *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
+func (subcollector *PipelineSubcollector) isPipelineHealthy(pipeReloadStats responses.PipelineReloadResponse) float64 {
 	if pipeReloadStats.LastFailureTimestamp == nil {
 		return CollectorHealthy
 	}
