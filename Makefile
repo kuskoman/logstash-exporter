@@ -112,6 +112,7 @@ clean-elasticsearch:
 #: Upgrades all dependencies
 upgrade-dependencies:
 	go get -u ./...
+	go mod tidy
 
 #: Migrates configuration from v1 to v2
 migrate-v1-to-v2:
