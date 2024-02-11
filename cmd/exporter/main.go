@@ -26,9 +26,6 @@ func main() {
 	}
 
 	warn := godotenv.Load()
-	if warn != nil {
-		log.Printf("failed to load .env file: %s", warn)
-	}
 
 	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
 	if err != nil {
@@ -38,9 +35,14 @@ func main() {
 
 	logger, err := config.SetupSlog(exporterConfig.Logging.Level, exporterConfig.Logging.Format)
 	if err != nil {
+		log.Printf("failed to load .env file: %s", err)
 		log.Fatalf("failed to setup slog: %s", err)
-	} else {
-		slog.SetDefault(logger)
+	}
+
+	slog.SetDefault(logger)
+
+	if warn != nil {
+		slog.Warn("failed to load .env file", "error", warn)
 	}
 
 	host := exporterConfig.Server.Host
