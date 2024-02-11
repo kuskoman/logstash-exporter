@@ -9,9 +9,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
+	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
@@ -25,42 +25,42 @@ var (
 type NodeinfoCollector struct {
 	clients []logstash_client.Client
 
-	NodeInfos          *prometheus.Desc
-	BuildInfos         *prometheus.Desc
+	NodeInfos  *prometheus.Desc
+	BuildInfos *prometheus.Desc
 
-	Up                 *prometheus.Desc
+	Up *prometheus.Desc
 
 	PipelineWorkers    *prometheus.Desc
 	PipelineBatchSize  *prometheus.Desc
 	PipelineBatchDelay *prometheus.Desc
 
-	Status             *prometheus.Desc
+	Status *prometheus.Desc
 }
 
 func NewNodeinfoCollector(clients []logstash_client.Client) *NodeinfoCollector {
 	descHelper := prometheus_helper.SimpleDescHelper{Namespace: namespace, Subsystem: subsystem}
 
 	return &NodeinfoCollector{
-		clients:            clients,
-		NodeInfos:          descHelper.NewDesc("node",
+		clients: clients,
+		NodeInfos: descHelper.NewDesc("node",
 			"A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance.",
 			"name", "version", "http_address", "host", "id",
 		),
-		BuildInfos:         descHelper.NewDesc("build",
+		BuildInfos: descHelper.NewDesc("build",
 			"A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance.",
 			"date", "sha", "snapshot"),
 
-		Up:                 descHelper.NewDesc("up",
+		Up: descHelper.NewDesc("up",
 			"A metric that returns 1 if the node is up, 0 otherwise."),
-		PipelineWorkers:    descHelper.NewDesc("pipeline_workers",
+		PipelineWorkers: descHelper.NewDesc("pipeline_workers",
 			"Number of worker threads that will process pipeline events.",
 		),
-		PipelineBatchSize:  descHelper.NewDesc("pipeline_batch_size",
+		PipelineBatchSize: descHelper.NewDesc("pipeline_batch_size",
 			"Number of events to retrieve from the input queue before sending to the filter and output stages."),
 		PipelineBatchDelay: descHelper.NewDesc("pipeline_batch_delay",
 			"Amount of time to wait for events to fill the batch before sending to the filter and output stages."),
 
-		Status:             descHelper.NewDesc("status",
+		Status: descHelper.NewDesc("status",
 			"A metric with a constant '1' value labeled by status.",
 			"status"),
 	}
@@ -101,52 +101,52 @@ func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Me
 	return errors.New(errorString)
 }
 
-func (c *NodeinfoCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
+func (collector *NodeinfoCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
 	endpoint := client.GetEndpoint()
-	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
+	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
 
 	nodeInfo, err := client.GetNodeInfo(ctx)
 	if err != nil {
-		status := c.getUpStatus(nodeInfo, err)
+		status := collector.getUpStatus(nodeInfo, err)
 
 		// ***** UP *****
-		mh.NewIntMetric(c.Up, prometheus.GaugeValue, status)
+		metricsHelper.NewIntMetric(collector.Up, prometheus.GaugeValue, status)
 		// **************
 
 		return err
 	}
 
 	// ***** NODE *****
-	mh.Labels = []string{nodeInfo.Name, nodeInfo.Version, nodeInfo.Host, nodeInfo.HTTPAddress, nodeInfo.ID, endpoint}
-	mh.NewIntMetric(c.NodeInfos, prometheus.CounterValue, 1)
+	metricsHelper.Labels = []string{nodeInfo.Name, nodeInfo.Version, nodeInfo.Host, nodeInfo.HTTPAddress, nodeInfo.ID, endpoint}
+	metricsHelper.NewIntMetric(collector.NodeInfos, prometheus.CounterValue, 1)
 	// ****************
 
 	// ***** BUILD *****
-	mh.Labels = []string{nodeInfo.BuildDate, nodeInfo.BuildSHA, strconv.FormatBool(nodeInfo.BuildSnapshot), endpoint}
-	mh.NewIntMetric(c.BuildInfos, prometheus.CounterValue, 1)
+	metricsHelper.Labels = []string{nodeInfo.BuildDate, nodeInfo.BuildSHA, strconv.FormatBool(nodeInfo.BuildSnapshot), endpoint}
+	metricsHelper.NewIntMetric(collector.BuildInfos, prometheus.CounterValue, 1)
 	// *****************
 
-	mh.Labels = []string{endpoint}
+	metricsHelper.Labels = []string{endpoint}
 
 	// ***** UP *****
-	mh.NewIntMetric(c.Up, prometheus.GaugeValue, 1)
+	metricsHelper.NewIntMetric(collector.Up, prometheus.GaugeValue, 1)
 	// **************
 
 	// ***** PIPELINE *****
-	mh.NewIntMetric(c.PipelineWorkers, prometheus.CounterValue, nodeInfo.Pipeline.Workers)
-	mh.NewIntMetric(c.PipelineBatchSize, prometheus.CounterValue, nodeInfo.Pipeline.BatchSize)
-	mh.NewIntMetric( c.PipelineBatchDelay, prometheus.CounterValue, nodeInfo.Pipeline.BatchDelay)
+	metricsHelper.NewIntMetric(collector.PipelineWorkers, prometheus.CounterValue, nodeInfo.Pipeline.Workers)
+	metricsHelper.NewIntMetric(collector.PipelineBatchSize, prometheus.CounterValue, nodeInfo.Pipeline.BatchSize)
+	metricsHelper.NewIntMetric(collector.PipelineBatchDelay, prometheus.CounterValue, nodeInfo.Pipeline.BatchDelay)
 	// ********************
 
 	// ***** STATUS *****
-	mh.Labels = []string{nodeInfo.Status, endpoint}
-	mh.NewIntMetric(c.Status, prometheus.CounterValue, 1)
-	// ******************  
+	metricsHelper.Labels = []string{nodeInfo.Status, endpoint}
+	metricsHelper.NewIntMetric(collector.Status, prometheus.CounterValue, 1)
+	// ******************
 
 	return nil
 }
 
-func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) int{
+func (c *NodeinfoCollector) getUpStatus(nodeinfo *responses.NodeInfoResponse, err error) int {
 	status := 1
 	if err != nil {
 		status = 0

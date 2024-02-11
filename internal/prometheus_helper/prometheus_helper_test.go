@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -118,18 +119,18 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		metricName := "test_metric"
 		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
-
+		
 		ch := make(chan prometheus.Metric)
 
 		go func() {
 			helper := &SimpleMetricsHelper{
 				Channel: ch,
-				Labels:  []string{},
+				Labels: []string{},
 			}
 			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()
 
-		metric := <-ch
+		metric := <- ch
 
 		fqName, err := ExtractFqName(metric.Desc().String())
 		if err != nil {
@@ -156,18 +157,18 @@ func TestSimpleMetricsHelper(t *testing.T) {
 
 		metricDesc := helper.NewDesc("metric", "help", "customLabel")
 		metricValue := 42.0
-
+		
 		ch := make(chan prometheus.Metric)
 
 		go func() {
 			helper := &SimpleMetricsHelper{
 				Channel: ch,
-				Labels:  []string{"customLabelValue", "hostnameEndpoint"},
+				Labels: []string{"customLabelValue", "hostnameEndpoint"},
 			}
 			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()
 
-		metric := <-ch
+		metric := <- ch
 
 		desc := metric.Desc()
 		if metricDesc.String() != desc.String() {
@@ -187,12 +188,12 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		metricName := "test_metric"
 		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
-
+		
 		ch := make(chan prometheus.Metric, 3)
 
 		helper := &SimpleMetricsHelper{
 			Channel: ch,
-			Labels:  []string{},
+			Labels: []string{},
 		}
 		helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		helper.NewIntMetric(metricDesc, prometheus.GaugeValue, int(metricValue))
@@ -210,4 +211,70 @@ func TestSimpleMetricsHelper(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("should create timestamp metric", func(t *testing.T) {
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricValue := time.UnixMilli(42)
+		
+		ch := make(chan prometheus.Metric)
+
+		go func() {
+			helper := &SimpleMetricsHelper{
+				Channel: ch,
+				Labels: []string{},
+			}
+			helper.NewTimestampMetric(metricDesc, prometheus.CounterValue, metricValue)
+		}()
+
+		metric := <- ch
+
+		fqName, err := ExtractFqName(metric.Desc().String())
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if metricName != fqName {
+			t.Errorf("expected extracted name to be %s, got %s", metricName, fqName)
+		}
+
+		val, err := extractTimestampMsFromMetric(metric)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if val != metricValue.UnixMilli() {
+			t.Errorf("expected extracted value to be %d, got %d", metricValue.UnixMilli(), val)
+		}
+	})
+}
+
+func TestExtractTimestampMsFromMetric(t *testing.T) {
+	t.Run("should extract timestamp from a metric", func(t *testing.T) {
+		metricDesc  := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metricType  := prometheus.GaugeValue
+		metricValue := time.UnixMilli(42)
+		metric      := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
+
+		extractedValue, err := extractTimestampMsFromMetric(metric)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		if extractedValue != metricValue.UnixMilli() {
+			t.Errorf("expected extracted value to be %d, got %d", metricValue.UnixMilli(), extractedValue)
+		}
+	})
+
+	t.Run("should return error if writing metric fails", func(t *testing.T) {
+		badMetric := &badMetricStub{}
+		val, err := extractTimestampMsFromMetric(badMetric)
+
+		if err == nil {
+			t.Errorf("expected error, but got nil")
+		}
+
+		if val != 0 {
+			t.Errorf("expected value to be 0, got %d", val)
+		}
+	})
+
 }
