@@ -2,6 +2,9 @@
 
 # execute: ./scripts/add_descriptions_to_readme.sh
 
+# enable regex (see: https://stackoverflow.com/a/42740385)
+shopt -s extglob
+
 scriptName="$(dirname "$0")/$(basename "$0")"
 
 function getHelp() { # get descriptions and commands from Makefile
@@ -12,11 +15,10 @@ function getHelp() { # get descriptions and commands from Makefile
     while read -r line; do
         if (( i % 2 == 0 ));
             then
-                descriptions+=( "$(echo $line | sed 's/#:[ ]*//')" )
+				descriptions+=( "${line//#:*( )}" )
             else
-                commands+=( $(echo "$line" | cut -d : -f 1) )
+                commands+=( "$(echo "$line" | cut -d : -f 1)" )
         fi
-
         ((i++))
     done < <(
         # https://stackoverflow.com/a/59087509
@@ -29,8 +31,8 @@ FILE=README.md
 
 getHelp
 
-let startLine=$(grep -n "^#### Available Commands" $FILE | cut -d : -f 1)+2
-let endLine=$(grep -n "^#### File Structure" $FILE | cut -d : -f 1)-2
+startLine=$(( $( grep -n "^#### Available Commands" $FILE | cut -d : -f 1 ) + 2 ))
+endLine=$(( $( grep -n "^#### File Structure" $FILE | cut -d : -f 1 ) - 2 ))
 
 # Updates "Available Commands" section:
 
