@@ -115,58 +115,58 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	collectingStart := time.Now()
 	slog.Debug("collecting pipeline stats for pipeline", "pipelineID", pipelineID)
 
-	mh := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
+	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
 
 	// ***** EVENTS *****
-	mh.NewIntMetric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
-	mh.NewIntMetric(subcollector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
-	mh.NewIntMetric(subcollector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
-	mh.NewIntMetric(subcollector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
-	mh.NewIntMetric(subcollector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
+	metricsHelper.NewIntMetric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
+	metricsHelper.NewIntMetric(subcollector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
+	metricsHelper.NewIntMetric(subcollector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
+	metricsHelper.NewIntMetric(subcollector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
+	metricsHelper.NewIntMetric(subcollector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
 	// ******************
 
 	// ***** UP *****
-	mh.NewFloatMetric(subcollector.Up, prometheus.GaugeValue, subcollector.isPipelineHealthy(pipeStats.Reloads))
+	metricsHelper.NewFloatMetric(subcollector.Up, prometheus.GaugeValue, subcollector.isPipelineHealthy(pipeStats.Reloads))
 	// **************
 
 	// ***** RELOADS *****
-	mh.NewIntMetric(subcollector.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
-	mh.NewIntMetric(subcollector.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
+	metricsHelper.NewIntMetric(subcollector.ReloadsSuccesses, prometheus.CounterValue, pipeStats.Reloads.Successes)
+	metricsHelper.NewIntMetric(subcollector.ReloadsFailures, prometheus.CounterValue, pipeStats.Reloads.Failures)
 
 	if pipeStats.Reloads.LastSuccessTimestamp != nil {
-		mh.NewTimestampMetric(subcollector.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)
+		metricsHelper.NewTimestampMetric(subcollector.ReloadsLastSuccessTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastSuccessTimestamp)
 	}
 	if pipeStats.Reloads.LastFailureTimestamp != nil {
-		mh.NewTimestampMetric(subcollector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
+		metricsHelper.NewTimestampMetric(subcollector.ReloadsLastFailureTimestamp, prometheus.GaugeValue, *pipeStats.Reloads.LastFailureTimestamp)
 	}
 	// *******************
 
 	// ***** QUEUE *****
-	mh.NewInt64Metric(subcollector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
-	mh.NewInt64Metric(subcollector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
-	mh.NewInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
+	metricsHelper.NewInt64Metric(subcollector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
 	// *****************
 
 	// ***** FLOW *****
 	flowStats := pipeStats.Flow
-	mh.NewFloatMetric(subcollector.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
-	mh.NewFloatMetric(subcollector.FlowInputLifetime, prometheus.CounterValue, flowStats.InputThroughput.Lifetime)
-	mh.NewFloatMetric(subcollector.FlowFilterCurrent, prometheus.GaugeValue, flowStats.FilterThroughput.Current)
-	mh.NewFloatMetric(subcollector.FlowFilterLifetime, prometheus.CounterValue, flowStats.FilterThroughput.Lifetime)
-	mh.NewFloatMetric(subcollector.FlowOutputCurrent, prometheus.GaugeValue, flowStats.OutputThroughput.Current)
-	mh.NewFloatMetric(subcollector.FlowOutputLifetime, prometheus.CounterValue, flowStats.OutputThroughput.Lifetime)
-	mh.NewFloatMetric(subcollector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, flowStats.QueueBackpressure.Current)
-	mh.NewFloatMetric(subcollector.FlowQueueBackpressureLifetime, prometheus.CounterValue, flowStats.QueueBackpressure.Lifetime)
-	mh.NewFloatMetric(subcollector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, flowStats.WorkerConcurrency.Current)
-	mh.NewFloatMetric(subcollector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, flowStats.WorkerConcurrency.Lifetime)
+	metricsHelper.NewFloatMetric(subcollector.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
+	metricsHelper.NewFloatMetric(subcollector.FlowInputLifetime, prometheus.CounterValue, flowStats.InputThroughput.Lifetime)
+	metricsHelper.NewFloatMetric(subcollector.FlowFilterCurrent, prometheus.GaugeValue, flowStats.FilterThroughput.Current)
+	metricsHelper.NewFloatMetric(subcollector.FlowFilterLifetime, prometheus.CounterValue, flowStats.FilterThroughput.Lifetime)
+	metricsHelper.NewFloatMetric(subcollector.FlowOutputCurrent, prometheus.GaugeValue, flowStats.OutputThroughput.Current)
+	metricsHelper.NewFloatMetric(subcollector.FlowOutputLifetime, prometheus.CounterValue, flowStats.OutputThroughput.Lifetime)
+	metricsHelper.NewFloatMetric(subcollector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, flowStats.QueueBackpressure.Current)
+	metricsHelper.NewFloatMetric(subcollector.FlowQueueBackpressureLifetime, prometheus.CounterValue, flowStats.QueueBackpressure.Lifetime)
+	metricsHelper.NewFloatMetric(subcollector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, flowStats.WorkerConcurrency.Current)
+	metricsHelper.NewFloatMetric(subcollector.FlowWorkerConcurrencyLifetime, prometheus.CounterValue, flowStats.WorkerConcurrency.Lifetime)
 	// ****************
 
 	// ***** DEAD LETTER QUEUE *****
 	deadLetterQueueStats := pipeStats.DeadLetterQueue
-	mh.NewIntMetric(subcollector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
-	mh.NewInt64Metric(subcollector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
-	mh.NewInt64Metric(subcollector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
-	mh.NewInt64Metric(subcollector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
+	metricsHelper.NewIntMetric(subcollector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
+	metricsHelper.NewInt64Metric(subcollector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
 	// *****************************
 
 	// ===== PLUGINS =====
@@ -177,14 +177,14 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 
 		// Response codes returned by output Bulk Requests
 		for code, count := range plugin.BulkRequests.Responses {
-			mh.Labels = []string{pluginType, plugin.Name, plugin.ID, code, pipelineID, endpoint}
-			mh.NewIntMetric(subcollector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, count)
+			metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, code, pipelineID, endpoint}
+			metricsHelper.NewIntMetric(subcollector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, count)
 		}
 
-		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(subcollector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, plugin.Documents.Successes)
-		mh.NewIntMetric(subcollector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, plugin.Documents.NonRetryableFailures)
-		mh.NewIntMetric(subcollector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, plugin.BulkRequests.WithErrors)
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, plugin.Documents.Successes)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, plugin.Documents.NonRetryableFailures)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, plugin.BulkRequests.WithErrors)
 	}
 	// *******************
 
@@ -193,9 +193,9 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		pluginType := "input"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
-		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, plugin.Events.QueuePushDurationInMillis)
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, plugin.Events.QueuePushDurationInMillis)
 	}
 	// ******************
 
@@ -205,15 +205,15 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
 		pluginType = "codec:encode"
-		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Encode.WritesIn)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Encode.DurationInMillis)
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Encode.WritesIn)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Encode.DurationInMillis)
 
 		pluginType = "codec:decode"
-		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Decode.WritesIn)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Decode.Out)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Decode.DurationInMillis)
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Decode.WritesIn)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Decode.Out)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Decode.DurationInMillis)
 	}
 	// ******************
 
@@ -222,10 +222,10 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		pluginType := "filter"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
-		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
 	}
 	// *******************
 
@@ -234,10 +234,10 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		pluginType := "output"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
-		mh.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
-		mh.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		mh.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
 	}
 	// *******************
 	// ===================

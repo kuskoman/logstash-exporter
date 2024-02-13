@@ -185,8 +185,8 @@ func TestSimpleMetricsHelper(t *testing.T) {
 	})
 
 	t.Run("should create metrics with different value types", func(t *testing.T) {
-		metricName := "test_metric"
-		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricName  := "test_metric"
+		metricDesc  := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
 		
 		ch := make(chan prometheus.Metric, 3)
@@ -213,8 +213,8 @@ func TestSimpleMetricsHelper(t *testing.T) {
 	})
 
 	t.Run("should create timestamp metric", func(t *testing.T) {
-		metricName := "test_metric"
-		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricName  := "test_metric"
+		metricDesc  := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := time.UnixMilli(42)
 		
 		ch := make(chan prometheus.Metric)
