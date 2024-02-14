@@ -10,6 +10,17 @@ body:
       placeholder: Describe the feature and its benefits
     validations:
       required: true
+  - type: dropdown
+    id: application-version
+    attributes:
+      label: Version of logstash-exporter this feature request applies to
+      description: Please select the version(s) that this feature request applies to.
+      options:
+        - v1
+        - v2
+        - Both v1 and v2 (master)
+    validations:
+      required: false
   - type: textarea
     id: motivation
     attributes:
