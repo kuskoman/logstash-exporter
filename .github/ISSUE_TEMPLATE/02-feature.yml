@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest a new feature for Logstash Exporter
+labels: ["feature", "enhancement"]
+body:
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: Please provide a clear and concise description of the feature you would like to see implemented.
+      placeholder: Describe the feature and its benefits
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation and Goals
+      description: Explain the motivation behind this feature request and what goals it aims to achieve.
+      placeholder: Explain why this feature is important and how it will be useful
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: Are there any alternatives to this feature that could also meet the same needs?
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the feature request here.
+      placeholder: Add any other information or screenshots that would help in understanding the feature request
+    validations:
+      required: false
