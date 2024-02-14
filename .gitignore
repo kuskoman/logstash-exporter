@@ -44,4 +44,4 @@ _debug*.yaml
 helm-generator/
 
 # Local config.yml
-config.yml
+/config.yml
