@@ -49,7 +49,6 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           ignore_names: >-
-            add_descriptions_to_readme.sh
             add_metrics_to_readme.sh
             create_release_notes.sh
             verify_metrics.sh
