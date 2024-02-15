@@ -26,7 +26,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: "^1.21"
+          go-version: "^1.22"
 
       - name: Lint code using golangci-lint
         uses: golangci/golangci-lint-action@v4
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: "^1.21"
+          go-version: "^1.22"
 
       - name: Test code
         run: go test ./... -covermode=atomic -coverprofile=coverage.out
@@ -156,6 +156,14 @@ jobs:
       - name: Wait for compose
         run: make wait-for-compose
 
+      - name: Print compose logs if failed
+        run: docker-compose logs
+        if: failure()
+
+      - name: Print exporter logs if failed
+        run: docker-compose logs exporter
+        if: failure()
+
       - name: Run metrics integration test
         run: make verify-metrics
 
@@ -179,7 +187,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: "^1.21"
+          go-version: "^1.22"
 
       - name: Build Linux binary
         run: make build-linux
@@ -204,7 +212,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: "^1.21"
+          go-version: "^1.22"
 
       - name: Build Linux ARM binary
         run: make build-linux-arm
@@ -229,7 +237,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: "^1.21"
+          go-version: "^1.22"
 
       - name: Build Mac binary
         run: make build-darwin
@@ -254,7 +262,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: "^1.21"
+          go-version: "^1.22"
 
       - name: Build Windows binary
         run: make build-windows
