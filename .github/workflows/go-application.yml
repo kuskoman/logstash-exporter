@@ -160,6 +160,10 @@ jobs:
         run: docker-compose logs
         if: failure()
 
+      - name: Print exporter logs if failed
+        run: docker-compose logs exporter
+        if: failure()
+
       - name: Run metrics integration test
         run: make verify-metrics
 
