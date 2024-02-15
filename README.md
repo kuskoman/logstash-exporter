@@ -168,7 +168,8 @@ See more in the [Migration](#migration) section.
 - `make minify`: Minifies the binary executables.
 - `make install-helm-readme`: Installs readme-generator-for-helm tool.
 - `make helm-readme`: Generates Helm chart README.md file.
-- `make clean-elasticsearch`: Cleans Elasticsearch data, works only with default ES port. The command may take a very long time to complete.
+- `make clean-elasticsearch`: Cleans Elasticsearch data. The command may take a very long time to complete.
+- `make clean-prometheus`: Cleans Prometheus data.
 - `make upgrade-dependencies`: Upgrades all dependencies.
 - `make migrate-v1-to-v2`: Migrates configuration from v1 to v2.
 - `make update-readme-descriptions`: Update Makefile descriptions in main README.md.

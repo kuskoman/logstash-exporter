@@ -90,7 +90,11 @@ jobs:
         run: make helm-readme
 
       - name: Verify that there are no changes
-        run: git diff --exit-code || echo "README.md is not up to date. Please use helm-readme and commit the changes."
+        run: git diff --exit-code || (echo "README.md is not up to date. Please use helm-readme and commit the changes." && exit 1)
+
+      - name: Print changes
+        run: git diff
+        if: failure()
 
   verify-makefile-readme:
     name: Verify that Makefile section of README is up to date
@@ -103,7 +107,11 @@ jobs:
         run: make update-readme-descriptions
 
       - name: Verify that there are no changes
-        run: git diff --exit-code || echo "README.md is not up to date. Please use makefile-readme and commit the changes."
+        run: git diff --exit-code || (echo "README.md is not up to date. Please use makefile-readme and commit the changes." && exit 1)
+
+      - name: Print changes
+        run: git diff
+        if: failure()
 
   lint-helm-chart:
     name: Lint Helm chart
