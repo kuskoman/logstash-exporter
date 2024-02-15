@@ -23,11 +23,11 @@
 
 ### Custom logstash-exporter configuration. Overrides the default .logstash section
 
-| Name                   | Description                 | Value                                             |
-| ---------------------- | --------------------------- | ------------------------------------------------- |
-| `customConfig.enabled` | Enable custom configuration | `false`                                           |
+| Name                   | Description                 | Value                                                |
+| ---------------------- | --------------------------- | ---------------------------------------------------- |
+| `customConfig.enabled` | Enable custom configuration | `false`                                              |
 | `customConfig.config`  | Custom configuration        | `logstash:
-  urls:
+  servers:
     - "http://logstash:9600"
 ` |
 
