@@ -2,9 +2,15 @@
 
 # execute: ./scripts/add_descriptions_to_readme.sh
 
-# define new line character to be used in `sed` 
+# define new line character to be u"$SED_COMMAND" in `"$SED_COMMAND"`
 nl='
 '
+
+SED_COMMAND="sed"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	SED_COMMAND="gsed"
+fi
 
 # enable regex (see: https://stackoverflow.com/a/42740385)
 shopt -s extglob
@@ -43,7 +49,7 @@ endLine=$(( $( grep -n "^#### File Structure" $FILE | cut -d : -f 1 ) - 2 ))
 if (( startLine <= endLine));
 then
 	# Deletes previous descriptions
-	sed -i "$startLine,${endLine}d" "$FILE"
+	"$SED_COMMAND" -i "$startLine,${endLine}d" "$FILE"
 fi
 
 function createMultipleAsterisks() {
@@ -58,13 +64,13 @@ function printAvailableCommands() {
 	commentLen=$(( ${#stringToWrite} - 11 ))
 	i=0
 
-	sed -i "${curLine}i\\${stringToWrite}" "$FILE"
+	"$SED_COMMAND" -i "${curLine}i\\${stringToWrite}" "$FILE"
 
 	# https://www.shellcheck.net/wiki/SC2219
 	(( curLine++ )) || true
 
 	# empty line
-	sed -i "${curLine}i${nl}" "$FILE"
+	"$SED_COMMAND" -i "${curLine}i${nl}" "$FILE"
 
 	(( curLine++ )) || true
 
@@ -75,20 +81,20 @@ function printAvailableCommands() {
 		stringToWrite=${stringToWrite//\'/\\\'}
 		echo "$stringToWrite"
 
-		sed -i "${curLine}i\\${stringToWrite}" "$FILE"
+		"$SED_COMMAND" -i "${curLine}i\\${stringToWrite}" "$FILE"
 		(( curLine++ )) || true
 
 		(( i++ )) || true
 	done
 
 	# empty line
-	sed -i "${curLine}i${nl}" "$FILE"
+	"$SED_COMMAND" -i "${curLine}i${nl}" "$FILE"
 	(( curLine++ )) || true
 
 	# multiple '*'
 	asterisks=$(createMultipleAsterisks $commentLen)
 	stringToWrite="<!--- ${asterisks} --->"
-	sed -i "${curLine}i\\${stringToWrite}" "$FILE"
+	"$SED_COMMAND" -i "${curLine}i\\${stringToWrite}" "$FILE"
 
 	(( curLine++ )) || true
 }
