@@ -41,6 +41,11 @@ services:
       - PROMETHEUS_PORT=${PROMETHEUS_PORT:-9090}
     ports:
       - ${PROMETHEUS_PORT:-9090}:9090
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--web.enable-admin-api"
     healthcheck:
       test:
         - "CMD"

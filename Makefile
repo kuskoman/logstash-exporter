@@ -100,13 +100,29 @@ install-helm-readme:
 helm-readme:
 	./scripts/generate_helm_readme.sh
 
-#: Cleans Elasticsearch data, works only with default ES port. The command may take a very long time to complete
+#: Cleans Elasticsearch data. The command may take a very long time to complete
 clean-elasticsearch:
-	@indices=$(shell curl -s -X GET "http://localhost:9200/_cat/indices" | awk '{print $$3}') ;\
+	@echo "Cleaning up Elasticsearch indices..."
+	@ELASTICSEARCH_PORT=$${ELASTICSEARCH_PORT:-9200} ;\
+	indices=$$(curl -s -X GET "http://localhost:$$ELASTICSEARCH_PORT/_cat/indices?h=index" | grep -E 'logstash-*') ;\
 	for index in $$indices ; do \
-		echo "Deleting all documents from index $$index" ;\
-		curl -X POST "http://localhost:9200/$$index/_delete_by_query?conflicts=proceed" -H "Content-Type: application/json" -d '{"query": {"match_all": {}}}' ;\
-		echo "" ;\
+		echo "Deleting documents from index $$index..." ;\
+		curl -X POST "http://localhost:$$ELASTICSEARCH_PORT/$$index/_delete_by_query?conflicts=proceed" -H "Content-Type: application/json" -d '{"query": {"match_all": {}}}' ;\
+		echo "Completed deleting documents from index $$index." ;\
+	done
+	@echo "Cleanup completed."
+
+#: Cleans Prometheus data
+clean-prometheus:
+	@PROMETHEUS_PORT=$${PROMETHEUS_PORT:-9090} ;\
+	set -euo pipefail ;\
+	echo "Deleting series from Prometheus..." ;\
+	ALL_SERIES=$$(curl -Ss http://localhost:$$PROMETHEUS_PORT/api/v1/label/__name__/values | jq -r '.data[]') ;\
+	for series in $$ALL_SERIES ; do \
+		echo "Deleting series $$series..." ;\
+		encodedSeries=$$(printf '%s' "$$series" | jq -sRr @uri) ;\
+		curl -X POST "http://localhost:$$PROMETHEUS_PORT/api/v1/admin/tsdb/delete_series?match[]=$$encodedSeries" ;\
+		echo "Completed deleting series $$series." ;\
 	done
 
 #: Upgrades all dependencies
