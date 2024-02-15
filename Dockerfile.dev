@@ -1,5 +1,10 @@
-FROM cosmtrek/air:v1.49.0
+FROM cosmtrek/air:v1.49.0 as air
+
+
+FROM golang:1.22.0-alpine3.19
 
 WORKDIR /app
+
+COPY --from=air /go/bin/air /go/bin/air
 
 ENTRYPOINT ["/go/bin/air", "-c", ".air.toml"]
