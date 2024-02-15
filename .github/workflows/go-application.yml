@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
@@ -61,10 +61,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install Node 18
-        uses: actions/setup-node@v4.0.2
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install Compose
         uses: ndeloof/install-compose-action@v0.0.1
@@ -146,7 +146,7 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
@@ -171,7 +171,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
@@ -196,7 +196,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
@@ -221,7 +221,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v4
@@ -245,7 +245,7 @@ jobs:
     needs: [build-linux]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Build Docker image
         run: make build-docker
@@ -299,7 +299,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -321,10 +321,10 @@ jobs:
       - build-linux-docker-image
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Download Docker image
-        uses: actions/download-artifact@v4.1.2
+        uses: actions/download-artifact@v4
         with:
           name: logstash-exporter-docker-image
           path: .helm/files
@@ -373,7 +373,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Output tag information
@@ -408,7 +408,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
-        uses: actions/download-artifact@v4.1.2
+        uses: actions/download-artifact@v4
         with:
           name: logstash-exporter-${{ matrix.binary }}
       - name: Generate sha256 checksum
