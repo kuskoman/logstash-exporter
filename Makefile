@@ -112,6 +112,8 @@ clean-elasticsearch:
 #: Upgrades all dependencies
 upgrade-dependencies:
 	go get -u ./...
+	go mod tidy
+
 
 #: Shows info about available commands
 help:
