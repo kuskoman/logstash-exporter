@@ -129,6 +129,7 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make install-helm-readme`: Installs readme-generator-for-helm tool.
 - `make helm-readme`: Generates Helm chart README.md file.
 - `make clean-elasticsearch`: Cleans Elasticsearch data, works only with default ES port. The command may take a very long time to complete.
+- `make update-readme-descriptions`: Update Makefile descriptions in main README.md.
 - `make upgrade-dependencies`: Upgrades all dependencies.
 - `make help`: Shows info about available commands.
 
