@@ -1,5 +1,15 @@
-FROM cosmtrek/air:v1.49.0
+FROM cosmtrek/air:v1.49.0 as air
+
+FROM golang:1.22.0-alpine3.19
 
 WORKDIR /app
+
+RUN apk add --no-cache curl
+
+COPY --from=air /go/bin/air /go/bin/air
+
+EXPOSE 9198
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:9198/healthcheck
 
 ENTRYPOINT ["/go/bin/air", "-c", ".air.toml"]
