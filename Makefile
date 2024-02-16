@@ -109,11 +109,14 @@ clean-elasticsearch:
 		echo "" ;\
 	done
 
+#: Update Makefile descriptions in main README.md
+update-readme-descriptions:
+	./scripts/add_descriptions_to_readme.sh
+
 #: Upgrades all dependencies
 upgrade-dependencies:
 	go get -u ./...
 	go mod tidy
-
 
 #: Shows info about available commands
 help:

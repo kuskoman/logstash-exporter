@@ -113,6 +113,7 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make build-linux`: Builds a binary executable for Linux.
 - `make build-darwin`: Builds a binary executable for Darwin.
 - `make build-windows`: Builds a binary executable for Windows.
+- `make build-linux-arm`: Builds a binary executable for Linux ARM.
 - `make build-docker`: Builds a Docker image for the Go Exporter application.
 - `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`).
 - `make clean`: Deletes all binary executables in the out directory.
@@ -128,6 +129,8 @@ All configuration variables can be checked in the [config directory](./config/).
 - `make install-helm-readme`: Installs readme-generator-for-helm tool.
 - `make helm-readme`: Generates Helm chart README.md file.
 - `make clean-elasticsearch`: Cleans Elasticsearch data, works only with default ES port. The command may take a very long time to complete.
+- `make update-readme-descriptions`: Update Makefile descriptions in main README.md.
+- `make upgrade-dependencies`: Upgrades all dependencies.
 - `make help`: Shows info about available commands.
 
 <!--- **************************************************** --->

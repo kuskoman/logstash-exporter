@@ -2,5 +2,5 @@ apiVersion: v2
 name: logstash-exporter
 description: Prometheus exporter for Logstash written in Go
 type: application
-version: "1.0.2"
-appVersion: "1.0.2"
+version: "1.6.1"
+appVersion: "1.6.1"
