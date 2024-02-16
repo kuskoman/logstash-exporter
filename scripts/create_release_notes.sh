@@ -25,7 +25,6 @@ if [ -z "$commits_since_previous_tag" ]; then
 else
   echo "Release Notes ($current_tag):" > "$notes_file"
   {
-    # new line
     echo ""
     echo "Since the last tag ($previous_tag), the following changes have been made:"
     echo ""
