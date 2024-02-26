@@ -27,6 +27,14 @@ The application can be run in two ways:
 
 Additionally [Helm chart](./chart/) is provided for easy deployment to Kubernetes.
 
+### Flags
+
+The application supports the following flags:
+
+- `-config`: Path to the configuration file (default: `config.yml`). Takes precedence over `EXPORTER_CONFIG_LOCATION` environment variable.
+- `-help`: Show help message.
+- `-version`: Show semantic version.
+
 #### Binary Executable
 
 The binary executable can be downloaded from the [releases page](https://github.com/kuskoman/logstash-exporter/releases).
