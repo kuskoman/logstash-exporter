@@ -1,4 +1,4 @@
-FROM cosmtrek/air:v1.49.0 as air
+FROM cosmtrek/air:v1.51.0 as air
 
 
 FROM golang:1.22.0-alpine3.19
