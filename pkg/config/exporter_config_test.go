@@ -78,9 +78,6 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
-		if mergedConfig.Logstash.HttpInsecure != defaultHttpInsecure {
-			t.Errorf("expected http insecure to be %v, got %v", defaultHttpInsecure, mergedConfig.Logstash.HttpInsecure)
-		}
 	})
 
 	t.Run("merge with nil config", func(t *testing.T) {
@@ -103,9 +100,6 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
-		if mergedConfig.Logstash.HttpInsecure != defaultHttpInsecure {
-			t.Errorf("expected http insecure to be %v, got %v", defaultHttpInsecure, mergedConfig.Logstash.HttpInsecure)
-		}
 	})
 
 	t.Run("merge with non-empty config", func(t *testing.T) {
@@ -121,11 +115,10 @@ func TestMergeWithDefault(t *testing.T) {
 			},
 			Logstash: LogstashConfig{
 				Servers: []*LogstashServer{
-					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9601", HttpInsecure: true},
 					{Host: "http://localhost:9602"},
 				},
 				HttpTimeout: 3 * time.Second,
-				HttpInsecure: true,
 			},
 		}
 
@@ -152,9 +145,6 @@ func TestMergeWithDefault(t *testing.T) {
 		}
 		if mergedConfig.Logstash.HttpTimeout != 3*time.Second {
 			t.Errorf("expected http timeout to be %v, got %v", 3*time.Second, mergedConfig.Logstash.HttpTimeout)
-		}
-		if mergedConfig.Logstash.HttpInsecure != true {
-			t.Errorf("expected http insecure to be %v, got %v", true, mergedConfig.Logstash.HttpInsecure)
 		}
 	})
 }
