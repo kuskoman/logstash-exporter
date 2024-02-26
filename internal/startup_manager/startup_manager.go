@@ -2,10 +2,10 @@ package startup_manager
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/internal/server"
@@ -19,6 +19,7 @@ import (
 // and its components
 type StartupManager struct {
 	isInitialized bool
+	mutex         *sync.Mutex
 	flagsConfig   *flagsConfig
 	appConfig     *config.Config
 }
@@ -27,42 +28,50 @@ type StartupManager struct {
 func NewStartupManager() *StartupManager {
 	return &StartupManager{
 		isInitialized: false,
+		mutex:         &sync.Mutex{},
 	}
 }
 
-// Initialize is a method that initializes the startup manager
+// Initialize is a method that initializes the startup manager.
+// Should be only called once.
 func (manager *StartupManager) Initialize() error {
+	manager.mutex.Lock()
+	defer manager.mutex.Unlock()
+
 	warn := godotenv.Load()
 
 	if manager.isInitialized {
 		return errors.New("startup manager is already initialized")
 	}
 
-	flagsConfig, shouldExit := handleFlags()
-	if shouldExit {
-		os.Exit(0)
-	}
-
-	manager.flagsConfig = flagsConfig
-	manager.isInitialized = true
+	manager.loadFlags()
 
 	err := manager.loadConfig()
-	if err != nil {
-		if warn != nil {
-			log.Printf("failed to load .env file: %v", warn)
-		}
-		return err
-	}
 
 	if warn != nil {
 		slog.Warn("failed to load .env file", "err", warn)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	printInitialMessage()
 	manager.setupPrometheus()
 	manager.startAppServer()
 
+	manager.isInitialized = true
+
 	return nil
+}
+
+func (manager *StartupManager) loadFlags() {
+	flagsConfig, shouldExit := handleFlags()
+	if shouldExit {
+		os.Exit(0)
+	}
+
+	manager.flagsConfig = flagsConfig
 }
 
 func (manager *StartupManager) loadConfig() error {
