@@ -17,17 +17,28 @@ import (
 )
 
 func main() {
-	version := flag.Bool("version", false, "prints the version and exits")
+	versionFlag := flag.Bool("version", false, "prints the version and exits")
+	helpFlag := flag.Bool("help", false, "prints the help message and exits")
+	configLocationFlag := flag.String("config", config.ExporterConfigLocation, "location of the exporter config file")
 
 	flag.Parse()
-	if *version {
+
+	if *helpFlag {
+		fmt.Printf("Usage of %s:\n", os.Args[0])
+		fmt.Println()
+		fmt.Println("Flags:")
+		flag.PrintDefaults()
+		return
+	}
+
+	if *versionFlag {
 		fmt.Printf("%s\n", config.SemanticVersion)
 		return
 	}
 
 	warn := godotenv.Load()
 
-	exporterConfig, err := config.GetConfig(config.ExporterConfigLocation)
+	exporterConfig, err := config.GetConfig(*configLocationFlag)
 	if err != nil {
 		log.Fatalf("failed to get exporter config: %s", err)
 		os.Exit(1)
