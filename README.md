@@ -281,26 +281,26 @@ Table of exported metrics:
 | logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, goversion from which logstash_exporter was built, and the goos and goarch for the build. |
 | logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance. |
 | logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance. |
-| logstash_info_pipeline_batch_delay | counter | Amount of time to wait for events to fill the batch before sending to the filter and output stages. |
-| logstash_info_pipeline_batch_size | counter | Number of events to retrieve from the input queue before sending to the filter and output stages. |
-| logstash_info_pipeline_workers | counter | Number of worker threads that will process pipeline events. |
+| logstash_info_pipeline_batch_delay | gauge | Amount of time to wait for events to fill the batch before sending to the filter and output stages. |
+| logstash_info_pipeline_batch_size | gauge | Number of events to retrieve from the input queue before sending to the filter and output stages. |
+| logstash_info_pipeline_workers | gauge | Number of worker threads that will process pipeline events. |
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
-| logstash_info_up | gauge | A metric that returns 1 if the node is up, 0 otherwise. |
+| logstash_info_up | counter | A metric that returns 1 if the node is up, 0 otherwise. |
 | logstash_stats_events_duration_millis | gauge | Duration of events processing in milliseconds. |
-| logstash_stats_events_filtered | gauge | Number of events filtered out. |
-| logstash_stats_events_in | gauge | Number of events received. |
-| logstash_stats_events_out | gauge | Number of events out. |
+| logstash_stats_events_filtered | counter | Number of events filtered out. |
+| logstash_stats_events_in | counter | Number of events received. |
+| logstash_stats_events_out | counter | Number of events out. |
 | logstash_stats_events_queue_push_duration_millis | gauge | Duration of events push to queue in milliseconds. |
 | logstash_stats_flow_filter_current | gauge | Current number of events in the filter queue. |
-| logstash_stats_flow_filter_lifetime | gauge | Lifetime number of events in the filter queue. |
+| logstash_stats_flow_filter_lifetime | counter | Lifetime number of events in the filter queue. |
 | logstash_stats_flow_input_current | gauge | Current number of events in the input queue. |
-| logstash_stats_flow_input_lifetime | gauge | Lifetime number of events in the input queue. |
+| logstash_stats_flow_input_lifetime | counter | Lifetime number of events in the input queue. |
 | logstash_stats_flow_output_current | gauge | Current number of events in the output queue. |
-| logstash_stats_flow_output_lifetime | gauge | Lifetime number of events in the output queue. |
+| logstash_stats_flow_output_lifetime | counter | Lifetime number of events in the output queue. |
 | logstash_stats_flow_queue_backpressure_current | gauge | Current number of events in the backpressure queue. |
-| logstash_stats_flow_queue_backpressure_lifetime | gauge | Lifetime number of events in the backpressure queue. |
+| logstash_stats_flow_queue_backpressure_lifetime | counter | Lifetime number of events in the backpressure queue. |
 | logstash_stats_flow_worker_concurrency_current | gauge | Current number of workers. |
-| logstash_stats_flow_worker_concurrency_lifetime | gauge | Lifetime number of workers. |
+| logstash_stats_flow_worker_concurrency_lifetime | counter | Lifetime number of workers. |
 | logstash_stats_jvm_mem_heap_committed_bytes | gauge | Amount of heap memory in bytes that is committed for the Java virtual machine to use. |
 | logstash_stats_jvm_mem_heap_max_bytes | gauge | Maximum amount of heap memory in bytes that can be used for memory management. |
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | Amount of used heap memory in bytes. |
@@ -318,11 +318,11 @@ Table of exported metrics:
 | logstash_stats_pipeline_dead_letter_queue_expired_events | counter | Number of events expired in the dead letter queue. |
 | logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes | gauge | Maximum size of the dead letter queue in bytes. |
 | logstash_stats_pipeline_dead_letter_queue_size_in_bytes | gauge | Current size of the dead letter queue in bytes. |
-| logstash_stats_pipeline_events_duration | counter | Time needed to process event. |
+| logstash_stats_pipeline_events_duration | gauge | Time needed to process event. |
 | logstash_stats_pipeline_events_filtered | counter | Number of events that have been filtered out by this pipeline. |
 | logstash_stats_pipeline_events_in | counter | Number of events that have been inputted into this pipeline. |
 | logstash_stats_pipeline_events_out | counter | Number of events that have been processed by this pipeline. |
-| logstash_stats_pipeline_events_queue_push_duration | counter | Time needed to push event to queue. |
+| logstash_stats_pipeline_events_queue_push_duration | gauge | Time needed to push event to queue. |
 | logstash_stats_pipeline_flow_filter_current | gauge | Current number of events in the filter queue. |
 | logstash_stats_pipeline_flow_filter_lifetime | counter | Lifetime number of events in the filter queue. |
 | logstash_stats_pipeline_flow_input_current | gauge | Current number of events in the input queue. |
@@ -340,10 +340,10 @@ Table of exported metrics:
 | logstash_stats_pipeline_plugin_events_duration | counter | Time spent processing events in this plugin. |
 | logstash_stats_pipeline_plugin_events_in | counter | Number of events received this pipeline. |
 | logstash_stats_pipeline_plugin_events_out | counter | Number of events output by this pipeline. |
-| logstash_stats_pipeline_plugin_events_queue_push_duration | counter | Time spent pushing events into the input queue. |
+| logstash_stats_pipeline_plugin_events_queue_push_duration | gauge | Time spent pushing events into the input queue. |
 | logstash_stats_pipeline_queue_events_count | counter | Number of events in the queue. |
-| logstash_stats_pipeline_queue_events_queue_size | counter | Number of events that the queue can accommodate |
-| logstash_stats_pipeline_queue_max_size_in_bytes | counter | Maximum size of given queue in bytes. |
+| logstash_stats_pipeline_queue_events_queue_size | gauge | Number of events that the queue can accommodate |
+| logstash_stats_pipeline_queue_max_size_in_bytes | gauge | Maximum size of given queue in bytes. |
 | logstash_stats_pipeline_reloads_failures | counter | Number of failed pipeline reloads. |
 | logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
 | logstash_stats_pipeline_reloads_last_failure_timestamp | gauge | Timestamp of last failed pipeline reload. |
@@ -353,12 +353,12 @@ Table of exported metrics:
 | logstash_stats_process_cpu_load_average_5m | gauge | Total 5m system load average. |
 | logstash_stats_process_cpu_load_average_15m | gauge | Total 15m system load average. |
 | logstash_stats_process_cpu_percent | gauge | CPU usage of the process. |
-| logstash_stats_process_cpu_total_millis | gauge | Total CPU time used by the process. |
+| logstash_stats_process_cpu_total_millis | counter | Total CPU time used by the process. |
 | logstash_stats_process_max_file_descriptors | gauge | Limit of open file descriptors. |
 | logstash_stats_process_mem_total_virtual | gauge | Total virtual memory used by the process. |
 | logstash_stats_process_open_file_descriptors | gauge | Number of currently open file descriptors. |
 | logstash_stats_queue_events_count | gauge | Number of events in the queue. |
-| logstash_stats_reload_failures | gauge | Number of failed reloads. |
-| logstash_stats_reload_successes | gauge | Number of successful reloads. |
+| logstash_stats_reload_failures | counter | Number of failed reloads. |
+| logstash_stats_reload_successes | counter | Number of successful reloads. |
 
 <!-- METRICS_TABLE_END -->
