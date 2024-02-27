@@ -129,13 +129,13 @@ func (collector *NodeinfoCollector) collectSingleInstance(client logstash_client
 	metricsHelper.Labels = []string{endpoint}
 
 	// ***** UP *****
-	metricsHelper.NewIntMetric(collector.Up, prometheus.GaugeValue, 1)
+	metricsHelper.NewIntMetric(collector.Up, prometheus.CounterValue, 1)
 	// **************
 
 	// ***** PIPELINE *****
-	metricsHelper.NewIntMetric(collector.PipelineWorkers, prometheus.CounterValue, nodeInfo.Pipeline.Workers)
-	metricsHelper.NewIntMetric(collector.PipelineBatchSize, prometheus.CounterValue, nodeInfo.Pipeline.BatchSize)
-	metricsHelper.NewIntMetric(collector.PipelineBatchDelay, prometheus.CounterValue, nodeInfo.Pipeline.BatchDelay)
+	metricsHelper.NewIntMetric(collector.PipelineWorkers, prometheus.GaugeValue, nodeInfo.Pipeline.Workers)
+	metricsHelper.NewIntMetric(collector.PipelineBatchSize, prometheus.GaugeValue, nodeInfo.Pipeline.BatchSize)
+	metricsHelper.NewIntMetric(collector.PipelineBatchDelay, prometheus.GaugeValue, nodeInfo.Pipeline.BatchDelay)
 	// ********************
 
 	// ***** STATUS *****
