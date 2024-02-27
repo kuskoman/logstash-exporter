@@ -19,7 +19,7 @@
     },
     "mem": {
       "heap_used_percent": 27,
-      "heap_committed_in_bytes": 1073741824,
+      "heap_committed_in_bytes": 17179869184,
       "heap_max_in_bytes": 1073741822,
       "heap_used_in_bytes": 294044784,
       "non_heap_used_in_bytes": 147703688,
