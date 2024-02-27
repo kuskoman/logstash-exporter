@@ -121,8 +121,8 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	metricsHelper.NewIntMetric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
 	metricsHelper.NewIntMetric(subcollector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
 	metricsHelper.NewIntMetric(subcollector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
-	metricsHelper.NewIntMetric(subcollector.EventsDuration, prometheus.CounterValue, pipeStats.Events.DurationInMillis)
-	metricsHelper.NewIntMetric(subcollector.EventsQueuePushDuration, prometheus.CounterValue, pipeStats.Events.QueuePushDurationInMillis)
+	metricsHelper.NewIntMetric(subcollector.EventsDuration, prometheus.GaugeValue, pipeStats.Events.DurationInMillis)
+	metricsHelper.NewIntMetric(subcollector.EventsQueuePushDuration, prometheus.GaugeValue, pipeStats.Events.QueuePushDurationInMillis)
 	// ******************
 
 	// ***** UP *****
@@ -143,8 +143,8 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 
 	// ***** QUEUE *****
 	metricsHelper.NewInt64Metric(subcollector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
-	metricsHelper.NewInt64Metric(subcollector.QueueEventsQueueSize, prometheus.CounterValue, pipeStats.Queue.QueueSizeInBytes)
-	metricsHelper.NewInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.CounterValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.QueueEventsQueueSize, prometheus.GaugeValue, pipeStats.Queue.QueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.GaugeValue, pipeStats.Queue.MaxQueueSizeInBytes)
 	// *****************
 
 	// ***** FLOW *****
@@ -195,7 +195,7 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 
 		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
-		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsQueuePushDuration, prometheus.CounterValue, plugin.Events.QueuePushDurationInMillis)
+		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsQueuePushDuration, prometheus.GaugeValue, plugin.Events.QueuePushDurationInMillis)
 	}
 	// ******************
 
