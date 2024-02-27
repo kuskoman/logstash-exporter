@@ -14,26 +14,26 @@ type JvmResponse struct {
 		PeakCount int `json:"peak_count"`
 	} `json:"threads"`
 	Mem struct {
-		HeapUsedPercent         int `json:"heap_used_percent"`
-		HeapCommittedInBytes    int `json:"heap_committed_in_bytes"`
-		HeapMaxInBytes          int `json:"heap_max_in_bytes"`
-		HeapUsedInBytes         int `json:"heap_used_in_bytes"`
-		NonHeapUsedInBytes      int `json:"non_heap_used_in_bytes"`
-		NonHeapCommittedInBytes int `json:"non_heap_committed_in_bytes"`
+		HeapUsedPercent         int   `json:"heap_used_percent"`
+		HeapCommittedInBytes    int64 `json:"heap_committed_in_bytes"`
+		HeapMaxInBytes          int64 `json:"heap_max_in_bytes"`
+		HeapUsedInBytes         int64 `json:"heap_used_in_bytes"`
+		NonHeapUsedInBytes      int64 `json:"non_heap_used_in_bytes"`
+		NonHeapCommittedInBytes int64 `json:"non_heap_committed_in_bytes"`
 		Pools                   struct {
 			Young struct {
-				PeakMaxInBytes   int `json:"peak_max_in_bytes"`
-				MaxInBytes       int `json:"max_in_bytes"`
-				CommittedInBytes int `json:"committed_in_bytes"`
-				PeakUsedInBytes  int `json:"peak_used_in_bytes"`
-				UsedInBytes      int `json:"used_in_bytes"`
+				PeakMaxInBytes   int64 `json:"peak_max_in_bytes"`
+				MaxInBytes       int64 `json:"max_in_bytes"`
+				CommittedInBytes int64 `json:"committed_in_bytes"`
+				PeakUsedInBytes  int64 `json:"peak_used_in_bytes"`
+				UsedInBytes      int64 `json:"used_in_bytes"`
 			} `json:"young"`
 			Old struct {
-				PeakMaxInBytes   int `json:"peak_max_in_bytes"`
-				MaxInBytes       int `json:"max_in_bytes"`
-				CommittedInBytes int `json:"committed_in_bytes"`
-				PeakUsedInBytes  int `json:"peak_used_in_bytes"`
-				UsedInBytes      int `json:"used_in_bytes"`
+				PeakMaxInBytes   int64 `json:"peak_max_in_bytes"`
+				MaxInBytes       int64 `json:"max_in_bytes"`
+				CommittedInBytes int64 `json:"committed_in_bytes"`
+				PeakUsedInBytes  int64 `json:"peak_used_in_bytes"`
+				UsedInBytes      int64 `json:"used_in_bytes"`
 			} `json:"old"`
 			Survivor struct {
 				PeakMaxInBytes   int `json:"peak_max_in_bytes"`
