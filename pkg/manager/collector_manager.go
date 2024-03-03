@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/version"
+	"github.com/prometheus/client_golang/prometheus/collectors/version"
 
 	"github.com/kuskoman/logstash-exporter/internal/collectors/nodeinfo"
 	"github.com/kuskoman/logstash-exporter/internal/collectors/nodestats"
