@@ -60,15 +60,15 @@ type JvmResponse struct {
 }
 
 type ProcessResponse struct {
-	OpenFileDescriptors     int64 `json:"open_file_descriptors"`
-	PeakOpenFileDescriptors int64 `json:"peak_open_file_descriptors"`
-	MaxFileDescriptors      int64 `json:"max_file_descriptors"`
+	OpenFileDescriptors     uint64 `json:"open_file_descriptors"`
+	PeakOpenFileDescriptors int64  `json:"peak_open_file_descriptors"`
+	MaxFileDescriptors      uint64 `json:"max_file_descriptors"`
 	Mem                     struct {
-		TotalVirtualInBytes int64 `json:"total_virtual_in_bytes"`
+		TotalVirtualInBytes uint64 `json:"total_virtual_in_bytes"`
 	} `json:"mem"`
 	CPU struct {
-		TotalInMillis int64 `json:"total_in_millis"`
-		Percent       int64 `json:"percent"`
+		TotalInMillis uint64 `json:"total_in_millis"`
+		Percent       int    `json:"percent"`
 		LoadAverage   struct {
 			OneM     float64 `json:"1m"`
 			FiveM    float64 `json:"5m"`
@@ -78,11 +78,11 @@ type ProcessResponse struct {
 }
 
 type EventsResponse struct {
-	In                        int64 `json:"in"`
-	Filtered                  int64 `json:"filtered"`
-	Out                       int64 `json:"out"`
-	DurationInMillis          int64 `json:"duration_in_millis"`
-	QueuePushDurationInMillis int64 `json:"queue_push_duration_in_millis"`
+	In                        uint64 `json:"in"`
+	Filtered                  uint64 `json:"filtered"`
+	Out                       uint64 `json:"out"`
+	DurationInMillis          uint64 `json:"duration_in_millis"`
+	QueuePushDurationInMillis uint64 `json:"queue_push_duration_in_millis"`
 }
 
 type FlowResponse struct {
@@ -170,16 +170,16 @@ type SinglePipelineResponse struct {
 	Reloads PipelineReloadResponse `json:"reloads"`
 	Queue   struct {
 		Type                string `json:"type"`
-		EventsCount         int64  `json:"events_count"`
-		QueueSizeInBytes    int64  `json:"queue_size_in_bytes"`
-		MaxQueueSizeInBytes int64  `json:"max_queue_size_in_bytes"`
+		EventsCount         uint64 `json:"events_count"`
+		QueueSizeInBytes    uint64 `json:"queue_size_in_bytes"`
+		MaxQueueSizeInBytes uint64 `json:"max_queue_size_in_bytes"`
 	} `json:"queue"`
 	DeadLetterQueue struct {
 		MaxQueueSizeInBytes int `json:"max_queue_size_in_bytes"`
 		// todo: research how LastError is returned
-		QueueSizeInBytes int64  `json:"queue_size_in_bytes"`
-		DroppedEvents    int64  `json:"dropped_events"`
-		ExpiredEvents    int64  `json:"expired_events"`
+		QueueSizeInBytes uint64 `json:"queue_size_in_bytes"`
+		DroppedEvents    uint64 `json:"dropped_events"`
+		ExpiredEvents    uint64 `json:"expired_events"`
 		StoragePolicy    string `json:"storage_policy"`
 	} `json:"dead_letter_queue"`
 	Hash        string `json:"hash"`
