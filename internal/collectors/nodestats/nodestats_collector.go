@@ -242,14 +242,14 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ PROCESS ************
 	procStats := nodeStats.Process
-	metricsHelper.NewInt64Metric(collector.ProcessOpenFileDescriptors, prometheus.GaugeValue, procStats.OpenFileDescriptors)
-	metricsHelper.NewInt64Metric(collector.ProcessMaxFileDescriptors, prometheus.GaugeValue, procStats.MaxFileDescriptors)
-	metricsHelper.NewInt64Metric(collector.ProcessCpuPercent, prometheus.GaugeValue, procStats.CPU.Percent)
-	metricsHelper.NewInt64Metric(collector.ProcessCpuTotalMillis, prometheus.CounterValue, procStats.CPU.TotalInMillis)
+	metricsHelper.NewUInt64Metric(collector.ProcessOpenFileDescriptors, prometheus.GaugeValue, procStats.OpenFileDescriptors)
+	metricsHelper.NewUInt64Metric(collector.ProcessMaxFileDescriptors, prometheus.GaugeValue, procStats.MaxFileDescriptors)
+	metricsHelper.NewIntMetric(collector.ProcessCpuPercent, prometheus.GaugeValue, procStats.CPU.Percent)
+	metricsHelper.NewUInt64Metric(collector.ProcessCpuTotalMillis, prometheus.CounterValue, procStats.CPU.TotalInMillis)
 	metricsHelper.NewFloatMetric(collector.ProcessCpuLoadAverageOneM, prometheus.GaugeValue, procStats.CPU.LoadAverage.OneM)
 	metricsHelper.NewFloatMetric(collector.ProcessCpuLoadAverageFiveM, prometheus.GaugeValue, procStats.CPU.LoadAverage.FiveM)
 	metricsHelper.NewFloatMetric(collector.ProcessCpuLoadAverageFifteenM, prometheus.GaugeValue, procStats.CPU.LoadAverage.FifteenM)
-	metricsHelper.NewInt64Metric(collector.ProcessMemTotalVirtual, prometheus.GaugeValue, procStats.Mem.TotalVirtualInBytes)
+	metricsHelper.NewUInt64Metric(collector.ProcessMemTotalVirtual, prometheus.GaugeValue, procStats.Mem.TotalVirtualInBytes)
 	// *********************************
 
 	// ************ RELOADS ************
@@ -263,11 +263,11 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ EVENTS ************
 	eventsStats := nodeStats.Events
-	metricsHelper.NewInt64Metric(collector.EventsIn, prometheus.CounterValue, eventsStats.In)
-	metricsHelper.NewInt64Metric(collector.EventsFiltered, prometheus.CounterValue, eventsStats.Filtered)
-	metricsHelper.NewInt64Metric(collector.EventsOut, prometheus.CounterValue, eventsStats.Out)
-	metricsHelper.NewInt64Metric(collector.EventsDurationInMillis, prometheus.GaugeValue, eventsStats.DurationInMillis)
-	metricsHelper.NewInt64Metric(collector.EventsQueuePushDurationInMillis, prometheus.GaugeValue, eventsStats.QueuePushDurationInMillis)
+	metricsHelper.NewUInt64Metric(collector.EventsIn, prometheus.CounterValue, eventsStats.In)
+	metricsHelper.NewUInt64Metric(collector.EventsFiltered, prometheus.CounterValue, eventsStats.Filtered)
+	metricsHelper.NewUInt64Metric(collector.EventsOut, prometheus.CounterValue, eventsStats.Out)
+	metricsHelper.NewUInt64Metric(collector.EventsDurationInMillis, prometheus.GaugeValue, eventsStats.DurationInMillis)
+	metricsHelper.NewUInt64Metric(collector.EventsQueuePushDurationInMillis, prometheus.GaugeValue, eventsStats.QueuePushDurationInMillis)
 	// ********************************
 
 	// ************ FLOW ************

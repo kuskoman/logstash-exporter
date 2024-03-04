@@ -119,18 +119,18 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		metricName := "test_metric"
 		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
-		
+
 		ch := make(chan prometheus.Metric)
 
 		go func() {
 			helper := &SimpleMetricsHelper{
 				Channel: ch,
-				Labels: []string{},
+				Labels:  []string{},
 			}
 			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()
 
-		metric := <- ch
+		metric := <-ch
 
 		fqName, err := ExtractFqName(metric.Desc().String())
 		if err != nil {
@@ -157,18 +157,18 @@ func TestSimpleMetricsHelper(t *testing.T) {
 
 		metricDesc := helper.NewDesc("metric", "help", "customLabel")
 		metricValue := 42.0
-		
+
 		ch := make(chan prometheus.Metric)
 
 		go func() {
 			helper := &SimpleMetricsHelper{
 				Channel: ch,
-				Labels: []string{"customLabelValue", "hostnameEndpoint"},
+				Labels:  []string{"customLabelValue", "hostnameEndpoint"},
 			}
 			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()
 
-		metric := <- ch
+		metric := <-ch
 
 		desc := metric.Desc()
 		if metricDesc.String() != desc.String() {
@@ -185,19 +185,19 @@ func TestSimpleMetricsHelper(t *testing.T) {
 	})
 
 	t.Run("should create metrics with different value types", func(t *testing.T) {
-		metricName  := "test_metric"
-		metricDesc  := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := 42.0
-		
+
 		ch := make(chan prometheus.Metric, 3)
 
 		helper := &SimpleMetricsHelper{
 			Channel: ch,
-			Labels: []string{},
+			Labels:  []string{},
 		}
 		helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		helper.NewIntMetric(metricDesc, prometheus.GaugeValue, int(metricValue))
-		helper.NewInt64Metric(metricDesc, prometheus.GaugeValue, int64(metricValue))
+		helper.NewUInt64Metric(metricDesc, prometheus.GaugeValue, uint64(metricValue))
 
 		close(ch)
 
@@ -213,21 +213,21 @@ func TestSimpleMetricsHelper(t *testing.T) {
 	})
 
 	t.Run("should create timestamp metric", func(t *testing.T) {
-		metricName  := "test_metric"
-		metricDesc  := prometheus.NewDesc(metricName, "test metric help", nil, nil)
+		metricName := "test_metric"
+		metricDesc := prometheus.NewDesc(metricName, "test metric help", nil, nil)
 		metricValue := time.UnixMilli(42)
-		
+
 		ch := make(chan prometheus.Metric)
 
 		go func() {
 			helper := &SimpleMetricsHelper{
 				Channel: ch,
-				Labels: []string{},
+				Labels:  []string{},
 			}
 			helper.NewTimestampMetric(metricDesc, prometheus.CounterValue, metricValue)
 		}()
 
-		metric := <- ch
+		metric := <-ch
 
 		fqName, err := ExtractFqName(metric.Desc().String())
 		if err != nil {
@@ -249,10 +249,10 @@ func TestSimpleMetricsHelper(t *testing.T) {
 
 func TestExtractTimestampMsFromMetric(t *testing.T) {
 	t.Run("should extract timestamp from a metric", func(t *testing.T) {
-		metricDesc  := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
-		metricType  := prometheus.GaugeValue
+		metricDesc := prometheus.NewDesc("test_metric", "test metric help", nil, nil)
+		metricType := prometheus.GaugeValue
 		metricValue := time.UnixMilli(42)
-		metric      := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
+		metric := prometheus.NewMetricWithTimestamp(metricValue, prometheus.MustNewConstMetric(metricDesc, metricType, 1))
 
 		extractedValue, err := extractTimestampMsFromMetric(metric)
 		if err != nil {

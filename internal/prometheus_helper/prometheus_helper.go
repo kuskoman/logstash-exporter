@@ -57,7 +57,7 @@ func ExtractValueFromMetric(metric prometheus.Metric) (float64, error) {
 // SimpleMetricsHelper is a helper struct that can be used to channel new prometheus.Metric objects
 type SimpleMetricsHelper struct {
 	Channel chan<- prometheus.Metric
-	Labels []string
+	Labels  []string
 }
 
 // NewFloatMetric appends new metric with the desc and metricType, value
@@ -69,23 +69,23 @@ func (mh *SimpleMetricsHelper) NewFloatMetric(desc *prometheus.Desc, metricType 
 
 // NewIntMetric same as NewFloatMetric but for 'int' type
 func (mh *SimpleMetricsHelper) NewIntMetric(desc *prometheus.Desc, metricType prometheus.ValueType, value int) {
-    mh.NewFloatMetric(desc, metricType, float64(value))
+	mh.NewFloatMetric(desc, metricType, float64(value))
 }
 
-// NewInt64Metric same as NewFloatMetric but for 'int64' type
-func (mh *SimpleMetricsHelper) NewInt64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value int64) {
-    mh.NewFloatMetric(desc, metricType, float64(value))
+// NewUInt64Metric same as NewFloatMetric but for 'uint64' type
+func (mh *SimpleMetricsHelper) NewUInt64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value uint64) {
+	mh.NewFloatMetric(desc, metricType, float64(value))
 }
 
-// newTimestampMetric same as NewFloatMetric but for setting Timestamp value 
-func (mh *SimpleMetricsHelper) NewTimestampMetric (desc *prometheus.Desc, metricType prometheus.ValueType, value time.Time) {
+// newTimestampMetric same as NewFloatMetric but for setting Timestamp value
+func (mh *SimpleMetricsHelper) NewTimestampMetric(desc *prometheus.Desc, metricType prometheus.ValueType, value time.Time) {
 	metric := prometheus.NewMetricWithTimestamp(value, prometheus.MustNewConstMetric(desc, metricType, 1, mh.Labels...))
 	mh.Channel <- metric
 }
 
 // ExtractValueFromMetric extracts the timestamp from a prometheus.Metric object.
 // Useful for testing NewTimestampMetric method of SimpleMetricsHelper
-// Returns the extracted timestamp in milliseconds of 'int64' type 
+// Returns the extracted timestamp in milliseconds of 'int64' type
 func extractTimestampMsFromMetric(metric prometheus.Metric) (int64, error) {
 	var dtoMetric dto.Metric
 	err := metric.Write(&dtoMetric)
