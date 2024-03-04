@@ -122,7 +122,7 @@ func TestCollectNotNil(t *testing.T) {
 	var foundMetrics []string
 	for metric := range ch {
 		if metric == nil {
-			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+			t.Error("expected metric not to be nil")
 		}
 
 		foundMetricDesc := metric.Desc().String()
