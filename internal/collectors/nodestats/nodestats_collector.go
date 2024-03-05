@@ -263,9 +263,9 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ EVENTS ************
 	eventsStats := nodeStats.Events
-	metricsHelper.NewUInt64Metric(collector.EventsIn, prometheus.CounterValue, eventsStats.In)
-	metricsHelper.NewUInt64Metric(collector.EventsFiltered, prometheus.CounterValue, eventsStats.Filtered)
-	metricsHelper.NewUInt64Metric(collector.EventsOut, prometheus.CounterValue, eventsStats.Out)
+	metricsHelper.NewUInt64Metric(collector.EventsIn, prometheus.GaugeValue, eventsStats.In)
+	metricsHelper.NewUInt64Metric(collector.EventsFiltered, prometheus.GaugeValue, eventsStats.Filtered)
+	metricsHelper.NewUInt64Metric(collector.EventsOut, prometheus.GaugeValue, eventsStats.Out)
 	metricsHelper.NewUInt64Metric(collector.EventsDurationInMillis, prometheus.GaugeValue, eventsStats.DurationInMillis)
 	metricsHelper.NewUInt64Metric(collector.EventsQueuePushDurationInMillis, prometheus.GaugeValue, eventsStats.QueuePushDurationInMillis)
 	// ********************************
