@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - logstash-data:/usr/share/logstash/data
-      - ./.docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./.docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./.docker/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
     depends_on:
       - elasticsearch

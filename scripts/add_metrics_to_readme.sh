@@ -9,6 +9,13 @@ function getMetrics() {
     done
 }
 
+function failureConfigChange() {
+	local logstashCID=$(docker ps -a | grep 'logstash-exporter-logstash-1' | awk '{print $1}')
+	docker exec -it "$logstashCID" sh -c "echo 'Wrong Config' >> /usr/share/logstash/pipeline/logstash.conf"
+}
+
+failureConfigChange
+
 FILE=README.md
 while IFS= read -r line; do LINES+=("$line"); done < $FILE
 
