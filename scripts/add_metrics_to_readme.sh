@@ -11,7 +11,21 @@ function getMetrics() {
 
 function failureConfigChange() {
 	local logstashCID=$(docker ps -a | grep 'logstash-exporter-logstash-1' | awk '{print $1}')
-	docker exec -it "$logstashCID" sh -c "echo 'Wrong Config' >> /usr/share/logstash/pipeline/logstash.conf"
+	local logstashPID=$( docker exec "$logstashCID" sh -c "echo \$(ps aux | grep logstash) | awk '{print \$2}'" )
+	local logstashConf='/usr/share/logstash/pipeline/logstash.conf'
+
+	docker exec -it "$logstashCID" sh -c "echo 'Wrong Config' >> $logstashConf"
+	# reload logstash
+	docker exec -it "$logstashCID" sh -c "kill -1 $logstashPID"
+
+	# bring back previous config 
+	# walk around with 'cp' to avoid replacing config inside container
+	docker exec "$logstashCID" sh -c "sed '\$d' $logstashConf > /tmp/prev_logstash.conf" 
+	docker exec "$logstashCID" sh -c "cp /tmp/prev_logstash.conf $logstashConf"
+
+	# reload logstash
+	docker exec -it "$logstashCID" sh -c "kill -1 $logstashPID"
+
 }
 
 failureConfigChange
