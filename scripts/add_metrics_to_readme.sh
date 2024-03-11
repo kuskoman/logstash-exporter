@@ -14,12 +14,14 @@ function failureConfigChange() {
 	logstashCID=$( docker ps -a | grep 'logstash-exporter-logstash-1' | awk '{print $1}' )
 	local logstashConf
 	logstashConf='/usr/share/logstash/pipeline/logstash.conf'
+	# "logstash pid should be always 1 AFAIK" ~ Kuskoman, 2024
+	local logstashPID
+	logstashPID=1
 
 	docker exec -it "$logstashCID" sh -c "echo 'Wrong Config' >> $logstashConf"
 
 	# reload logstash
-	# "logstash pid should be always 1 AFAIK" ~ Kuskoman, 2024
-	docker exec -it "$logstashCID" sh -c "kill -1 1"
+	docker exec -it "$logstashCID" sh -c "kill -1 $logstashPID"
 
 	# bring back previous config 
 	# walk around with 'cp' to avoid replacing config inside container
@@ -27,7 +29,7 @@ function failureConfigChange() {
 	docker exec "$logstashCID" sh -c "cp /tmp/prev_logstash.conf $logstashConf"
 
 	# reload logstash
-	docker exec -it "$logstashCID" sh -c "kill -1 1"
+	docker exec -it "$logstashCID" sh -c "kill -1 $logstashPID"
 
 }
 
