@@ -287,9 +287,9 @@ Table of exported metrics:
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
 | logstash_info_up | counter | A metric that returns 1 if the node is up, 0 otherwise. |
 | logstash_stats_events_duration_millis | gauge | Duration of events processing in milliseconds. |
-| logstash_stats_events_filtered | counter | Number of events filtered out. |
-| logstash_stats_events_in | counter | Number of events received. |
-| logstash_stats_events_out | counter | Number of events out. |
+| logstash_stats_events_filtered | gauge | Number of events filtered out. |
+| logstash_stats_events_in | gauge | Number of events received. |
+| logstash_stats_events_out | gauge | Number of events out. |
 | logstash_stats_events_queue_push_duration_millis | gauge | Duration of events push to queue in milliseconds. |
 | logstash_stats_flow_filter_current | gauge | Current number of events in the filter queue. |
 | logstash_stats_flow_filter_lifetime | counter | Lifetime number of events in the filter queue. |
@@ -345,9 +345,9 @@ Table of exported metrics:
 | logstash_stats_pipeline_queue_events_queue_size | gauge | Number of events that the queue can accommodate |
 | logstash_stats_pipeline_queue_max_size_in_bytes | gauge | Maximum size of given queue in bytes. |
 | logstash_stats_pipeline_reloads_failures | counter | Number of failed pipeline reloads. |
-| logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
 | logstash_stats_pipeline_reloads_last_failure_timestamp | gauge | Timestamp of last failed pipeline reload. |
 | logstash_stats_pipeline_reloads_last_success_timestamp | gauge | Timestamp of last successful pipeline reload. |
+| logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
 | logstash_stats_pipeline_up | gauge | Whether the pipeline is up or not. |
 | logstash_stats_process_cpu_load_average_1m | gauge | Total 1m system load average. |
 | logstash_stats_process_cpu_load_average_5m | gauge | Total 5m system load average. |
