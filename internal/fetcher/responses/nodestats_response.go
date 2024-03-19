@@ -99,15 +99,9 @@ type FlowResponse struct {
 
 type SinglePipelineResponse struct {
 	Monitoring PipelineLogstashMonitoringResponse `json:".monitoring-logstash"`
-	Events     struct {
-		Out                       int `json:"out"`
-		Filtered                  int `json:"filtered"`
-		In                        int `json:"in"`
-		DurationInMillis          int `json:"duration_in_millis"`
-		QueuePushDurationInMillis int `json:"queue_push_duration_in_millis"`
-	} `json:"events"`
-	Flow    FlowResponse `json:"flow"`
-	Plugins struct {
+	Events     EventsResponse                     `json:"events"`
+	Flow       FlowResponse                       `json:"flow"`
+	Plugins    struct {
 		Inputs []struct {
 			ID     string `json:"id"`
 			Name   string `json:"name"`

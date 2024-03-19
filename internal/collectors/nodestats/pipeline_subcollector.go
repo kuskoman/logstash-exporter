@@ -118,11 +118,11 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
 
 	// ***** EVENTS *****
-	metricsHelper.NewIntMetric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
-	metricsHelper.NewIntMetric(subcollector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
-	metricsHelper.NewIntMetric(subcollector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
-	metricsHelper.NewIntMetric(subcollector.EventsDuration, prometheus.GaugeValue, pipeStats.Events.DurationInMillis)
-	metricsHelper.NewIntMetric(subcollector.EventsQueuePushDuration, prometheus.GaugeValue, pipeStats.Events.QueuePushDurationInMillis)
+	metricsHelper.NewInt64Metric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
+	metricsHelper.NewInt64Metric(subcollector.EventsFiltered, prometheus.CounterValue, pipeStats.Events.Filtered)
+	metricsHelper.NewInt64Metric(subcollector.EventsIn, prometheus.CounterValue, pipeStats.Events.In)
+	metricsHelper.NewInt64Metric(subcollector.EventsDuration, prometheus.GaugeValue, pipeStats.Events.DurationInMillis)
+	metricsHelper.NewInt64Metric(subcollector.EventsQueuePushDuration, prometheus.GaugeValue, pipeStats.Events.QueuePushDurationInMillis)
 	// ******************
 
 	// ***** UP *****
