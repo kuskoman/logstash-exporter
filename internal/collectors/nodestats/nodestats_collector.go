@@ -199,37 +199,37 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	// ************ MEMORY ************
 	memStats := nodeStats.Jvm.Mem
 	metricsHelper.NewIntMetric(collector.JvmMemHeapUsedPercent, prometheus.GaugeValue, memStats.HeapUsedPercent)
-	metricsHelper.NewIntMetric(collector.JvmMemHeapCommittedBytes, prometheus.GaugeValue, memStats.HeapCommittedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemHeapMaxBytes, prometheus.GaugeValue, memStats.HeapMaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemHeapUsedBytes, prometheus.GaugeValue, memStats.HeapUsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemNonHeapCommittedBytes, prometheus.GaugeValue, memStats.NonHeapCommittedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemHeapCommittedBytes, prometheus.GaugeValue, memStats.HeapCommittedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemHeapMaxBytes, prometheus.GaugeValue, memStats.HeapMaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemHeapUsedBytes, prometheus.GaugeValue, memStats.HeapUsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemNonHeapCommittedBytes, prometheus.GaugeValue, memStats.NonHeapCommittedInBytes)
 
 	//	  ********* POOLS *********
 	//          *** YOUNG ***
 	metricsHelper.Labels = []string{"young", endpoint}
-	metricsHelper.NewIntMetric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Young.PeakUsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Young.UsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Young.PeakMaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Young.MaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Young.CommittedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Young.PeakUsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Young.UsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Young.PeakMaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Young.MaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Young.CommittedInBytes)
 	//          *************
 
 	//           *** OLD ***
 	metricsHelper.Labels = []string{"old", endpoint}
-	metricsHelper.NewIntMetric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Old.PeakUsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Old.UsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Old.PeakMaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Old.MaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Old.CommittedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Old.PeakUsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Old.UsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Old.PeakMaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Old.MaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Old.CommittedInBytes)
 	//           ***********
 
 	//         *** SURVIVOR ***
 	metricsHelper.Labels = []string{"survivor", endpoint}
-	metricsHelper.NewIntMetric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.PeakUsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.UsedInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.PeakMaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.MaxInBytes)
-	metricsHelper.NewIntMetric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.CommittedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.PeakUsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.UsedInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.PeakMaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.MaxInBytes)
+	metricsHelper.NewInt64Metric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.CommittedInBytes)
 	//         ****************
 	//	  *************************
 	// ********************************
@@ -242,14 +242,14 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ PROCESS ************
 	procStats := nodeStats.Process
-	metricsHelper.NewUInt64Metric(collector.ProcessOpenFileDescriptors, prometheus.GaugeValue, procStats.OpenFileDescriptors)
-	metricsHelper.NewUInt64Metric(collector.ProcessMaxFileDescriptors, prometheus.GaugeValue, procStats.MaxFileDescriptors)
+	metricsHelper.NewInt64Metric(collector.ProcessOpenFileDescriptors, prometheus.GaugeValue, procStats.OpenFileDescriptors)
+	metricsHelper.NewInt64Metric(collector.ProcessMaxFileDescriptors, prometheus.GaugeValue, procStats.MaxFileDescriptors)
 	metricsHelper.NewIntMetric(collector.ProcessCpuPercent, prometheus.GaugeValue, procStats.CPU.Percent)
-	metricsHelper.NewUInt64Metric(collector.ProcessCpuTotalMillis, prometheus.CounterValue, procStats.CPU.TotalInMillis)
+	metricsHelper.NewInt64Metric(collector.ProcessCpuTotalMillis, prometheus.CounterValue, procStats.CPU.TotalInMillis)
 	metricsHelper.NewFloatMetric(collector.ProcessCpuLoadAverageOneM, prometheus.GaugeValue, procStats.CPU.LoadAverage.OneM)
 	metricsHelper.NewFloatMetric(collector.ProcessCpuLoadAverageFiveM, prometheus.GaugeValue, procStats.CPU.LoadAverage.FiveM)
 	metricsHelper.NewFloatMetric(collector.ProcessCpuLoadAverageFifteenM, prometheus.GaugeValue, procStats.CPU.LoadAverage.FifteenM)
-	metricsHelper.NewUInt64Metric(collector.ProcessMemTotalVirtual, prometheus.GaugeValue, procStats.Mem.TotalVirtualInBytes)
+	metricsHelper.NewInt64Metric(collector.ProcessMemTotalVirtual, prometheus.GaugeValue, procStats.Mem.TotalVirtualInBytes)
 	// *********************************
 
 	// ************ RELOADS ************
@@ -263,11 +263,11 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ EVENTS ************
 	eventsStats := nodeStats.Events
-	metricsHelper.NewUInt64Metric(collector.EventsIn, prometheus.GaugeValue, eventsStats.In)
-	metricsHelper.NewUInt64Metric(collector.EventsFiltered, prometheus.GaugeValue, eventsStats.Filtered)
-	metricsHelper.NewUInt64Metric(collector.EventsOut, prometheus.GaugeValue, eventsStats.Out)
-	metricsHelper.NewUInt64Metric(collector.EventsDurationInMillis, prometheus.GaugeValue, eventsStats.DurationInMillis)
-	metricsHelper.NewUInt64Metric(collector.EventsQueuePushDurationInMillis, prometheus.GaugeValue, eventsStats.QueuePushDurationInMillis)
+	metricsHelper.NewInt64Metric(collector.EventsIn, prometheus.GaugeValue, eventsStats.In)
+	metricsHelper.NewInt64Metric(collector.EventsFiltered, prometheus.GaugeValue, eventsStats.Filtered)
+	metricsHelper.NewInt64Metric(collector.EventsOut, prometheus.GaugeValue, eventsStats.Out)
+	metricsHelper.NewInt64Metric(collector.EventsDurationInMillis, prometheus.GaugeValue, eventsStats.DurationInMillis)
+	metricsHelper.NewInt64Metric(collector.EventsQueuePushDurationInMillis, prometheus.GaugeValue, eventsStats.QueuePushDurationInMillis)
 	// ********************************
 
 	// ************ FLOW ************

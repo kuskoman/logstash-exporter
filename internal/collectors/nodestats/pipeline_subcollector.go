@@ -142,9 +142,9 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	// *******************
 
 	// ***** QUEUE *****
-	metricsHelper.NewUInt64Metric(subcollector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
-	metricsHelper.NewUInt64Metric(subcollector.QueueEventsQueueSize, prometheus.GaugeValue, pipeStats.Queue.QueueSizeInBytes)
-	metricsHelper.NewUInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.GaugeValue, pipeStats.Queue.MaxQueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.QueueEventsCount, prometheus.CounterValue, pipeStats.Queue.EventsCount)
+	metricsHelper.NewInt64Metric(subcollector.QueueEventsQueueSize, prometheus.GaugeValue, pipeStats.Queue.QueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.QueueMaxQueueSizeInBytes, prometheus.GaugeValue, pipeStats.Queue.MaxQueueSizeInBytes)
 	// *****************
 
 	// ***** FLOW *****
@@ -164,9 +164,9 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	// ***** DEAD LETTER QUEUE *****
 	deadLetterQueueStats := pipeStats.DeadLetterQueue
 	metricsHelper.NewIntMetric(subcollector.DeadLetterQueueMaxSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.MaxQueueSizeInBytes)
-	metricsHelper.NewUInt64Metric(subcollector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
-	metricsHelper.NewUInt64Metric(subcollector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
-	metricsHelper.NewUInt64Metric(subcollector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
+	metricsHelper.NewInt64Metric(subcollector.DeadLetterQueueSizeInBytes, prometheus.GaugeValue, deadLetterQueueStats.QueueSizeInBytes)
+	metricsHelper.NewInt64Metric(subcollector.DeadLetterQueueDroppedEvents, prometheus.CounterValue, deadLetterQueueStats.DroppedEvents)
+	metricsHelper.NewInt64Metric(subcollector.DeadLetterQueueExpiredEvents, prometheus.CounterValue, deadLetterQueueStats.ExpiredEvents)
 	// *****************************
 
 	// ===== PLUGINS =====

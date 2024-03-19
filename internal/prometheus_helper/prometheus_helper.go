@@ -72,8 +72,8 @@ func (mh *SimpleMetricsHelper) NewIntMetric(desc *prometheus.Desc, metricType pr
 	mh.NewFloatMetric(desc, metricType, float64(value))
 }
 
-// NewUInt64Metric same as NewFloatMetric but for 'uint64' type
-func (mh *SimpleMetricsHelper) NewUInt64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value uint64) {
+// NewInt64Metric same as NewFloatMetric but for 'int64' type
+func (mh *SimpleMetricsHelper) NewInt64Metric(desc *prometheus.Desc, metricType prometheus.ValueType, value int64) {
 	mh.NewFloatMetric(desc, metricType, float64(value))
 }
 
