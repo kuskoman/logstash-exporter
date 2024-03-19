@@ -8,67 +8,56 @@ type PipelineResponse struct {
 	BatchDelay int `json:"batch_delay"`
 }
 
+type PoolResponse struct {
+	PeakMaxInBytes   int64 `json:"peak_max_in_bytes"`
+	MaxInBytes       int64 `json:"max_in_bytes"`
+	CommittedInBytes int64 `json:"committed_in_bytes"`
+	PeakUsedInBytes  int64 `json:"peak_used_in_bytes"`
+	UsedInBytes      int64 `json:"used_in_bytes"`
+}
+
+type CollectorResponse struct {
+	CollectionCount        int `json:"collection_count"`
+	CollectionTimeInMillis int `json:"collection_time_in_millis"`
+}
+
 type JvmResponse struct {
 	Threads struct {
 		Count     int `json:"count"`
 		PeakCount int `json:"peak_count"`
 	} `json:"threads"`
 	Mem struct {
-		HeapUsedPercent         int `json:"heap_used_percent"`
-		HeapCommittedInBytes    int `json:"heap_committed_in_bytes"`
-		HeapMaxInBytes          int `json:"heap_max_in_bytes"`
-		HeapUsedInBytes         int `json:"heap_used_in_bytes"`
-		NonHeapUsedInBytes      int `json:"non_heap_used_in_bytes"`
-		NonHeapCommittedInBytes int `json:"non_heap_committed_in_bytes"`
+		HeapUsedPercent         int   `json:"heap_used_percent"`
+		HeapCommittedInBytes    int64 `json:"heap_committed_in_bytes"`
+		HeapMaxInBytes          int64 `json:"heap_max_in_bytes"`
+		HeapUsedInBytes         int64 `json:"heap_used_in_bytes"`
+		NonHeapUsedInBytes      int64 `json:"non_heap_used_in_bytes"`
+		NonHeapCommittedInBytes int64 `json:"non_heap_committed_in_bytes"`
 		Pools                   struct {
-			Young struct {
-				PeakMaxInBytes   int `json:"peak_max_in_bytes"`
-				MaxInBytes       int `json:"max_in_bytes"`
-				CommittedInBytes int `json:"committed_in_bytes"`
-				PeakUsedInBytes  int `json:"peak_used_in_bytes"`
-				UsedInBytes      int `json:"used_in_bytes"`
-			} `json:"young"`
-			Old struct {
-				PeakMaxInBytes   int `json:"peak_max_in_bytes"`
-				MaxInBytes       int `json:"max_in_bytes"`
-				CommittedInBytes int `json:"committed_in_bytes"`
-				PeakUsedInBytes  int `json:"peak_used_in_bytes"`
-				UsedInBytes      int `json:"used_in_bytes"`
-			} `json:"old"`
-			Survivor struct {
-				PeakMaxInBytes   int `json:"peak_max_in_bytes"`
-				MaxInBytes       int `json:"max_in_bytes"`
-				CommittedInBytes int `json:"committed_in_bytes"`
-				PeakUsedInBytes  int `json:"peak_used_in_bytes"`
-				UsedInBytes      int `json:"used_in_bytes"`
-			} `json:"survivor"`
+			Young    PoolResponse `json:"young"`
+			Old      PoolResponse `json:"old"`
+			Survivor PoolResponse `json:"survivor"`
 		} `json:"pools"`
 	} `json:"mem"`
 	Gc struct {
 		Collectors struct {
-			Young struct {
-				CollectionCount        int `json:"collection_count"`
-				CollectionTimeInMillis int `json:"collection_time_in_millis"`
-			} `json:"young"`
-			Old struct {
-				CollectionCount        int `json:"collection_count"`
-				CollectionTimeInMillis int `json:"collection_time_in_millis"`
-			} `json:"old"`
+			Young CollectorResponse `json:"young"`
+			Old   CollectorResponse `json:"old"`
 		} `json:"collectors"`
 	} `json:"gc"`
 	UptimeInMillis int `json:"uptime_in_millis"`
 }
 
 type ProcessResponse struct {
-	OpenFileDescriptors     uint64 `json:"open_file_descriptors"`
-	PeakOpenFileDescriptors int64  `json:"peak_open_file_descriptors"`
-	MaxFileDescriptors      uint64 `json:"max_file_descriptors"`
+	OpenFileDescriptors     int64 `json:"open_file_descriptors"`
+	PeakOpenFileDescriptors int64 `json:"peak_open_file_descriptors"`
+	MaxFileDescriptors      int64 `json:"max_file_descriptors"`
 	Mem                     struct {
-		TotalVirtualInBytes uint64 `json:"total_virtual_in_bytes"`
+		TotalVirtualInBytes int64 `json:"total_virtual_in_bytes"`
 	} `json:"mem"`
 	CPU struct {
-		TotalInMillis uint64 `json:"total_in_millis"`
-		Percent       int    `json:"percent"`
+		TotalInMillis int64 `json:"total_in_millis"`
+		Percent       int   `json:"percent"`
 		LoadAverage   struct {
 			OneM     float64 `json:"1m"`
 			FiveM    float64 `json:"5m"`
@@ -78,11 +67,11 @@ type ProcessResponse struct {
 }
 
 type EventsResponse struct {
-	In                        uint64 `json:"in"`
-	Filtered                  uint64 `json:"filtered"`
-	Out                       uint64 `json:"out"`
-	DurationInMillis          uint64 `json:"duration_in_millis"`
-	QueuePushDurationInMillis uint64 `json:"queue_push_duration_in_millis"`
+	In                        int64 `json:"in"`
+	Filtered                  int64 `json:"filtered"`
+	Out                       int64 `json:"out"`
+	DurationInMillis          int64 `json:"duration_in_millis"`
+	QueuePushDurationInMillis int64 `json:"queue_push_duration_in_millis"`
 }
 
 type FlowResponse struct {
@@ -170,16 +159,16 @@ type SinglePipelineResponse struct {
 	Reloads PipelineReloadResponse `json:"reloads"`
 	Queue   struct {
 		Type                string `json:"type"`
-		EventsCount         uint64 `json:"events_count"`
-		QueueSizeInBytes    uint64 `json:"queue_size_in_bytes"`
-		MaxQueueSizeInBytes uint64 `json:"max_queue_size_in_bytes"`
+		EventsCount         int64  `json:"events_count"`
+		QueueSizeInBytes    int64  `json:"queue_size_in_bytes"`
+		MaxQueueSizeInBytes int64  `json:"max_queue_size_in_bytes"`
 	} `json:"queue"`
 	DeadLetterQueue struct {
 		MaxQueueSizeInBytes int `json:"max_queue_size_in_bytes"`
 		// todo: research how LastError is returned
-		QueueSizeInBytes uint64 `json:"queue_size_in_bytes"`
-		DroppedEvents    uint64 `json:"dropped_events"`
-		ExpiredEvents    uint64 `json:"expired_events"`
+		QueueSizeInBytes int64  `json:"queue_size_in_bytes"`
+		DroppedEvents    int64  `json:"dropped_events"`
+		ExpiredEvents    int64  `json:"expired_events"`
 		StoragePolicy    string `json:"storage_policy"`
 	} `json:"dead_letter_queue"`
 	Hash        string `json:"hash"`

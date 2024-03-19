@@ -197,7 +197,6 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		}
 		helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		helper.NewIntMetric(metricDesc, prometheus.GaugeValue, int(metricValue))
-		helper.NewUInt64Metric(metricDesc, prometheus.GaugeValue, uint64(metricValue))
 
 		close(ch)
 
