@@ -168,6 +168,16 @@
                     "description": "Security context for the deployment",
                     "default": {}
                 },
+                "podSecurityContext": {
+                    "type": "object",
+                    "description": "Security context for the deployment that only applies to the pod",
+                    "default": {}
+                },
+                "containerSecurityContext": {
+                    "type": "object",
+                    "description": "Security context for the deployment that only applies to the container",
+                    "default": {}
+                },
                 "livenessProbe": {
                     "type": "object",
                     "properties": {

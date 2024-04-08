@@ -42,24 +42,26 @@
 
 ### Deployment settings
 
-| Name                           | Description                                                  | Value    |
-| ------------------------------ | ------------------------------------------------------------ | -------- |
-| `deployment.replicas`          | Number of replicas for the deployment                        | `1`      |
-| `deployment.restartPolicy`     | Restart policy for the deployment.                           | `Always` |
-| `deployment.annotations`       | Additional deployment annotations                            | `{}`     |
-| `deployment.labels`            | Additional deployment labels                                 | `{}`     |
-| `deployment.pullSecret`        | Kubernetes secret for pulling the image                      | `[]`     |
-| `deployment.resources`         | Resource requests and limits                                 | `{}`     |
-| `deployment.nodeSelector`      | Node selector for the deployment                             | `{}`     |
-| `deployment.tolerations`       | Tolerations for the deployment                               | `[]`     |
-| `deployment.podAnnotations`    | Additional pod annotations                                   | `{}`     |
-| `deployment.podLabels`         | Additional pod labels                                        | `{}`     |
-| `deployment.affinity`          | Affinity for the deployment                                  | `{}`     |
-| `deployment.env`               | Additional environment variables                             | `{}`     |
-| `deployment.envFrom`           | Additional environment variables from config maps or secrets | `[]`     |
-| `deployment.priorityClassName` | Priority class name for the deployment                       | `""`     |
-| `deployment.dnsConfig`         | DNS configuration for the deployment                         | `{}`     |
-| `deployment.securityContext`   | Security context for the deployment                          | `{}`     |
+| Name                                  | Description                                                            | Value    |
+| ------------------------------------- | ---------------------------------------------------------------------- | -------- |
+| `deployment.replicas`                 | Number of replicas for the deployment                                  | `1`      |
+| `deployment.restartPolicy`            | Restart policy for the deployment.                                     | `Always` |
+| `deployment.annotations`              | Additional deployment annotations                                      | `{}`     |
+| `deployment.labels`                   | Additional deployment labels                                           | `{}`     |
+| `deployment.pullSecret`               | Kubernetes secret for pulling the image                                | `[]`     |
+| `deployment.resources`                | Resource requests and limits                                           | `{}`     |
+| `deployment.nodeSelector`             | Node selector for the deployment                                       | `{}`     |
+| `deployment.tolerations`              | Tolerations for the deployment                                         | `[]`     |
+| `deployment.podAnnotations`           | Additional pod annotations                                             | `{}`     |
+| `deployment.podLabels`                | Additional pod labels                                                  | `{}`     |
+| `deployment.affinity`                 | Affinity for the deployment                                            | `{}`     |
+| `deployment.env`                      | Additional environment variables                                       | `{}`     |
+| `deployment.envFrom`                  | Additional environment variables from config maps or secrets           | `[]`     |
+| `deployment.priorityClassName`        | Priority class name for the deployment                                 | `""`     |
+| `deployment.dnsConfig`                | DNS configuration for the deployment                                   | `{}`     |
+| `deployment.securityContext`          | Security context for the deployment                                    | `{}`     |
+| `deployment.podSecurityContext`       | Security context for the deployment that only applies to the pod       | `{}`     |
+| `deployment.containerSecurityContext` | Security context for the deployment that only applies to the container | `{}`     |
 
 ### Liveness probe settings
 

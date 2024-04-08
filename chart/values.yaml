@@ -114,6 +114,12 @@ deployment:
   ## @param deployment.securityContext Security context for the deployment
   ##
   securityContext: {}
+  ## @param deployment.podSecurityContext Security context for the deployment that only applies to the pod
+  ##
+  podSecurityContext: {}
+  ## @param deployment.containerSecurityContext Security context for the deployment that only applies to the container
+  ##
+  containerSecurityContext: {}
   ## @section Liveness probe settings
   ##
   livenessProbe:
