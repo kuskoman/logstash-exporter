@@ -106,17 +106,17 @@ spec:
 
         {{- if .Values.deployment.resources }}
         resources:
-          {{- toYaml .Values.deployment.resources | nindent 12 }}
+          {{- toYaml .Values.deployment.resources | nindent 10 }}
         {{- end }}
 
         {{- if .Values.deployment.livenessProbe }}
         livenessProbe:
-          {{- toYaml .Values.deployment.livenessProbe | nindent 12 }}
+          {{- toYaml .Values.deployment.livenessProbe | nindent 10 }}
         {{- end }}
 
         {{- if .Values.deployment.readinessProbe }}
         readinessProbe:
-          {{- toYaml .Values.deployment.readinessProbe | nindent 12 }}
+          {{- toYaml .Values.deployment.readinessProbe | nindent 10 }}
         {{- end }}
 
         {{- if or .Values.deployment.securityContext .Values.deployment.containerSecurityContext }}
