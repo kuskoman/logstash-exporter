@@ -116,7 +116,7 @@ spec:
 
         {{- with .Values.deployment.securityContext }}
         securityContext:
-          {{- toYaml . | nindent 12 }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
         ports:
         - name: http
