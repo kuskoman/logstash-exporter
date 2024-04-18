@@ -11,7 +11,7 @@ import (
 	"github.com/kuskoman/logstash-exporter/config"
 	logstashclient "github.com/kuskoman/logstash-exporter/fetcher/logstash_client"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/version"
+	"github.com/prometheus/client_golang/prometheus/collectors/version"
 )
 
 type Collector interface {
