@@ -41,6 +41,9 @@ func main() {
 	versionInfo := config.GetVersionInfo()
 	slog.Info(versionInfo.String())
 
+	httpInsecure := config.GetHttpInsecure()
+	slog.Debug("http insecure", "insecure", httpInsecure)
+
 	httpTimeout, err := config.GetHttpTimeout()
 	if err != nil {
 		slog.Error("failed to get http timeout", "err", err)
@@ -48,7 +51,7 @@ func main() {
 	}
 	slog.Debug("http timeout", "timeout", httpTimeout)
 
-	collectorManager := collectors.NewCollectorManager(logstashUrl, httpTimeout)
+	collectorManager := collectors.NewCollectorManager(logstashUrl, httpInsecure, httpTimeout)
 	appServer := server.NewAppServer(host, port, httpTimeout)
 	prometheus.MustRegister(collectorManager)
 

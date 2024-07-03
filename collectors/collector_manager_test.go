@@ -14,7 +14,7 @@ const httpTimeout = 2 * time.Second
 
 func TestNewCollectorManager(t *testing.T) {
 	mockEndpoint := "http://localhost:9600"
-	cm := NewCollectorManager(mockEndpoint, httpTimeout)
+	cm := NewCollectorManager(mockEndpoint, false, httpTimeout)
 
 	if cm == nil {
 		t.Error("Expected collector manager to be initialized")
