@@ -1,4 +1,4 @@
-FROM golang:1.22.4-alpine3.19 as build
+FROM golang:1.22.5-alpine3.19 as build
 
 ARG VERSION \
     GIT_COMMIT \
