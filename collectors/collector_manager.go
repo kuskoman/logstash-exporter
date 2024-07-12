@@ -25,8 +25,8 @@ type CollectorManager struct {
 	timeout         time.Duration
 }
 
-func NewCollectorManager(endpoint string, timeout time.Duration) *CollectorManager {
-	client := logstashclient.NewClient(endpoint)
+func NewCollectorManager(endpoint string, insecure bool, timeout time.Duration) *CollectorManager {
+	client := logstashclient.NewClient(endpoint, insecure)
 
 	collectors := getCollectors(client)
 

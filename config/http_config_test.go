@@ -44,3 +44,36 @@ func TestGetHttpTimeout(t *testing.T) {
 		}
 	})
 }
+
+func TestGetHttpInsecure(t *testing.T) {
+	t.Run("DefaultInsecure", func(t *testing.T) {
+		t.Parallel()
+		os.Unsetenv(httpInsecureEnvVar)
+		insecure := GetHttpInsecure()
+		if insecure != false {
+			t.Errorf("Expected default insecure of %v, got %v", false, insecure)
+		}
+	})
+
+	t.Run("CustomInsecure", func(t *testing.T) {
+		t.Parallel()
+		expectedInsecure := true
+		os.Setenv(httpInsecureEnvVar, "true")
+		defer os.Unsetenv(httpInsecureEnvVar)
+		insecure := GetHttpInsecure()
+		if insecure != expectedInsecure {
+			t.Errorf("Expected insecure of %v, got %v", expectedInsecure, insecure)
+		}
+	})
+
+	t.Run("InvalidInsecure", func(t *testing.T) {
+		t.Parallel()
+		expectedInsecure := false
+		os.Setenv(httpInsecureEnvVar, "invalid")
+		defer os.Unsetenv(httpInsecureEnvVar)
+		insecure := GetHttpInsecure()
+		if insecure != expectedInsecure {
+			t.Errorf("Expected insecure of %v, got %v", expectedInsecure, insecure)
+		}
+	})
+}

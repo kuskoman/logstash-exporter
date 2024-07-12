@@ -2,12 +2,14 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"time"
 )
 
 const (
 	defaultHttpTimeout = time.Second * 2
 	httpTimeoutEnvVar  = "HTTP_TIMEOUT"
+	httpInsecureEnvVar = "HTTP_INSECURE"
 )
 
 func GetHttpTimeout() (time.Duration, error) {
@@ -22,4 +24,9 @@ func GetHttpTimeout() (time.Duration, error) {
 	}
 
 	return timeout, nil
+}
+
+func GetHttpInsecure() bool {
+	b, _ := strconv.ParseBool(os.Getenv(httpInsecureEnvVar))
+	return b
 }
