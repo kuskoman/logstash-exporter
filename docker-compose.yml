@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.9.0
+    image: docker.elastic.co/logstash/logstash:8.14.3
     restart: unless-stopped
     volumes:
       - logstash-data:/usr/share/logstash/data
@@ -23,7 +23,7 @@ services:
       - ${LOGSTASH_PORT:-5044}:5044
       - ${LOGSTASH_STATS_PORT:-9600}:9600
   prometheus:
-    image: prom/prometheus:v2.46.0
+    image: prom/prometheus:v2.53.1
     restart: unless-stopped
     volumes:
       - prometheus-data:/prometheus
@@ -42,7 +42,7 @@ services:
       timeout: 10s
       retries: 8
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
     restart: unless-stopped
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
@@ -65,7 +65,7 @@ services:
     ports:
       - ${ELASTICSEARCH_PORT:-9200}:9200
   grafana:
-    image: grafana/grafana:10.0.3
+    image: grafana/grafana:10.2.8
     restart: unless-stopped
     ports:
       - ${GRAFANA_PORT:-3000}:3000
