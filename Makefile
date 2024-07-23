@@ -18,7 +18,7 @@ DOCKER_IMG ?= "logstash-exporter"
 #: Builds binary executables for all OS (Win, Darwin, Linux)
 all: $(GOOS_BINARIES)
 
-VERSIONINFO_PKG := config
+VERSIONINFO_PKG := pkg/config
 ldflags := -s -w \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).Version=$(VERSION)' \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).SemanticVersion=$(SEMANTIC_VERSION)' \
