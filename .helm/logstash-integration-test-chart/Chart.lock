@@ -4,12 +4,12 @@ dependencies:
   version: 8.5.1
 - name: apache
   repository: https://charts.bitnami.com/bitnami
-  version: 10.2.4
+  version: 11.2.10
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
-  version: 25.8.2
+  version: 25.24.1
 - name: logstash-exporter
   repository: file://../../chart/
-  version: 1.0.2
-digest: sha256:7d4c4f09f7947734ed527834d32065bebdb655fddd854fe9ba0481d3d9939e7f
-generated: "2023-12-26T20:27:15.623329+01:00"
+  version: 2.0.0
+digest: sha256:954a0f66f7738d85b0e809e23f0425736f0d2816d593e2b2e2f3cf0275aea659
+generated: "2024-07-23T21:52:41.953412+02:00"
