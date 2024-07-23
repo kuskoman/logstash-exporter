@@ -10,11 +10,11 @@ dependencies:
     condition: logstash.enabled
   # we are replacing elasticsearch with apache for testing purposes
   - name: apache
-    version: "^10.2.4"
+    version: "^11.2.10"
     repository: https://charts.bitnami.com/bitnami
     condition: apache.enabled
   - name: prometheus
-    version: "^25.8.2"
+    version: "^25.24.1"
     repository: https://prometheus-community.github.io/helm-charts
     condition: prometheus.enabled
   - name: logstash-exporter

@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   logstash: &logstash
-    image: docker.elastic.co/logstash/logstash:8.12.1
+    image: docker.elastic.co/logstash/logstash:8.14.3
     restart: unless-stopped
     volumes:
       - logstash-data:/usr/share/logstash/data
@@ -56,7 +56,7 @@ services:
       timeout: 10s
       retries: 8
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
     restart: unless-stopped
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
@@ -79,7 +79,7 @@ services:
     ports:
       - ${ELASTICSEARCH_PORT:-9200}:9200
   grafana:
-    image: grafana/grafana:10.2.4
+    image: grafana/grafana:10.4.4
     restart: unless-stopped
     ports:
       - ${GRAFANA_PORT:-3000}:3000
