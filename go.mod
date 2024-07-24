@@ -3,8 +3,11 @@ module github.com/kuskoman/logstash-exporter
 go 1.23
 
 require (
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/joho/godotenv v1.5.1
-	github.com/prometheus/client_golang v1.20.5
+	github.com/oklog/run v1.1.0
+	github.com/prometheus/client_golang v1.20.4
+	github.com/slok/reload v0.2.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -21,6 +24,7 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 )
 
 require (
