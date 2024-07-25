@@ -65,9 +65,7 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 
 
 	printInitialMessage()
-	slog.Warn("test1")
 	manager.SetupPrometheus(ctx)
-	slog.Warn("test2")
 
 	var (
 		runGroup      run.Group
@@ -92,14 +90,6 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 		slog.Info("Prometeus reloaded")
 		return nil
 	}))
-
-	/*
-	reloadManager.Add(100, reload.ReloaderFunc(func(ctx context.Context, id string) error {
-		slog.Info("App server reloaded")
-		manager.startAppServer(ctx)
-		return nil
-	}))
-	*/
 
 	ctx, cancel := context.WithCancel(ctx)
 
@@ -176,13 +166,10 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 		},
 	)
 
-
 	manager.isInitialized = true
 
-	slog.Warn("test3")
 	runGroup.Run()
 	
-	//manager.startAppServer(ctx)
 	return nil
 }
 
@@ -221,26 +208,6 @@ func setupLogging(loggingConfig *config.LoggingConfig) error {
 	slog.SetDefault(logger)
 	return nil
 }
-
-/*
-func (manager *StartupManager) startAppServer(ctx context.Context) {
-	manager.mutex.Lock()
-	defer manager.mutex.Unlock()
-
-	config := manager.appConfig
-
-	host := config.Server.Host
-	port := strconv.Itoa(config.Server.Port)
-	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
-
-	slog.Info("starting server on", "host", host, "port", port)
-	if err := appServer.ListenAndServe(); err != nil {
-		slog.Error("failed to listen and serve", "err", err)
-		os.Exit(1)
-	}
-}
-*/
-
 
 func (startupManager *StartupManager) SetupPrometheus(ctx context.Context) {
 	startupManager.mutex.Lock()
