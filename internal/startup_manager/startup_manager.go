@@ -78,6 +78,11 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	// Add all app reloaders in order.
 	reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, id string) error {
 		// If configuration fails ignore reload with a warning.
+		slog.Info("ev", "event", id)
+		if (id == "no-event") {
+			return nil
+		}
+
 		err := manager.LoadConfig(ctx)
 		if err != nil {
 			slog.Warn("Config could not be reloaded: %s", err)
@@ -89,6 +94,10 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	}))
 
 	reloadManager.Add(100, reload.ReloaderFunc(func(ctx context.Context, id string) error {
+		if (id == "no-event") {
+			return nil
+		}
+
 		manager.SetupPrometheus(ctx)
 		slog.Info("Prometeus reloaded")
 		return nil
@@ -155,10 +164,13 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 				}
 				slog.Info("Modification", "event", event)
                 if strings.Contains(event.Name, fname) {
+					if _, err = os.Stat(*manager.flagsConfig.configLocation); errors.Is(err, os.ErrNotExist) {
+						return "no-event", nil
+					}
 					slog.Info("Config modified","config fname", event.Name)
 					return "file-watch", nil
                 }
-					return "", nil
+				return "no-event", err
 			case err := <-watcher.Errors:
 				return "", err
 			}
