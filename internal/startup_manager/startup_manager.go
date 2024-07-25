@@ -7,6 +7,9 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"path/filepath"
+	"strings"
+
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/internal/server"
@@ -135,7 +138,8 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = watcher.Add(*manager.flagsConfig.configLocation)
+	err = watcher.Add(filepath.Dir(*manager.flagsConfig.configLocation))
+	fname := filepath.Base(*manager.flagsConfig.configLocation)
 	if err != nil {
 		slog.Warn("could not add file watcher for %s: %s", *manager.flagsConfig.configLocation, err)
 		return err
@@ -143,11 +147,21 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 
 	// Add file watcher based reload notifier.
 	reloadManager.On(reload.NotifierFunc(func(ctx context.Context) (string, error) {
-		select {
-		case <-watcher.Events:
-			return "file-watch", nil
-		case err := <-watcher.Errors:
-			return "", err
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return "", err
+				}
+				slog.Info("Modification", "event", event)
+                if strings.Contains(event.Name, fname) {
+					slog.Info("Config modified","config fname", event.Name)
+					return "file-watch", nil
+                }
+					return "", nil
+			case err := <-watcher.Errors:
+				return "", err
+			}
 		}
 	}))
 
