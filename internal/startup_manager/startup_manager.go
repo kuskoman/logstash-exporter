@@ -1,17 +1,25 @@
 package startup_manager
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"os"
 	"strconv"
 	"sync"
+	"path/filepath"
+	"strings"
+
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/internal/server"
 	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
+	
+	"github.com/fsnotify/fsnotify"
+	"github.com/oklog/run"
+	"github.com/slok/reload"
 )
 
 // StartupManager is a struct that holds the startup manager
@@ -32,11 +40,157 @@ func NewStartupManager() *StartupManager {
 	}
 }
 
+var previousCollector prometheus.Collector = nil
+
+func (manager *StartupManager) StartAppServer() {
+	config := manager.appConfig
+
+	host := config.Server.Host
+	port := strconv.Itoa(config.Server.Port)
+	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
+
+	slog.Info("starting server on", "host", host, "port", port)
+	if err := appServer.ListenAndServe(); err != nil {
+		slog.Error("failed to listen and serve", "err", err)
+		os.Exit(1)
+	}
+}
+
+func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
+	var (
+		runGroup      run.Group
+		reloadManager = reload.NewManager()
+	)
+
+	// Add all app reloaders in order.
+	reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, id string) error {
+		// If configuration fails ignore reload with a warning.
+		slog.Info("ev", "event", id)
+		if (id == "no-event") {
+			return nil
+		}
+
+		err := manager.LoadConfig(ctx)
+		if err != nil {
+			slog.Warn("Config could not be reloaded", "err", err)
+			return err
+		}
+
+		slog.Info("Config reloaded")
+		return nil
+	}))
+
+	reloadManager.Add(100, reload.ReloaderFunc(func(ctx context.Context, id string) error {
+		if (id == "no-event") {
+			return nil
+		}
+
+		manager.SetupPrometheus(ctx)
+		slog.Info("Prometeus reloaded")
+		return nil
+	}))
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	runGroup.Add(
+		func() error {
+			slog.Info("Starting reload manager")
+			return reloadManager.Run(ctx)
+		},
+		func(_ error) {
+			slog.Info("Stopping reload manager")
+			cancel()
+		},
+	)
+
+
+	config := manager.appConfig
+
+	host := config.Server.Host
+	port := strconv.Itoa(config.Server.Port)
+	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
+
+	runGroup.Add(
+		func() error {
+			slog.Info("starting server on", "host", host, "port", port)
+			return appServer.ListenAndServe()
+		},
+		func(_ error) {
+			slog.Info("Stopping HTTP server")
+			ctx, cancel := context.WithTimeout(context.Background(), config.Logstash.HttpTimeout)
+			defer cancel()
+			err := appServer.Shutdown(ctx)
+			if err != nil {
+				slog.Error("Could not shut down http server", "err", err)
+			}
+			os.Exit(1)
+		},
+	)
+
+
+	// File watcher:
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	err = watcher.Add(filepath.Dir(*manager.flagsConfig.configLocation))
+	fname := filepath.Base(*manager.flagsConfig.configLocation)
+	if err != nil {
+		slog.Warn("could not add file watcher for %s: %s", *manager.flagsConfig.configLocation, err)
+		return err
+	}
+
+	// Add file watcher based reload notifier.
+	reloadManager.On(reload.NotifierFunc(func(ctx context.Context) (string, error) {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return "", err
+				}
+				slog.Info("Modification", "event", event)
+                if strings.Contains(event.Name, fname) {
+					if _, err = os.Stat(*manager.flagsConfig.configLocation); errors.Is(err, os.ErrNotExist) {
+						return "no-event", nil
+					}
+					slog.Info("Config modified","config fname", event.Name)
+					return "file-watch", nil
+                }
+				return "no-event", err
+			case err := <-watcher.Errors:
+				return "", err
+			}
+		}
+	}))
+
+	ctx, cancel = context.WithCancel(ctx)
+	runGroup.Add(
+		func() error {
+			// Block forever until the watcher stops.
+			slog.Info("File watcher running with","config file", *manager.flagsConfig.configLocation)
+			<-ctx.Done()
+			return nil
+		},
+		func(_ error) {
+			slog.Info("Stopping file watcher")
+			watcher.Close()
+			cancel()
+		},
+	)
+
+	manager.isInitialized = true
+
+	runGroup.Run()
+
+	return nil
+}
+
 // Initialize is a method that initializes the startup manager.
 // Should be only called once.
-func (manager *StartupManager) Initialize() error {
-	manager.mutex.Lock()
-	defer manager.mutex.Unlock()
+func (manager *StartupManager) Initialize(ctx context.Context) error {
+	ctx, rootCancel := context.WithCancel(ctx)
+	defer rootCancel()
 
 	warn := godotenv.Load()
 
@@ -44,9 +198,9 @@ func (manager *StartupManager) Initialize() error {
 		return errors.New("startup manager is already initialized")
 	}
 
-	manager.loadFlags()
+	manager.LoadFlags()
 
-	err := manager.loadConfig()
+	err := manager.LoadConfig(ctx)
 
 	if warn != nil {
 		slog.Warn("failed to load .env file", "err", warn)
@@ -56,16 +210,20 @@ func (manager *StartupManager) Initialize() error {
 		return err
 	}
 
-	printInitialMessage()
-	manager.setupPrometheus()
-	manager.startAppServer()
 
-	manager.isInitialized = true
+	printInitialMessage()
+	manager.SetupPrometheus(ctx)
+
+	if (*manager.flagsConfig.hotReload) {
+		manager.SetupHotReload(ctx)
+	} else {
+		manager.StartAppServer()
+	}
 
 	return nil
 }
 
-func (manager *StartupManager) loadFlags() {
+func (manager *StartupManager) LoadFlags() {
 	flagsConfig, shouldExit := handleFlags()
 	if shouldExit {
 		os.Exit(0)
@@ -74,7 +232,10 @@ func (manager *StartupManager) loadFlags() {
 	manager.flagsConfig = flagsConfig
 }
 
-func (manager *StartupManager) loadConfig() error {
+func (manager *StartupManager) LoadConfig(ctx context.Context) error {
+	manager.mutex.Lock()
+	defer manager.mutex.Unlock()
+
 	exporterConfig, err := config.GetConfig(*manager.flagsConfig.configLocation)
 	if err != nil {
 		return err
@@ -98,29 +259,25 @@ func setupLogging(loggingConfig *config.LoggingConfig) error {
 	return nil
 }
 
-func (manager *StartupManager) startAppServer() {
-	config := manager.appConfig
+func (startupManager *StartupManager) SetupPrometheus(ctx context.Context) {
+	startupManager.mutex.Lock()
+	defer startupManager.mutex.Unlock()
 
-	host := config.Server.Host
-	port := strconv.Itoa(config.Server.Port)
-	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
-
-	slog.Info("starting server on", "host", host, "port", port)
-	if err := appServer.ListenAndServe(); err != nil {
-		slog.Error("failed to listen and serve", "err", err)
-		os.Exit(1)
-	}
-}
-
-func (startupManager *StartupManager) setupPrometheus() {
 	config := startupManager.appConfig
 	slog.Debug("http timeout", "timeout", config.Logstash.HttpTimeout)
+
+	if (previousCollector != nil) {
+		slog.Info("should unregister")
+		prometheus.Unregister(previousCollector)
+	}
 
 	collectorManager := collector_manager.NewCollectorManager(
 		config.Logstash.Servers,
 		config.Logstash.HttpTimeout,
 	)
+
 	prometheus.MustRegister(collectorManager)
+	previousCollector = collectorManager
 }
 
 func printInitialMessage() {
