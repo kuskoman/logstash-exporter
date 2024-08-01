@@ -42,34 +42,21 @@ func NewStartupManager() *StartupManager {
 
 var previousCollector prometheus.Collector = nil
 
-// Initialize is a method that initializes the startup manager.
-// Should be only called once.
-func (manager *StartupManager) Initialize(ctx context.Context) error {
-	ctx, rootCancel := context.WithCancel(ctx)
-	defer rootCancel()
+func (manager *StartupManager) StartAppServer() {
+	config := manager.appConfig
 
-	warn := godotenv.Load()
+	host := config.Server.Host
+	port := strconv.Itoa(config.Server.Port)
+	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
 
-	if manager.isInitialized {
-		return errors.New("startup manager is already initialized")
+	slog.Info("starting server on", "host", host, "port", port)
+	if err := appServer.ListenAndServe(); err != nil {
+		slog.Error("failed to listen and serve", "err", err)
+		os.Exit(1)
 	}
+}
 
-	manager.LoadFlags()
-
-	err := manager.LoadConfig(ctx)
-
-	if warn != nil {
-		slog.Warn("failed to load .env file", "err", warn)
-	}
-
-	if err != nil {
-		return err
-	}
-
-
-	printInitialMessage()
-	manager.SetupPrometheus(ctx)
-
+func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 	var (
 		runGroup      run.Group
 		reloadManager = reload.NewManager()
@@ -85,7 +72,7 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 
 		err := manager.LoadConfig(ctx)
 		if err != nil {
-			slog.Warn("Config could not be reloaded: %s", err)
+			slog.Warn("Config could not be reloaded", "err", err)
 			return err
 		}
 
@@ -134,7 +121,7 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 			defer cancel()
 			err := appServer.Shutdown(ctx)
 			if err != nil {
-				slog.Error("Could not shut down http server: %s", err)
+				slog.Error("Could not shut down http server", "err", err)
 			}
 			os.Exit(1)
 		},
@@ -195,7 +182,44 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	manager.isInitialized = true
 
 	runGroup.Run()
-	
+
+	return nil
+}
+
+// Initialize is a method that initializes the startup manager.
+// Should be only called once.
+func (manager *StartupManager) Initialize(ctx context.Context) error {
+	ctx, rootCancel := context.WithCancel(ctx)
+	defer rootCancel()
+
+	warn := godotenv.Load()
+
+	if manager.isInitialized {
+		return errors.New("startup manager is already initialized")
+	}
+
+	manager.LoadFlags()
+
+	err := manager.LoadConfig(ctx)
+
+	if warn != nil {
+		slog.Warn("failed to load .env file", "err", warn)
+	}
+
+	if err != nil {
+		return err
+	}
+
+
+	printInitialMessage()
+	manager.SetupPrometheus(ctx)
+
+	if (*manager.flagsConfig.hotReload) {
+		manager.SetupHotReload(ctx)
+	} else {
+		manager.StartAppServer()
+	}
+
 	return nil
 }
 
