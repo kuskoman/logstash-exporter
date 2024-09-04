@@ -72,11 +72,11 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 
 		err := manager.LoadConfig(ctx)
 		if err != nil {
-			slog.Warn("Config could not be reloaded", "err", err)
+			slog.Warn("config could not be reloaded", "err", err)
 			return err
 		}
 
-		slog.Info("Config reloaded")
+		slog.Info("config reloaded")
 		return nil
 	}))
 
@@ -86,7 +86,7 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		}
 
 		manager.SetupPrometheus(ctx)
-		slog.Info("Prometeus reloaded")
+		slog.Info("prometeus reloaded")
 		return nil
 	}))
 
@@ -94,11 +94,11 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 
 	runGroup.Add(
 		func() error {
-			slog.Info("Starting reload manager")
+			slog.Info("starting reload manager")
 			return reloadManager.Run(ctx)
 		},
 		func(_ error) {
-			slog.Info("Stopping reload manager")
+			slog.Info("stopping reload manager")
 			cancel()
 		},
 	)
@@ -116,12 +116,12 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 			return appServer.ListenAndServe()
 		},
 		func(_ error) {
-			slog.Info("Stopping HTTP server")
+			slog.Info("stopping HTTP server")
 			ctx, cancel := context.WithTimeout(context.Background(), config.Logstash.HttpTimeout)
 			defer cancel()
 			err := appServer.Shutdown(ctx)
 			if err != nil {
-				slog.Error("Could not shut down http server", "err", err)
+				slog.Error("could not shut down http server", "err", err)
 			}
 			os.Exit(1)
 		},
@@ -149,12 +149,12 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 				if !ok {
 					return "", err
 				}
-				slog.Info("Modification", "event", event)
-                if strings.Contains(event.Name, fname) {
+				slog.Info("modification", "event", event)
+                if strings.Contains(event.Name, fname) && event.Has(fsnotify.Write) {
 					if _, err = os.Stat(*manager.flagsConfig.configLocation); errors.Is(err, os.ErrNotExist) {
 						return "no-event", nil
 					}
-					slog.Info("Config modified","config fname", event.Name)
+					slog.Info("config modified","config fname", event.Name)
 					return "file-watch", nil
                 }
 				return "no-event", err
@@ -168,12 +168,12 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 	runGroup.Add(
 		func() error {
 			// Block forever until the watcher stops.
-			slog.Info("File watcher running with","config file", *manager.flagsConfig.configLocation)
+			slog.Info("file watcher running with","config file", *manager.flagsConfig.configLocation)
 			<-ctx.Done()
 			return nil
 		},
 		func(_ error) {
-			slog.Info("Stopping file watcher")
+			slog.Info("stopping file watcher")
 			watcher.Close()
 			cancel()
 		},
