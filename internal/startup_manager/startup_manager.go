@@ -91,7 +91,6 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 	}))
 
 	ctx, cancel := context.WithCancel(ctx)
-
 	runGroup.Add(
 		func() error {
 			slog.Info("starting reload manager")
@@ -103,13 +102,10 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		},
 	)
 
-
 	config := manager.appConfig
-
 	host := config.Server.Host
 	port := strconv.Itoa(config.Server.Port)
 	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
-
 	runGroup.Add(
 		func() error {
 			slog.Info("starting server on", "host", host, "port", port)
@@ -135,12 +131,16 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		return err
 	}
 	err = watcher.Add(filepath.Dir(*manager.flagsConfig.configLocation))
-	fname := filepath.Base(*manager.flagsConfig.configLocation)
 	if err != nil {
 		slog.Warn("could not add file watcher for %s: %s", *manager.flagsConfig.configLocation, err)
 		return err
 	}
 
+	fname := filepath.Base(*manager.flagsConfig.configLocation)
+	initialStat, err := os.Stat(*manager.flagsConfig.configLocation)
+	if err != nil {
+		return err
+	}
 	// Add file watcher based reload notifier.
 	reloadManager.On(reload.NotifierFunc(func(ctx context.Context) (string, error) {
 		for {
@@ -149,13 +149,17 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 				if !ok {
 					return "", err
 				}
-				slog.Info("modification", "event", event)
-                if strings.Contains(event.Name, fname) && event.Has(fsnotify.Write) {
-					if _, err = os.Stat(*manager.flagsConfig.configLocation); errors.Is(err, os.ErrNotExist) {
-						return "no-event", nil
+
+				if strings.Contains(event.Name, fname) {
+					stat, err := os.Stat(*manager.flagsConfig.configLocation)
+					if err != nil {
+						return "", err
 					}
-					slog.Info("config modified","config fname", event.Name)
-					return "file-watch", nil
+
+					if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
+						slog.Info("config modified", "config fname", event.Name)
+						return "file-watch", nil
+					}
                 }
 				return "no-event", err
 			case err := <-watcher.Errors:
