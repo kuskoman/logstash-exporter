@@ -40,7 +40,7 @@ func NewStartupManager() *StartupManager {
 	}
 }
 
-var previousCollector prometheus.Collector = nil
+var previousCollector prometheus.Collector
 
 func (manager *StartupManager) StartAppServer() {
 	config := manager.appConfig
