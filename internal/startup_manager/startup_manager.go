@@ -42,6 +42,16 @@ func NewStartupManager() *StartupManager {
 
 var previousCollector prometheus.Collector
 
+const (
+	NoEvent      = "no-event"
+	EventError   = ""
+	FileModified = "modified"
+)
+
+func isNothingChanged(event string) bool {
+	return event != FileModified
+}
+
 func (manager *StartupManager) StartAppServer() {
 	config := manager.appConfig
 
@@ -63,10 +73,9 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 	)
 
 	// Add all app reloaders in order.
-	reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, id string) error {
+	reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, event string) error {
 		// If configuration fails ignore reload with a warning.
-		slog.Info("ev", "event", id)
-		if (id == "no-event") {
+		if isNothingChanged(event) {
 			return nil
 		}
 
@@ -80,8 +89,8 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		return nil
 	}))
 
-	reloadManager.Add(100, reload.ReloaderFunc(func(ctx context.Context, id string) error {
-		if (id == "no-event") {
+	reloadManager.Add(100, reload.ReloaderFunc(func(ctx context.Context, event string) error {
+		if isNothingChanged(event) {
 			return nil
 		}
 
@@ -147,23 +156,23 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
-					return "", err
+					return EventError, nil
 				}
 
 				if strings.Contains(event.Name, fname) {
 					stat, err := os.Stat(*manager.flagsConfig.configLocation)
 					if err != nil {
-						return "", err
+						return EventError, err
 					}
 
 					if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
 						slog.Info("config modified", "config fname", event.Name)
-						return "file-watch", nil
+						return FileModified, nil
 					}
                 }
-				return "no-event", err
+				return NoEvent, nil
 			case err := <-watcher.Errors:
-				return "", err
+				return EventError, err
 			}
 		}
 	}))
@@ -271,7 +280,7 @@ func (startupManager *StartupManager) SetupPrometheus(ctx context.Context) {
 	slog.Debug("http timeout", "timeout", config.Logstash.HttpTimeout)
 
 	if (previousCollector != nil) {
-		slog.Info("should unregister")
+		slog.Debug("should unregister")
 		prometheus.Unregister(previousCollector)
 	}
 
