@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/prometheus/client_golang v1.20.2
+	github.com/prometheus/client_golang v1.20.3
 	gopkg.in/yaml.v2 v2.4.0
 )
 
