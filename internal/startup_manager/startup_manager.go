@@ -10,13 +10,13 @@ import (
 	"path/filepath"
 	"strings"
 
-
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/internal/server"
 	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
 	
+	// hot reload:
 	"github.com/fsnotify/fsnotify"
 	"github.com/oklog/run"
 	"github.com/slok/reload"
@@ -59,6 +59,7 @@ func (manager *StartupManager) StartAppServer() {
 	port := strconv.Itoa(config.Server.Port)
 	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
 
+	manager.isInitialized = true
 	slog.Info("starting server on", "host", host, "port", port)
 	if err := appServer.ListenAndServe(); err != nil {
 		slog.Error("failed to listen and serve", "err", err)
