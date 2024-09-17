@@ -5,17 +5,18 @@ import (
 	"errors"
 	"log/slog"
 	"os"
-	"strconv"
-	"sync"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/joho/godotenv"
 	"github.com/kuskoman/logstash-exporter/internal/server"
 	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
-	
+
 	// hot reload:
 	"github.com/fsnotify/fsnotify"
 	"github.com/oklog/run"
@@ -73,24 +74,8 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		reloadManager = reload.NewManager()
 	)
 
-	// Add all app reloaders in order.
+	// Prometheus reloader
 	reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, event string) error {
-		// If configuration fails ignore reload with a warning.
-		if isNothingChanged(event) {
-			return nil
-		}
-
-		err := manager.LoadConfig(ctx)
-		if err != nil {
-			slog.Warn("config could not be reloaded", "err", err)
-			return err
-		}
-
-		slog.Info("config reloaded")
-		return nil
-	}))
-
-	reloadManager.Add(100, reload.ReloaderFunc(func(ctx context.Context, event string) error {
 		if isNothingChanged(event) {
 			return nil
 		}
@@ -134,15 +119,14 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 	)
 
 
-	// File watcher:
-
+	// File watcher
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
 	err = watcher.Add(filepath.Dir(*manager.flagsConfig.configLocation))
 	if err != nil {
-		slog.Warn("could not add file watcher for %s: %s", *manager.flagsConfig.configLocation, err)
+		slog.Error("could not add file watcher for %s: %s", *manager.flagsConfig.configLocation, err)
 		return err
 	}
 
@@ -163,16 +147,29 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 				if strings.Contains(event.Name, fname) {
 					stat, err := os.Stat(*manager.flagsConfig.configLocation)
 					if err != nil {
+						slog.Error("config file could not be found", "err", err)
 						return EventError, err
 					}
 
 					if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-						slog.Info("config modified", "config fname", event.Name)
-						return FileModified, nil
+						tmpConfig := manager.appConfig
+						err := manager.LoadConfig(ctx)
+						if err != nil {
+							slog.Error("config could not be reloaded", "err", err)
+							return EventError, err
+						}
+
+						if !reflect.DeepEqual(tmpConfig, manager.appConfig) {
+							slog.Info("config modified", "config fname", event.Name)
+							return FileModified, nil
+						}
+
+						return NoEvent, nil
 					}
                 }
 				return NoEvent, nil
 			case err := <-watcher.Errors:
+				slog.Error("file watcher could not handle events", "err", err)
 				return EventError, err
 			}
 		}
@@ -221,6 +218,7 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	}
 
 	if err != nil {
+		slog.Error("failed to load config.yml file", "err", err)
 		return err
 	}
 
