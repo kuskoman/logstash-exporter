@@ -17,7 +17,6 @@ import (
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
 
-	// hot reload:
 	"github.com/fsnotify/fsnotify"
 	"github.com/oklog/run"
 	"github.com/slok/reload"
@@ -31,6 +30,8 @@ type StartupManager struct {
 	mutex         *sync.Mutex
 	flagsConfig   *flagsConfig
 	appConfig     *config.Config
+	runGroup      run.Group
+	reloadManager reload.Manager
 }
 
 // NewStartupManager returns a new instance of the StartupManager
@@ -49,11 +50,11 @@ const (
 	FileModified = "modified"
 )
 
-func isNothingChanged(event string) bool {
+func isConfigNotChanged(event string) bool {
 	return event != FileModified
 }
 
-func (manager *StartupManager) StartAppServer() {
+func (manager *StartupManager) SetupAppServer() {
 	config := manager.appConfig
 
 	host := config.Server.Host
@@ -68,15 +69,10 @@ func (manager *StartupManager) StartAppServer() {
 	}
 }
 
-func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
-	var (
-		runGroup      run.Group
-		reloadManager = reload.NewManager()
-	)
-
-	// Prometheus reloader
-	reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, event string) error {
-		if isNothingChanged(event) {
+// Setups Prometeus reloader in a hot-reload fashion.
+func (manager *StartupManager) SetupPrometeusReloader(ctx context.Context) {
+	manager.reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, event string) error {
+		if isConfigNotChanged(event) {
 			return nil
 		}
 
@@ -86,22 +82,26 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 	}))
 
 	ctx, cancel := context.WithCancel(ctx)
-	runGroup.Add(
+	manager.runGroup.Add(
 		func() error {
 			slog.Info("starting reload manager")
-			return reloadManager.Run(ctx)
+			return manager.reloadManager.Run(ctx)
 		},
 		func(_ error) {
 			slog.Info("stopping reload manager")
 			cancel()
 		},
 	)
+}
 
+// Setups App Server in parallel.
+// Used for hot-reload functionality.
+func (manager *StartupManager) SetupAppServerParallel(ctx context.Context) {
 	config := manager.appConfig
 	host := config.Server.Host
 	port := strconv.Itoa(config.Server.Port)
 	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
-	runGroup.Add(
+	manager.runGroup.Add(
 		func() error {
 			slog.Info("starting server on", "host", host, "port", port)
 			return appServer.ListenAndServe()
@@ -117,9 +117,11 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 			os.Exit(1)
 		},
 	)
+}
 
-
-	// File watcher
+// Setups file watcher for the config.yml file for hot-reload.
+// It is blocked forever until the watcher stops.
+func (manager *StartupManager) SetupFileWatcher(ctx context.Context) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -130,13 +132,8 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		return err
 	}
 
-	fname := filepath.Base(*manager.flagsConfig.configLocation)
-	initialStat, err := os.Stat(*manager.flagsConfig.configLocation)
-	if err != nil {
-		return err
-	}
-	// Add file watcher based reload notifier.
-	reloadManager.On(reload.NotifierFunc(func(ctx context.Context) (string, error) {
+	configFname := filepath.Base(*manager.flagsConfig.configLocation)
+	manager.reloadManager.On(reload.NotifierFunc(func(ctx context.Context) (string, error) {
 		for {
 			select {
 			case event, ok := <-watcher.Events:
@@ -144,30 +141,22 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 					return EventError, nil
 				}
 
-				if strings.Contains(event.Name, fname) {
-					stat, err := os.Stat(*manager.flagsConfig.configLocation)
-					if err != nil {
-						slog.Error("config file could not be found", "err", err)
-						return EventError, err
-					}
+				if !strings.Contains(event.Name, configFname) {
+					return NoEvent, nil
+				}
 
-					if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-						tmpConfig := manager.appConfig
-						err := manager.LoadConfig(ctx)
-						if err != nil {
-							slog.Error("config could not be reloaded", "err", err)
-							return EventError, err
-						}
+				tmpConfig := manager.appConfig
+				err = manager.LoadConfig(ctx)
+				if err != nil {
+					slog.Error("config could not be reloaded", "err", err)
+					return EventError, err
+				}
+				if reflect.DeepEqual(tmpConfig, manager.appConfig) {
+					return NoEvent, nil
+				}
 
-						if !reflect.DeepEqual(tmpConfig, manager.appConfig) {
-							slog.Info("config modified", "config fname", event.Name)
-							return FileModified, nil
-						}
-
-						return NoEvent, nil
-					}
-                }
-				return NoEvent, nil
+				slog.Info("config modified", "config fname", event.Name)
+				return FileModified, nil
 			case err := <-watcher.Errors:
 				slog.Error("file watcher could not handle events", "err", err)
 				return EventError, err
@@ -175,10 +164,9 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		}
 	}))
 
-	ctx, cancel = context.WithCancel(ctx)
-	runGroup.Add(
+	ctx, cancel := context.WithCancel(ctx)
+	manager.runGroup.Add(
 		func() error {
-			// Block forever until the watcher stops.
 			slog.Info("file watcher running with","config file", *manager.flagsConfig.configLocation)
 			<-ctx.Done()
 			return nil
@@ -190,9 +178,21 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		},
 	)
 
+	return nil
+}
+
+// Initializes the startup manager in hot-reloading mode.
+// Should be only called once.
+func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
+	manager.reloadManager = reload.NewManager()
+
+	manager.SetupPrometeusReloader(ctx)
+	manager.SetupAppServerParallel(ctx)
+	manager.SetupFileWatcher(ctx)
+
 	manager.isInitialized = true
 
-	runGroup.Run()
+	manager.runGroup.Run()
 
 	return nil
 }
@@ -222,14 +222,13 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 		return err
 	}
 
-
 	printInitialMessage()
 	manager.SetupPrometheus(ctx)
 
 	if (*manager.flagsConfig.hotReload) {
 		manager.SetupHotReload(ctx)
 	} else {
-		manager.StartAppServer()
+		manager.SetupAppServer()
 	}
 
 	return nil
