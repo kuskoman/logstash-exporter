@@ -16,7 +16,7 @@ type flagsConfig struct {
 func handleFlags() (*flagsConfig, bool) {
 	versionFlag := flag.Bool("version", false, "prints the version and exits")
 	helpFlag := flag.Bool("help", false, "prints the help message and exits")
-	hotReloadFlag := flag.Bool("hot-reload", false, "enable configuration hot reload")
+	hotReloadFlag := flag.Bool("watch", false, "enable configuration hot reload")
 	configLocationFlag := flag.String("config", config.ExporterConfigLocation, "location of the exporter config file")
 
 	flag.Parse()
