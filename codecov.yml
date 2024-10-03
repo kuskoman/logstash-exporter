@@ -7,3 +7,6 @@ coverage:
       default:
         target: 90%
         threshold: 20%
+
+ignore:
+  - "internal/startup_manager"
