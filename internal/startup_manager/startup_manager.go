@@ -188,11 +188,19 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 
 	manager.SetupPrometeusReloader(ctx)
 	manager.SetupAppServerParallel(ctx)
-	manager.SetupFileWatcher(ctx)
+	err := manager.SetupFileWatcher(ctx)
+	if err != nil {
+		slog.Error("failed to setup file watcher", "err", err)
+		return err
+	}
 
 	manager.isInitialized = true
 
-	manager.runGroup.Run()
+	err = manager.runGroup.Run()
+	if err != nil {
+		slog.Error("failed run reload group", "err", err)
+		return err
+	}
 
 	return nil
 }
@@ -226,7 +234,11 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	manager.SetupPrometheus(ctx)
 
 	if (*manager.flagsConfig.hotReload) {
-		manager.SetupHotReload(ctx)
+		err := manager.SetupHotReload(ctx)
+		if err != nil {
+			slog.Error("failed to set up hot reload", "err", err)
+			return err
+		}
 	} else {
 		manager.SetupAppServer()
 	}
