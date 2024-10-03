@@ -10,3 +10,4 @@ coverage:
 
 ignore:
   - "internal/startup_manager"
+  - "cmd/exporter"
