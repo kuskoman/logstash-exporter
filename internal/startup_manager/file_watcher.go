@@ -40,15 +40,19 @@ func NewFileWatcher(configLocation string, reloadManager reload.Manager) (*FileW
 
 // Watch sets up file watching for config changes
 func (fw *FileWatcher) Watch(ctx context.Context, configComparator *ConfigComparator) error {
+	slog.Info("watching config file", "file", fw.fileName)
+
 	fw.reloadManager.On(reload.NotifierFunc(func(ctx context.Context) (string, error) {
 		for {
 			select {
 			case event, ok := <-fw.watcher.Events:
 				if !ok {
+					slog.Error("file watcher event channel closed")
 					return EventError, nil
 				}
 
 				if !strings.Contains(event.Name, fw.fileName) {
+					slog.Debug("ignoring file event", "file", event.Name, "config file", fw.fileName)
 					return NoEvent, nil
 				}
 

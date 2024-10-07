@@ -2,6 +2,7 @@ package startup_manager
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 
 	"github.com/kuskoman/logstash-exporter/pkg/config"
@@ -34,6 +35,8 @@ func (cc *ConfigComparator) LoadAndCompareConfig(ctx context.Context) (bool, err
 	if cc.currentConfig == nil || !cc.currentConfig.Equals(newConfig) {
 		cc.currentConfig = newConfig
 		return true, nil
+	} else {
+		slog.Debug("config is unchanged")
 	}
 
 	return false, nil
