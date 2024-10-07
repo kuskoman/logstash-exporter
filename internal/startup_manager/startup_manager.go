@@ -33,6 +33,7 @@ type StartupManager struct {
 	fileWatcher      *FileWatcher
 	runGroup         run.Group
 	serverInstance   AppServer
+	collectorManager *collector_manager.CollectorManager
 }
 
 // NewStartupManager creates a new StartupManager
@@ -195,6 +196,12 @@ func (manager *StartupManager) setupPrometheus() {
 	)
 
 	prometheus.MustRegister(collector)
+
+	manager.collectorManager = collector
+}
+
+func (manager *StartupManager) stopPrometheus() {
+	prometheus.Unregister(manager.collectorManager)
 }
 
 // setupPrometheusReloader configures the reloader to handle Prometheus reload events
@@ -204,7 +211,7 @@ func (manager *StartupManager) setupPrometheusReloader() {
 			return nil
 		}
 
-		// Reload Prometheus configuration
+		manager.stopPrometheus()
 		manager.setupPrometheus()
 		slog.Info("prometheus reloaded")
 		return nil
