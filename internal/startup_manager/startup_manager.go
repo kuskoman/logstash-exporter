@@ -58,6 +58,7 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 
 	manager.SetupServerAndPrometheus(ctx)
 
+	slog.Debug("hot reload enabled", "enabled", manager.flagsConfig.HotReload)
 	if manager.flagsConfig.HotReload {
 		return manager.setupHotReload(ctx)
 	}
@@ -120,6 +121,7 @@ func (manager *StartupManager) SetupServerAndPrometheus(ctx context.Context) {
 
 // setupHotReload sets up file watching and hot-reload functionality
 func (manager *StartupManager) setupHotReload(ctx context.Context) error {
+	slog.Debug("setting up hot reload", "config file", manager.flagsConfig.ConfigLocation)
 	watcher, err := NewFileWatcher(manager.flagsConfig.ConfigLocation, manager.reloadManager)
 	if err != nil {
 		return err
