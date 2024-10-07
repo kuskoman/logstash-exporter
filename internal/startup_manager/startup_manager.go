@@ -52,13 +52,17 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 		return errors.New("startup manager is already initialized")
 	}
 
-	slog.Debug("Starting initialization")
+	slog.Debug("starting initialization")
 	if err := manager.LoadConfig(ctx); err != nil {
 		slog.Error("failed to load config", "err", err)
 		return err
 	}
 
-	manager.setupSlog()
+	err := manager.setupSlog()
+	if err != nil {
+		slog.Error("failed to setup slog", "err", err)
+		return err
+	}
 
 	// Setup server and Prometheus first
 	if err := manager.SetupServerAndPrometheus(ctx); err != nil {
@@ -66,7 +70,7 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	}
 
 	// Check for hot reload flag
-	slog.Debug("Checking if hot reload is enabled", "enabled", manager.flagsConfig.HotReload)
+	slog.Debug("checking if hot reload is enabled", "enabled", manager.flagsConfig.HotReload)
 	if manager.flagsConfig.HotReload {
 		if err := manager.setupHotReload(ctx); err != nil {
 			return err
@@ -136,7 +140,7 @@ func (manager *StartupManager) SetupServerAndPrometheus(ctx context.Context) err
 
 	// Then add the server to the runGroup
 	if err := manager.SetupServer(ctx); err != nil {
-		slog.Error("Failed to setup server", "err", err)
+		slog.Error("failed to setup server", "err", err)
 		return err
 	}
 
@@ -145,7 +149,7 @@ func (manager *StartupManager) SetupServerAndPrometheus(ctx context.Context) err
 
 // setupHotReload sets up file watching and hot-reload functionality
 func (manager *StartupManager) setupHotReload(ctx context.Context) error {
-	slog.Debug("Setting up hot reload", "config file", manager.flagsConfig.ConfigLocation)
+	slog.Debug("setting up hot reload", "config file", manager.flagsConfig.ConfigLocation)
 	watcher, err := NewFileWatcher(manager.flagsConfig.ConfigLocation, manager.reloadManager)
 	if err != nil {
 		return err
@@ -157,7 +161,7 @@ func (manager *StartupManager) setupHotReload(ctx context.Context) error {
 	// Watch file changes
 	err = manager.fileWatcher.Watch(ctx, manager.configComparator)
 	if err != nil {
-		slog.Error("Failed to setup file watcher", "err", err)
+		slog.Error("failed to setup file watcher", "err", err)
 		return err
 	}
 
