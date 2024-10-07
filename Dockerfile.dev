@@ -1,6 +1,6 @@
-FROM cosmtrek/air:v1.52.3 as air
+FROM cosmtrek/air:v1.60.0 as air
 
-FROM golang:1.22.5-alpine3.20
+FROM golang:1.23.1-alpine3.19
 
 WORKDIR /app
 
