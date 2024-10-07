@@ -54,6 +54,143 @@ func TestLoadConfig(t *testing.T) {
 	})
 }
 
+func TestConfigEquals(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns true for equal configs", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		config2 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		if !config1.Equals(config2) {
+			t.Error("expected configs to be equal")
+		}
+	})
+
+	t.Run("returns false for unequal configs (when nested fields differ)", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9603"},
+				},
+			},
+		}
+
+		config2 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		if config1.Equals(config2) {
+			t.Error("expected configs to be unequal")
+		}
+	})
+
+	t.Run("returns false for nil config", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		if config1.Equals(nil) {
+			t.Error("expected configs to be unequal")
+		}
+	})
+
+	t.Run("returns false for unequal configs (when one field is empty)", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		config2 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: nil,
+			},
+		}
+
+		if config1.Equals(config2) {
+			t.Error("expected configs to be unequal")
+		}
+	})
+}
+
 func TestMergeWithDefault(t *testing.T) {
 	t.Parallel()
 
