@@ -59,19 +59,14 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 	manager.SetupServerAndPrometheus(ctx)
 
 	if manager.flagsConfig.HotReload {
-		return manager.SetupHotReload(ctx)
+		return manager.setupHotReload(ctx)
 	}
 
-	return manager.StartServer(ctx)
+	return manager.runGroup.Run() // Run the group of processes, including the server
 }
 
-// StartServer starts the application server and stops the previous instance if running
+// StartServer adds the server execution to the runGroup and handles shutdown properly
 func (manager *StartupManager) StartServer(ctx context.Context) error {
-	if err := manager.StopServer(ctx); err != nil {
-		slog.Error("failed to stop existing server", "err", err)
-		return err
-	}
-
 	config := manager.configComparator.GetCurrentConfig()
 	host := config.Server.Host
 	port := strconv.Itoa(config.Server.Port)
@@ -79,11 +74,23 @@ func (manager *StartupManager) StartServer(ctx context.Context) error {
 	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
 	manager.serverInstance = appServer
 
-	slog.Info("starting server", "host", host, "port", port)
-	if err := appServer.ListenAndServe(); err != nil {
-		slog.Error("failed to listen and serve", "err", err)
-		return err
-	}
+	manager.runGroup.Add(
+		// Server running function
+		func() error {
+			slog.Info("starting server", "host", host, "port", port)
+			return appServer.ListenAndServe()
+		},
+		// Server shutdown function
+		func(err error) {
+			slog.Info("stopping server", "host", host, "port", port)
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
+			defer cancel()
+			if err := appServer.Shutdown(shutdownCtx); err != nil {
+				slog.Error("failed to shutdown server", "err", err)
+			}
+		},
+	)
+
 	return nil
 }
 
@@ -105,14 +112,14 @@ func (manager *StartupManager) StopServer(ctx context.Context) error {
 	return nil
 }
 
-// SetupServerAndPrometheus sets up the Prometheus collector and starts the server
+// SetupServerAndPrometheus sets up the Prometheus collector and adds the server to the runGroup
 func (manager *StartupManager) SetupServerAndPrometheus(ctx context.Context) {
 	manager.SetupPrometheus(ctx)
-	manager.StartServer(ctx)
+	manager.StartServer(ctx) // Add the server execution to runGroup instead of running it directly
 }
 
-// SetupHotReload sets up file watching and hot-reload functionality
-func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
+// setupHotReload sets up file watching and hot-reload functionality
+func (manager *StartupManager) setupHotReload(ctx context.Context) error {
 	watcher, err := NewFileWatcher(manager.flagsConfig.ConfigLocation, manager.reloadManager)
 	if err != nil {
 		return err
@@ -127,7 +134,7 @@ func (manager *StartupManager) SetupHotReload(ctx context.Context) error {
 		return err
 	}
 
-	return manager.runGroup.Run()
+	return manager.runGroup.Run() // Run the group including hot reload, server, etc.
 }
 
 // SetupPrometheus sets up the Prometheus exporter
@@ -154,21 +161,21 @@ func (manager *StartupManager) SetupPrometheusReloader(ctx context.Context) {
 		return nil
 	}))
 
-	ctx, cancel := context.WithCancel(ctx)
 	manager.runGroup.Add(
 		func() error {
 			slog.Info("starting reload manager")
 			return manager.reloadManager.Run(ctx)
 		},
-		func(_ error) {
+		func(err error) {
 			slog.Info("stopping reload manager")
-			cancel()
+			// No specific shutdown needed here, but we can add a cancel
 		},
 	)
 }
 
 // LoadConfig loads the configuration for the application
 func (manager *StartupManager) LoadConfig(ctx context.Context) error {
+	slog.Info("loading config", "file", manager.flagsConfig.ConfigLocation)
 	_, err := manager.configComparator.LoadAndCompareConfig(ctx)
 	return err
 }
