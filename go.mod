@@ -4,7 +4,6 @@ go 1.23
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/joho/godotenv v1.5.1
 	github.com/oklog/run v1.1.0
 	github.com/prometheus/client_golang v1.20.4
 	github.com/slok/reload v0.2.0
