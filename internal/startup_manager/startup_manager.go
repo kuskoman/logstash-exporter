@@ -10,6 +10,7 @@ import (
 	"github.com/kuskoman/logstash-exporter/internal/flags"
 	"github.com/kuskoman/logstash-exporter/internal/server"
 	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
+	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/slok/reload"
@@ -51,23 +52,47 @@ func (manager *StartupManager) Initialize(ctx context.Context) error {
 		return errors.New("startup manager is already initialized")
 	}
 
+	slog.Debug("Starting initialization")
 	if err := manager.LoadConfig(ctx); err != nil {
 		slog.Error("failed to load config", "err", err)
 		return err
 	}
 
-	manager.SetupServerAndPrometheus(ctx)
+	manager.setupSlog()
 
-	slog.Debug("hot reload enabled", "enabled", manager.flagsConfig.HotReload)
-	if manager.flagsConfig.HotReload {
-		return manager.setupHotReload(ctx)
+	// Setup server and Prometheus first
+	if err := manager.SetupServerAndPrometheus(ctx); err != nil {
+		return err
 	}
 
-	return manager.runGroup.Run() // Run the group of processes, including the server
+	// Check for hot reload flag
+	slog.Debug("Checking if hot reload is enabled", "enabled", manager.flagsConfig.HotReload)
+	if manager.flagsConfig.HotReload {
+		if err := manager.setupHotReload(ctx); err != nil {
+			return err
+		}
+	}
+
+	// Run the group (it will block until one of the processes terminates)
+	slog.Debug("running runGroup")
+	return manager.runGroup.Run()
 }
 
-// StartServer adds the server execution to the runGroup and handles shutdown properly
-func (manager *StartupManager) StartServer(ctx context.Context) error {
+func (manager *StartupManager) setupSlog() error {
+	cfg := manager.configComparator.GetCurrentConfig()
+	loggingConfig := cfg.Logging
+
+	logger, err := config.SetupSlog(loggingConfig.Level, loggingConfig.Format)
+	if err != nil {
+		return err
+	}
+
+	slog.SetDefault(logger)
+	return nil
+}
+
+// SetupServer sets up the server lifecycle management
+func (manager *StartupManager) SetupServer(ctx context.Context) error {
 	config := manager.configComparator.GetCurrentConfig()
 	host := config.Server.Host
 	port := strconv.Itoa(config.Server.Port)
@@ -75,72 +100,90 @@ func (manager *StartupManager) StartServer(ctx context.Context) error {
 	appServer := server.NewAppServer(host, port, config, config.Logstash.HttpTimeout)
 	manager.serverInstance = appServer
 
+	// Add named functions for server run and shutdown
 	manager.runGroup.Add(
-		// Server running function
-		func() error {
-			slog.Info("starting server", "host", host, "port", port)
-			return appServer.ListenAndServe()
-		},
-		// Server shutdown function
-		func(err error) {
-			slog.Info("stopping server", "host", host, "port", port)
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
-			defer cancel()
-			if err := appServer.Shutdown(shutdownCtx); err != nil {
-				slog.Error("failed to shutdown server", "err", err)
-			}
-		},
+		manager.runServer,
+		manager.shutdownServer,
 	)
 
+	slog.Debug("server setup complete", "host", host, "port", port)
 	return nil
 }
 
-// StopServer stops the running server instance, if one exists
-func (manager *StartupManager) StopServer(ctx context.Context) error {
-	if manager.serverInstance == nil {
-		return nil
-	}
+// runServer starts the server
+func (manager *StartupManager) runServer() error {
+	cfg := manager.configComparator.GetCurrentConfig()
+	slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
+	return manager.serverInstance.ListenAndServe()
+}
 
-	ctx, cancel := context.WithTimeout(ctx, ServerShutdownTimeout)
+// shutdownServer gracefully shuts down the server
+func (manager *StartupManager) shutdownServer(err error) {
+	cfg := manager.configComparator.GetCurrentConfig()
+	slog.Info("shutting down server", "host", cfg.Server.Host, "port", cfg.Server.Port)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
 	defer cancel()
 
-	slog.Info("stopping server")
-	if err := manager.serverInstance.Shutdown(ctx); err != nil {
-		slog.Error("failed to shut down server", "err", err)
-		return err
+	if err := manager.serverInstance.Shutdown(shutdownCtx); err != nil {
+		slog.Error("failed to shutdown server", "err", err)
 	}
-	manager.serverInstance = nil
-	return nil
 }
 
 // SetupServerAndPrometheus sets up the Prometheus collector and adds the server to the runGroup
-func (manager *StartupManager) SetupServerAndPrometheus(ctx context.Context) {
-	manager.SetupPrometheus(ctx)
-	manager.StartServer(ctx) // Add the server execution to runGroup instead of running it directly
+func (manager *StartupManager) SetupServerAndPrometheus(ctx context.Context) error {
+	// Setup Prometheus first
+	manager.setupPrometheus()
+
+	// Then add the server to the runGroup
+	if err := manager.SetupServer(ctx); err != nil {
+		slog.Error("Failed to setup server", "err", err)
+		return err
+	}
+
+	return nil
 }
 
 // setupHotReload sets up file watching and hot-reload functionality
 func (manager *StartupManager) setupHotReload(ctx context.Context) error {
-	slog.Debug("setting up hot reload", "config file", manager.flagsConfig.ConfigLocation)
+	slog.Debug("Setting up hot reload", "config file", manager.flagsConfig.ConfigLocation)
 	watcher, err := NewFileWatcher(manager.flagsConfig.ConfigLocation, manager.reloadManager)
 	if err != nil {
 		return err
 	}
 	manager.fileWatcher = watcher
 
-	manager.SetupPrometheusReloader(ctx)
+	manager.setupPrometheusReloader()
 
+	// Watch file changes
 	err = manager.fileWatcher.Watch(ctx, manager.configComparator)
 	if err != nil {
-		slog.Error("failed to setup file watcher", "err", err)
+		slog.Error("Failed to setup file watcher", "err", err)
 		return err
 	}
 
-	return manager.runGroup.Run() // Run the group including hot reload, server, etc.
+	// Add the reload manager to the runGroup
+	manager.runGroup.Add(
+		manager.startReloadManager,
+		manager.handleReloadManagerShutdown,
+	)
+
+	return nil
 }
 
-// SetupPrometheus sets up the Prometheus exporter
-func (manager *StartupManager) SetupPrometheus(ctx context.Context) {
+// startReloadManager starts the reload manager
+func (manager *StartupManager) startReloadManager() error {
+	slog.Info("starting reload manager")
+	return manager.reloadManager.Run(context.Background())
+}
+
+// handleReloadManagerShutdown gracefully stops the reload manager
+func (manager *StartupManager) handleReloadManagerShutdown(err error) {
+	slog.Info("stopping reload manager")
+	// Add any necessary shutdown logic here
+}
+
+// setupPrometheus sets up the Prometheus exporter
+func (manager *StartupManager) setupPrometheus() {
 	config := manager.configComparator.GetCurrentConfig()
 
 	collector := collector_manager.NewCollectorManager(
@@ -151,33 +194,26 @@ func (manager *StartupManager) SetupPrometheus(ctx context.Context) {
 	prometheus.MustRegister(collector)
 }
 
-// SetupPrometheusReloader configures the reloader to handle Prometheus reload events
-func (manager *StartupManager) SetupPrometheusReloader(ctx context.Context) {
+// setupPrometheusReloader configures the reloader to handle Prometheus reload events
+func (manager *StartupManager) setupPrometheusReloader() {
 	manager.reloadManager.Add(0, reload.ReloaderFunc(func(ctx context.Context, event string) error {
 		if event == NoEvent {
 			return nil
 		}
 
-		manager.SetupPrometheus(ctx)
+		// Reload Prometheus configuration
+		manager.setupPrometheus()
 		slog.Info("prometheus reloaded")
 		return nil
 	}))
-
-	manager.runGroup.Add(
-		func() error {
-			slog.Info("starting reload manager")
-			return manager.reloadManager.Run(ctx)
-		},
-		func(err error) {
-			slog.Info("stopping reload manager")
-			// No specific shutdown needed here, but we can add a cancel
-		},
-	)
 }
 
 // LoadConfig loads the configuration for the application
 func (manager *StartupManager) LoadConfig(ctx context.Context) error {
 	slog.Info("loading config", "file", manager.flagsConfig.ConfigLocation)
 	_, err := manager.configComparator.LoadAndCompareConfig(ctx)
+	if err != nil {
+		slog.Error("failed to load config", "err", err)
+	}
 	return err
 }
