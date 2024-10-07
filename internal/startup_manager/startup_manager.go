@@ -158,7 +158,6 @@ func (manager *StartupManager) setupHotReload(ctx context.Context) error {
 
 	manager.setupPrometheusReloader()
 
-	// Watch file changes
 	err = manager.fileWatcher.Watch(ctx, manager.configComparator)
 	if err != nil {
 		slog.Error("failed to setup file watcher", "err", err)

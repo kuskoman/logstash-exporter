@@ -24,6 +24,7 @@ func NewConfigComparator(configPath string) *ConfigComparator {
 
 // LoadAndCompareConfig loads the configuration and compares it with the current one
 func (cc *ConfigComparator) LoadAndCompareConfig(ctx context.Context) (bool, error) {
+	slog.Debug("loading and comparing config")
 	cc.mutex.Lock()
 	defer cc.mutex.Unlock()
 
