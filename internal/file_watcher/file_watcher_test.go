@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kuskoman/logstash-exporter/internal/file_utils"
 )
 
 const testTimeout = 1 * time.Second
@@ -13,8 +15,8 @@ func TestFileWatcher(t *testing.T) {
 	// todo: parallelize tests
 	t.Run("executes listener on file modification", func(t *testing.T) {
 		listenerCalled := make(chan struct{})
-		tempFile := createTempFile(t, "initial content")
-		defer removeFile(t, tempFile)
+		tempFile := file_utils.CreateTempFile(t, "initial content")
+		defer file_utils.RemoveFile(t, tempFile)
 
 		fw, err := NewFileWatcher(tempFile, mockListenerWithChannel(listenerCalled))
 		if err != nil {
@@ -46,8 +48,8 @@ func TestFileWatcher(t *testing.T) {
 
 	t.Run("does not execute listener if content hash is unchanged", func(t *testing.T) {
 		listenerCalled := make(chan struct{})
-		tempFile := createTempFile(t, "same content")
-		defer removeFile(t, tempFile)
+		tempFile := file_utils.CreateTempFile(t, "same content")
+		defer file_utils.RemoveFile(t, tempFile)
 
 		fw, err := NewFileWatcher(tempFile, mockListenerWithChannel(listenerCalled))
 		if err != nil {
@@ -77,8 +79,8 @@ func TestFileWatcher(t *testing.T) {
 	t.Run("handles multiple listeners", func(t *testing.T) {
 		listener1Called := make(chan struct{})
 		listener2Called := make(chan struct{})
-		tempFile := createTempFile(t, "initial content")
-		defer removeFile(t, tempFile)
+		tempFile := file_utils.CreateTempFile(t, "initial content")
+		defer file_utils.RemoveFile(t, tempFile)
 
 		fw, err := NewFileWatcher(tempFile, mockListenerWithChannel(listener1Called), mockListenerWithChannel(listener2Called))
 		if err != nil {

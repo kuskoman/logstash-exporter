@@ -8,22 +8,22 @@ import (
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
-// ConfigComparator handles config loading and comparing for changes
-type ConfigComparator struct {
+// ConfigManager handles config loading and comparing for changes
+type ConfigManager struct {
 	currentConfig *config.Config
 	mutex         sync.Mutex
 	configPath    string
 }
 
-// NewConfigComparator creates a new ConfigComparator
-func NewConfigComparator(configPath string) *ConfigComparator {
-	return &ConfigComparator{
+// NewConfigManager creates a new ConfigManager
+func NewConfigManager(configPath string) *ConfigManager {
+	return &ConfigManager{
 		configPath: configPath,
 	}
 }
 
 // LoadAndCompareConfig loads the configuration and compares it with the current one
-func (cc *ConfigComparator) LoadAndCompareConfig(ctx context.Context) (bool, error) {
+func (cc *ConfigManager) LoadAndCompareConfig(ctx context.Context) (bool, error) {
 	slog.Debug("loading and comparing config")
 	cc.mutex.Lock()
 	defer cc.mutex.Unlock()
@@ -44,7 +44,7 @@ func (cc *ConfigComparator) LoadAndCompareConfig(ctx context.Context) (bool, err
 }
 
 // GetCurrentConfig returns the current loaded configuration
-func (cc *ConfigComparator) GetCurrentConfig() *config.Config {
+func (cc *ConfigManager) GetCurrentConfig() *config.Config {
 	cc.mutex.Lock()
 	defer cc.mutex.Unlock()
 
