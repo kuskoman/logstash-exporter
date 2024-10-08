@@ -32,7 +32,7 @@ func NewFileWatcher(configLocation string, listeners ...func() error) (*FileWatc
 
 	fileName := filepath.Base(configLocation)
 
-	contentHash, err := calculateFileHash(configLocation)
+	contentHash, err := CalculateFileHash(configLocation)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (fw *FileWatcher) Watch(ctx context.Context) error {
 					continue
 				}
 
-				contentHash, err := calculateFileHash(fw.filePath)
+				contentHash, err := CalculateFileHash(fw.filePath)
 				if err != nil {
 					slog.Error("failed to calculate file hash", "err", err)
 					continue

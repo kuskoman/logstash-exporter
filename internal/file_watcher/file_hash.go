@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func calculateFileHash(filePath string) (string, error) {
+func CalculateFileHash(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", fmt.Errorf("could not open file: %v", err)
