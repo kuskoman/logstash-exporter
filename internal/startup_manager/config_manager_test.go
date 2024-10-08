@@ -54,7 +54,10 @@ server:
 		defer file_utils.RemoveFile(t, configPath)
 
 		cc := NewConfigManager(configPath)
-		cc.LoadAndCompareConfig(ctx) // Initial load
+		_, err := cc.LoadAndCompareConfig(ctx) // Initial load
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		changed, err := cc.LoadAndCompareConfig(ctx)
 		if err != nil {
@@ -87,7 +90,10 @@ server:
 		defer file_utils.RemoveFile(t, newConfigPath)
 
 		cc := NewConfigManager(validConfigPath)
-		cc.LoadAndCompareConfig(ctx)
+		_, err := cc.LoadAndCompareConfig(ctx)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		cc.configPath = newConfigPath
 		changed, err := cc.LoadAndCompareConfig(ctx)
@@ -156,7 +162,10 @@ server:
 		defer file_utils.RemoveFile(t, configPath)
 
 		cc := NewConfigManager(configPath)
-		cc.LoadAndCompareConfig(ctx)
+		_, err := cc.LoadAndCompareConfig(ctx)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		if cc.GetCurrentConfig() == nil {
 			t.Error("expected current config to be non-nil, but it was nil")
