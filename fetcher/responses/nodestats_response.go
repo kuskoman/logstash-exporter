@@ -152,6 +152,15 @@ type SinglePipelineResponse struct {
 				In               int `json:"in"`
 				DurationInMillis int `json:"duration_in_millis"`
 			} `json:"events"`
+			Flow struct {
+				WorkerUtilization struct {
+					Current  float64 `json:"current"`
+					Lifetime float64 `json:"lifetime"`
+				} `json:"worker_utilization"`
+				WorkerMillisPerEvent struct {
+					Lifetime float64 `json:"lifetime"`
+				} `json:"worker_millis_per_event"`
+			} `json:"flow"`
 		} `json:"filters"`
 		Outputs []struct {
 			ID     string `json:"id"`
