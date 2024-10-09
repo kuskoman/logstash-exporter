@@ -2,69 +2,59 @@
 [TestNodeStatsResponseStructure - 1]
 Unmarshalled NodestatsResponse
 responses.NodeStatsResponse{
-    Host:        "f26e584ecf05",
-    Version:     "8.8.1",
+    Host:        "814a8393fbd5",
+    Version:     "8.15.0",
     HttpAddress: "0.0.0.0:9600",
-    Id:          "096d672d-50d5-420b-a27c-254c089bdd78",
-    Name:        "f26e584ecf05",
-    EphemeralId: "25135ee3-be69-4076-bda1-e27524d9ee93",
+    Id:          "690de5cc-deb1-48d9-ba02-d4ec1b22e62a",
+    Name:        "814a8393fbd5",
+    EphemeralId: "eb4d9042-5642-4e21-bb8d-27454b81c5bc",
     Status:      "green",
     Snapshot:    false,
-    Pipeline:    responses.PipelineResponse{Workers:16, BatchSize:125, BatchDelay:50},
+    Pipeline:    responses.PipelineResponse{Workers:10, BatchSize:125, BatchDelay:50},
     Jvm:         responses.JvmResponse{
-        Threads: struct { Count int "json:\"count\""; PeakCount int "json:\"peak_count\"" }{Count:60, PeakCount:60},
+        Threads: struct { Count int "json:\"count\""; PeakCount int "json:\"peak_count\"" }{Count:65, PeakCount:65},
         Mem:     struct { HeapUsedPercent int "json:\"heap_used_percent\""; HeapCommittedInBytes int64 "json:\"heap_committed_in_bytes\""; HeapMaxInBytes int64 "json:\"heap_max_in_bytes\""; HeapUsedInBytes int64 "json:\"heap_used_in_bytes\""; NonHeapUsedInBytes int64 "json:\"non_heap_used_in_bytes\""; NonHeapCommittedInBytes int64 "json:\"non_heap_committed_in_bytes\""; Pools struct { Young struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" } "json:\"young\""; Old struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" } "json:\"old\""; Survivor struct { PeakMaxInBytes int "json:\"peak_max_in_bytes\""; MaxInBytes int "json:\"max_in_bytes\""; CommittedInBytes int "json:\"committed_in_bytes\""; PeakUsedInBytes int "json:\"peak_used_in_bytes\""; UsedInBytes int "json:\"used_in_bytes\"" } "json:\"survivor\"" } "json:\"pools\"" }{
-            HeapUsedPercent:         27,
-            HeapCommittedInBytes:    17179869184,
+            HeapUsedPercent:         36,
+            HeapCommittedInBytes:    1073741824,
             HeapMaxInBytes:          1073741822,
-            HeapUsedInBytes:         294044784,
-            NonHeapUsedInBytes:      147703688,
-            NonHeapCommittedInBytes: 155189248,
+            HeapUsedInBytes:         395837440,
+            NonHeapUsedInBytes:      172607568,
+            NonHeapCommittedInBytes: 183304192,
             Pools:                   struct { Young struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" } "json:\"young\""; Old struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" } "json:\"old\""; Survivor struct { PeakMaxInBytes int "json:\"peak_max_in_bytes\""; MaxInBytes int "json:\"max_in_bytes\""; CommittedInBytes int "json:\"committed_in_bytes\""; PeakUsedInBytes int "json:\"peak_used_in_bytes\""; UsedInBytes int "json:\"used_in_bytes\"" } "json:\"survivor\"" }{
-                Young:    struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" }{PeakMaxInBytes:-1, MaxInBytes:-1, CommittedInBytes:346030080, PeakUsedInBytes:326107136, UsedInBytes:180355072},
-                Old:      struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" }{PeakMaxInBytes:1073741824, MaxInBytes:1073741824, CommittedInBytes:687865856, PeakUsedInBytes:73986560, UsedInBytes:73986560},
-                Survivor: struct { PeakMaxInBytes int "json:\"peak_max_in_bytes\""; MaxInBytes int "json:\"max_in_bytes\""; CommittedInBytes int "json:\"committed_in_bytes\""; PeakUsedInBytes int "json:\"peak_used_in_bytes\""; UsedInBytes int "json:\"used_in_bytes\"" }{PeakMaxInBytes:-1, MaxInBytes:-1, CommittedInBytes:39845888, PeakUsedInBytes:39703152, UsedInBytes:39703152},
+                Young:    struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" }{PeakMaxInBytes:-1, MaxInBytes:-1, CommittedInBytes:668991488, PeakUsedInBytes:351272960, UsedInBytes:257949696},
+                Old:      struct { PeakMaxInBytes int64 "json:\"peak_max_in_bytes\""; MaxInBytes int64 "json:\"max_in_bytes\""; CommittedInBytes int64 "json:\"committed_in_bytes\""; PeakUsedInBytes int64 "json:\"peak_used_in_bytes\""; UsedInBytes int64 "json:\"used_in_bytes\"" }{PeakMaxInBytes:1073741824, MaxInBytes:1073741824, CommittedInBytes:397410304, PeakUsedInBytes:132644864, UsedInBytes:130547712},
+                Survivor: struct { PeakMaxInBytes int "json:\"peak_max_in_bytes\""; MaxInBytes int "json:\"max_in_bytes\""; CommittedInBytes int "json:\"committed_in_bytes\""; PeakUsedInBytes int "json:\"peak_used_in_bytes\""; UsedInBytes int "json:\"used_in_bytes\"" }{PeakMaxInBytes:-1, MaxInBytes:-1, CommittedInBytes:7340032, PeakUsedInBytes:47185920, UsedInBytes:7340032},
             },
         },
         Gc: struct { Collectors struct { Young struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" } "json:\"young\""; Old struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" } "json:\"old\"" } "json:\"collectors\"" }{
             Collectors: struct { Young struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" } "json:\"young\""; Old struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" } "json:\"old\"" }{
-                Young: struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" }{CollectionCount:8, CollectionTimeInMillis:224},
+                Young: struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" }{CollectionCount:11, CollectionTimeInMillis:110},
                 Old:   struct { CollectionCount int "json:\"collection_count\""; CollectionTimeInMillis int "json:\"collection_time_in_millis\"" }{},
             },
         },
-        UptimeInMillis: 53120,
+        UptimeInMillis: 56226,
     },
     Process: responses.ProcessResponse{
-        OpenFileDescriptors:     98,
-        PeakOpenFileDescriptors: 98,
+        OpenFileDescriptors:     108,
+        PeakOpenFileDescriptors: 109,
         MaxFileDescriptors:      1048576,
-        Mem:                     struct { TotalVirtualInBytes int64 "json:\"total_virtual_in_bytes\"" }{TotalVirtualInBytes:9305346048},
+        Mem:                     struct { TotalVirtualInBytes int64 "json:\"total_virtual_in_bytes\"" }{TotalVirtualInBytes:8282685440},
         CPU:                     struct { TotalInMillis int64 "json:\"total_in_millis\""; Percent int64 "json:\"percent\""; LoadAverage struct { OneM float64 "json:\"1m\""; FiveM float64 "json:\"5m\""; FifteenM float64 "json:\"15m\"" } "json:\"load_average\"" }{
-            TotalInMillis: 135300,
+            TotalInMillis: 35730,
             Percent:       0,
-            LoadAverage:   struct { OneM float64 "json:\"1m\""; FiveM float64 "json:\"5m\""; FifteenM float64 "json:\"15m\"" }{OneM:3.79, FiveM:1.29, FifteenM:0.46},
+            LoadAverage:   struct { OneM float64 "json:\"1m\""; FiveM float64 "json:\"5m\""; FifteenM float64 "json:\"15m\"" }{OneM:2.25, FiveM:0.68, FifteenM:0.24},
         },
     },
-    Events: responses.EventsResponse{In:4001, Filtered:10, Out:2, DurationInMillis:5, QueuePushDurationInMillis:7},
+    Events: responses.EventsResponse{In:3751, Filtered:1250, Out:1250, DurationInMillis:494960, QueuePushDurationInMillis:49451},
     Flow:   responses.FlowResponse{
-        InputThroughput:   struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:1, Lifetime:117.4},
-        FilterThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:2.1, Lifetime:3.2},
-        OutputThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:4.3, Lifetime:5.4},
-        QueueBackpressure: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:6.5, Lifetime:7.6},
-        WorkerConcurrency: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:8.7, Lifetime:9.8},
+        InputThroughput:   struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:73.9},
+        FilterThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:24.63},
+        OutputThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:24.63},
+        QueueBackpressure: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:1, Lifetime:0.9743},
+        WorkerConcurrency: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:10, Lifetime:9.752},
     },
-    Reloads: responses.ReloadResponse{},
-    Os:      responses.OsResponse{
-        Cgroup: struct { Cpu struct { CfsPeriodMicros int64 "json:\"cfs_period_micros\""; CfsQuotaMicros int64 "json:\"cfs_quota_micros\""; Stat struct { TimeThrottledNanos int64 "json:\"time_throttled_nanos\""; NumberOfTimesThrottled int64 "json:\"number_of_times_throttled\""; NumberOfElapsedPeriods int64 "json:\"number_of_elapsed_periods\"" } "json:\"stat\""; ControlGroup string "json:\"control_group\"" } "json:\"cpu\""; Cpuacct struct { UsageNanos int64 "json:\"usage_nanos\""; ControlGroup string "json:\"control_group\"" } "json:\"cpuacct\"" }{
-            Cpu: struct { CfsPeriodMicros int64 "json:\"cfs_period_micros\""; CfsQuotaMicros int64 "json:\"cfs_quota_micros\""; Stat struct { TimeThrottledNanos int64 "json:\"time_throttled_nanos\""; NumberOfTimesThrottled int64 "json:\"number_of_times_throttled\""; NumberOfElapsedPeriods int64 "json:\"number_of_elapsed_periods\"" } "json:\"stat\""; ControlGroup string "json:\"control_group\"" }{
-                CfsPeriodMicros: 100000,
-                CfsQuotaMicros:  -1,
-                Stat:            struct { TimeThrottledNanos int64 "json:\"time_throttled_nanos\""; NumberOfTimesThrottled int64 "json:\"number_of_times_throttled\""; NumberOfElapsedPeriods int64 "json:\"number_of_elapsed_periods\"" }{},
-                ControlGroup:    "/",
-            },
-            Cpuacct: struct { UsageNanos int64 "json:\"usage_nanos\""; ControlGroup string "json:\"control_group\"" }{UsageNanos:161531487900, ControlGroup:"/"},
-        },
-    },
+    Reloads:   responses.ReloadResponse{},
+    Os:        responses.OsResponse{},
     Queue:     responses.QueueResponse{},
     Pipelines: {
         ".monitoring-logstash": {
@@ -73,79 +63,23 @@ responses.NodeStatsResponse{
             Flow:       responses.FlowResponse{},
             Plugins:    struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\"" } "json:\"outputs\"" }{
                 Inputs: {
+                    {
+                        ID:     "9a9bed30135e19c8047fe6aa0588b70b15280fb9161fea8ed8e7368e1fb1e6d3",
+                        Name:   "",
+                        Events: struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" }{},
+                    },
                 },
                 Codecs: {
                 },
                 Filters: {
                 },
                 Outputs: {
-                },
-            },
-            Reloads:         responses.PipelineReloadResponse{},
-            Queue:           struct { Type string "json:\"type\""; EventsCount int64 "json:\"events_count\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\"" }{},
-            DeadLetterQueue: struct { MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; DroppedEvents int64 "json:\"dropped_events\""; ExpiredEvents int64 "json:\"expired_events\""; StoragePolicy string "json:\"storage_policy\"" }{},
-            Hash:            "",
-            EphemeralID:     "",
-        },
-        "main": {
-            Monitoring: responses.PipelineLogstashMonitoringResponse{},
-            Events:     struct { Out int "json:\"out\""; Filtered int "json:\"filtered\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" }{Out:0, Filtered:0, In:4001, DurationInMillis:0, QueuePushDurationInMillis:0},
-            Flow:       responses.FlowResponse{
-                InputThroughput:   struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:6.7, Lifetime:124},
-                FilterThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:7.8, Lifetime:8.9},
-                OutputThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:2.3, Lifetime:3.4},
-                QueueBackpressure: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:1.1, Lifetime:2.2},
-                WorkerConcurrency: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:4.5, Lifetime:5.6},
-            },
-            Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\"" } "json:\"outputs\"" }{
-                Inputs: {
                     {
-                        ID:     "c75c0c6f97fd2c8605b95a5b2694fdae97189fe49553787a923faeaa3342c54a",
-                        Name:   "generator",
-                        Events: struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" }{Out:4001, QueuePushDurationInMillis:0},
-                    },
-                },
-                Codecs: {
-                    {
-                        ID:     "plain_d7fb272d-75f5-4e38-bf56-c4c798bea2d1",
-                        Name:   "plain",
-                        Decode: struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
-                        Encode: struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
-                    },
-                    {
-                        ID:     "plain_35cb2d25-0d8d-441a-a714-82121715864d",
-                        Name:   "plain",
-                        Decode: struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:4001, WritesIn:4001, DurationInMillis:57},
-                        Encode: struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
-                    },
-                },
-                Filters: {
-                    {
-                        ID:     "1721e7c39758977b227be1d9334f0752555f39c873b8b86a3df8546f64059112",
-                        Name:   "json",
-                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:2000, In:2000, DurationInMillis:716},
-                    },
-                    {
-                        ID:     "drop_b8ed8ea8c0ace91d6b617f6c8a5153141183c35a330de014182825dbceeade00",
-                        Name:   "drop",
-                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:300, In:330, DurationInMillis:333},
-                    },
-                    {
-                        ID:     "drop_e2e0f559b7292f788693f9f318185d5c1d30127870ca8f0e608b11d9dc560079",
-                        Name:   "drop",
-                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:800, In:880, DurationInMillis:888},
-                    },
-                },
-                Outputs: {
-                    {
-                        ID:           "45554a51a53a57f5dbba7d26b65aad526147453a895529f3d4698c8fd88692ef",
-                        Name:         "elasticsearch",
-                        Events:       struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:0, In:2000, DurationInMillis:0},
-                        Documents:    struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" }{Successes:1337, NonRetryableFailures:87},
-                        BulkRequests: struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" }{
-                            WithErrors: 87,
-                            Responses:  {"200":87},
-                        },
+                        ID:           "e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",
+                        Name:         "",
+                        Events:       struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                        Documents:    struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" }{},
+                        BulkRequests: struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" }{},
                     },
                 },
             },
@@ -159,10 +93,104 @@ responses.NodeStatsResponse{
                     Backtrace: {"org/logstash/execution/AbstractPipelineExt.java:151:in `reload_pipeline'", "/usr/share/logstash/logstash-core/lib/logstash/java_pipeline.rb:181:in `block in reload_pipeline'", "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/stud-0.0.23/lib/stud/task.rb:24:in `block in initialize'"},
                 },
             },
+            Queue:           struct { Type string "json:\"type\""; EventsCount int64 "json:\"events_count\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\"" }{},
+            DeadLetterQueue: struct { MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; DroppedEvents int64 "json:\"dropped_events\""; ExpiredEvents int64 "json:\"expired_events\""; StoragePolicy string "json:\"storage_policy\"" }{},
+            Hash:            "",
+            EphemeralID:     "",
+        },
+        "main": {
+            Monitoring: responses.PipelineLogstashMonitoringResponse{},
+            Events:     struct { Out int "json:\"out\""; Filtered int "json:\"filtered\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" }{Out:1250, Filtered:1250, In:3751, DurationInMillis:495018, QueuePushDurationInMillis:49455},
+            Flow:       responses.FlowResponse{
+                InputThroughput:   struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:74.88},
+                FilterThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:24.95},
+                OutputThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:24.95},
+                QueueBackpressure: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:1, Lifetime:0.9872},
+                WorkerConcurrency: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:10, Lifetime:9.882},
+            },
+            Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\"" } "json:\"outputs\"" }{
+                Inputs: {
+                    {
+                        ID:     "5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",
+                        Name:   "dead_letter_queue",
+                        Events: struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" }{},
+                    },
+                    {
+                        ID:     "95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",
+                        Name:   "generator",
+                        Events: struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" }{Out:3751, QueuePushDurationInMillis:49454},
+                    },
+                },
+                Codecs: {
+                    {
+                        ID:     "plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",
+                        Name:   "plain",
+                        Decode: struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                        Encode: struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                    },
+                    {
+                        ID:     "plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",
+                        Name:   "plain",
+                        Decode: struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                        Encode: struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                    },
+                    {
+                        ID:     "plain-codec-001",
+                        Name:   "plain",
+                        Decode: struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                        Encode: struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                    },
+                },
+                Filters: {
+                    {
+                        ID:     "prune-http-input-fields",
+                        Name:   "prune",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:127},
+                    },
+                    {
+                        ID:     "ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",
+                        Name:   "ruby",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:2500, DurationInMillis:489610},
+                    },
+                    {
+                        ID:     "drop-non-existent",
+                        Name:   "drop",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                    },
+                    {
+                        ID:     "json-filter",
+                        Name:   "json",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:214},
+                    },
+                    {
+                        ID:     "mutate-path-001",
+                        Name:   "mutate",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:170},
+                    },
+                    {
+                        ID:     "drop-80-percent",
+                        Name:   "drop",
+                        Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                    },
+                },
+                Outputs: {
+                    {
+                        ID:           "81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",
+                        Name:         "elasticsearch",
+                        Events:       struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:4887},
+                        Documents:    struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" }{Successes:1250, NonRetryableFailures:0},
+                        BulkRequests: struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" }{
+                            WithErrors: 0,
+                            Responses:  {"200":10},
+                        },
+                    },
+                },
+            },
+            Reloads:         responses.PipelineReloadResponse{},
             Queue:           struct { Type string "json:\"type\""; EventsCount int64 "json:\"events_count\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\"" }{Type:"memory", EventsCount:0, QueueSizeInBytes:0, MaxQueueSizeInBytes:0},
-            DeadLetterQueue: struct { MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; DroppedEvents int64 "json:\"dropped_events\""; ExpiredEvents int64 "json:\"expired_events\""; StoragePolicy string "json:\"storage_policy\"" }{MaxQueueSizeInBytes:47244640256, QueueSizeInBytes:1, DroppedEvents:0, ExpiredEvents:0, StoragePolicy:"drop_newer"},
-            Hash:            "a73729cc9c29203931db21553c5edba063820a7e40d16cb5053be75cc3811a17",
-            EphemeralID:     "a5c63d09-1ba6-4d67-90a5-075f468a7ab0",
+            DeadLetterQueue: struct { MaxQueueSizeInBytes int64 "json:\"max_queue_size_in_bytes\""; QueueSizeInBytes int64 "json:\"queue_size_in_bytes\""; DroppedEvents int64 "json:\"dropped_events\""; ExpiredEvents int64 "json:\"expired_events\""; StoragePolicy string "json:\"storage_policy\"" }{MaxQueueSizeInBytes:1073741824, QueueSizeInBytes:1, DroppedEvents:0, ExpiredEvents:0, StoragePolicy:"drop_newer"},
+            Hash:            "d30c4ff4da9fdb1a6b06ee390df1336aa80cc5ce6582d316af3dc0695af2d82e",
+            EphemeralID:     "31caf4d6-162d-4eeb-bc04-411ae2e996f1",
         },
     },
 }

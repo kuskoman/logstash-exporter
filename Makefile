@@ -113,6 +113,10 @@ clean-elasticsearch:
 update-readme-descriptions:
 	./scripts/add_descriptions_to_readme.sh
 
+#: Updates snapshot for test data and runs tests
+update-snapshots:
+	UPDATE_SNAPS=true go test ./...
+
 #: Upgrades all dependencies
 upgrade-dependencies:
 	go get -u ./...
