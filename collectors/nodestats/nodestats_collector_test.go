@@ -86,8 +86,8 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_plugin_events_queue_push_duration",
 		"logstash_stats_pipeline_plugin_documents_successes",
 		"logstash_stats_pipeline_plugin_documents_non_retryable_failures",
-      	"logstash_stats_pipeline_plugin_bulk_requests_errors",
-      	"logstash_stats_pipeline_plugin_bulk_requests_responses",
+		"logstash_stats_pipeline_plugin_bulk_requests_errors",
+		"logstash_stats_pipeline_plugin_bulk_requests_responses",
 		"logstash_stats_process_cpu_percent",
 		"logstash_stats_process_cpu_total_millis",
 		"logstash_stats_process_cpu_load_average_1m",
@@ -109,7 +109,7 @@ func TestCollectNotNil(t *testing.T) {
 	var foundMetrics []string
 	for metric := range ch {
 		if metric == nil {
-			t.Errorf("expected metric %s not to be nil", metric.Desc().String())
+			t.Error("Expected metric not to be nil")
 		}
 
 		foundMetricDesc := metric.Desc().String()
