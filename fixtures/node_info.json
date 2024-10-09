@@ -1,18 +1,18 @@
 {
-  "host": "9e6e14cf5532",
-  "version": "8.6.1",
+  "host": "814a8393fbd5",
+  "version": "8.15.2",
   "http_address": "0.0.0.0:9600",
-  "id": "a2c7110e-5ccf-4226-bc9b-e773710e66a0",
-  "name": "9e6e14cf5532",
-  "ephemeral_id": "4a2ee04f-2733-4eaa-887d-675bad27f07c",
+  "id": "690de5cc-deb1-48d9-ba02-d4ec1b22e62a",
+  "name": "814a8393fbd5",
+  "ephemeral_id": "eb4d9042-5642-4e21-bb8d-27454b81c5bc",
   "status": "green",
   "snapshot": false,
   "pipeline": {
-    "workers": 16,
+    "workers": 10,
     "batch_size": 125,
     "batch_delay": 50
   },
-  "build_date": "2023-01-24T10:41:55+00:00",
-  "build_sha": "6a248b5091c490f09460db5651e5239d903b97cf",
+  "build_date": "2024-07-24T09:37:48+00:00",
+  "build_sha": "46b996c24da17cdc7a16bc3037edab5c6132ccd0",
   "build_snapshot": false
 }

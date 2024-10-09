@@ -138,6 +138,10 @@ migrate-v1-to-v2:
 update-readme-descriptions:
 	./scripts/add_descriptions_to_readme.sh
 
+#: Updates snapshot for test data and runs tests
+update-snapshots:
+	UPDATE_SNAPS=true go test ./...
+
 #: Shows info about available commands
 help:
 	@grep -B1 -E "^[a-zA-Z0-9_-]+:([^\=]|$$)" Makefile \
