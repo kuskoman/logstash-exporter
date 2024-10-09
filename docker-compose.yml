@@ -1,6 +1,6 @@
 services:
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.15.0
+    image: docker.elastic.co/logstash/logstash:8.15.2
     restart: unless-stopped
     volumes:
       - logstash-data:/usr/share/logstash/data
@@ -41,7 +41,7 @@ services:
       timeout: 10s
       retries: 8
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
     restart: unless-stopped
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
