@@ -181,6 +181,7 @@ See more in the [Migration](#migration) section.
 - `make upgrade-dependencies`: Upgrades all dependencies.
 - `make migrate-v1-to-v2`: Migrates configuration from v1 to v2.
 - `make update-readme-descriptions`: Update Makefile descriptions in main README.md.
+- `make update-snapshots`: Updates snapshot for test data and runs tests.
 - `make help`: Shows info about available commands.
 
 <!--- **************************************************** --->
