@@ -97,7 +97,6 @@ The application can be configured using the following environment variables, whi
 | `LOG_LEVEL`   | [Log level](https://pkg.go.dev/golang.org/x/exp/slog#Level) (defaults to "info" if not set)   | `""` (empty string)     |
 | `HTTP_TIMEOUT`| Timeout for HTTP requests to Logstash API in [Go duration format](https://golang.org/pkg/time/#ParseDuration) | `2s` |
 
-
 All configuration variables can be checked in the [config directory](./config/).
 
 ## Building

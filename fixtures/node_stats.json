@@ -119,28 +119,28 @@
       },
       "flow": {
         "input_throughput": {
-          "current": 0.0,
-          "lifetime": 0.0
+          "current": 1.0,
+          "lifetime": 2.0
         },
         "filter_throughput": {
-          "current": 0.0,
-          "lifetime": 0.0
+          "current": 3.0,
+          "lifetime": 4.0
         },
         "worker_concurrency": {
-          "current": 0.0,
-          "lifetime": 0.0
+          "current": 5.0,
+          "lifetime": 6.0
         },
         "queue_backpressure": {
-          "current": 0.0,
-          "lifetime": 0.0
+          "current": 7.0,
+          "lifetime": 8.0
         },
         "output_throughput": {
-          "current": 0.0,
-          "lifetime": 0.0
+          "current": 9.0,
+          "lifetime": 10.0
         },
         "worker_utilization": {
-          "current": 0.0,
-          "lifetime": 0.0
+          "current": 11.0,
+          "lifetime": 12.0
         }
       },
       "plugins": {
@@ -170,8 +170,8 @@
             "flow": {
               "worker_millis_per_event": {},
               "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.0
+                "current": 0.5,
+                "lifetime": 1.5
               }
             }
           }

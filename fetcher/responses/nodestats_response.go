@@ -106,6 +106,10 @@ type FlowResponse struct {
 		Current  float64 `json:"current"`
 		Lifetime float64 `json:"lifetime"`
 	} `json:"worker_concurrency"`
+	WorkerUtilization struct {
+		Current  float64 `json:"current"`
+		Lifetime float64 `json:"lifetime"`
+	} `json:"worker_utilization"`
 }
 
 type SinglePipelineResponse struct {
@@ -165,6 +169,12 @@ type SinglePipelineResponse struct {
 				WithErrors int            `json:"with_errors"`
 				Responses  map[string]int `json:"responses"`
 			} `json:"bulk_requests"`
+			Flow struct {
+				WorkerUtilization struct {
+					Current  float64 `json:"current"`
+					Lifetime float64 `json:"lifetime"`
+				} `json:"worker_utilization"`
+			} `json:"flow"`
 		} `json:"outputs"`
 	} `json:"plugins"`
 	Reloads PipelineReloadResponse `json:"reloads"`
