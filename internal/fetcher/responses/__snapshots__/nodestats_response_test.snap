@@ -52,6 +52,7 @@ responses.NodeStatsResponse{
         OutputThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:24.63},
         QueueBackpressure: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:1, Lifetime:0.9743},
         WorkerConcurrency: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:10, Lifetime:9.752},
+        WorkerUtilization: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{},
     },
     Reloads:   responses.ReloadResponse{},
     Os:        responses.OsResponse{},
@@ -61,7 +62,7 @@ responses.NodeStatsResponse{
             Monitoring: responses.PipelineLogstashMonitoringResponse{},
             Events:     responses.EventsResponse{},
             Flow:       responses.FlowResponse{},
-            Plugins:    struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\"" } "json:\"outputs\"" }{
+            Plugins:    struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Flow struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" } "json:\"flow\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\""; Flow struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\"" } "json:\"flow\"" } "json:\"outputs\"" }{
                 Inputs: {
                     {
                         ID:     "9a9bed30135e19c8047fe6aa0588b70b15280fb9161fea8ed8e7368e1fb1e6d3",
@@ -80,6 +81,7 @@ responses.NodeStatsResponse{
                         Events:       struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
                         Documents:    struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" }{},
                         BulkRequests: struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" }{},
+                        Flow:         struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\"" }{},
                     },
                 },
             },
@@ -107,8 +109,9 @@ responses.NodeStatsResponse{
                 OutputThroughput:  struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:24.95},
                 QueueBackpressure: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:1, Lifetime:0.9872},
                 WorkerConcurrency: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:10, Lifetime:9.882},
+                WorkerUtilization: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:100, Lifetime:98.82},
             },
-            Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\"" } "json:\"outputs\"" }{
+            Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Flow struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" } "json:\"flow\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\""; Flow struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\"" } "json:\"flow\"" } "json:\"outputs\"" }{
                 Inputs: {
                     {
                         ID:     "5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",
@@ -146,31 +149,49 @@ responses.NodeStatsResponse{
                         ID:     "prune-http-input-fields",
                         Name:   "prune",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:127},
+                        Flow:   struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" }{
+                            WorkerUtilization:    struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:0.02535},
+                            WorkerMillisPerEvent: struct { Lifetime float64 "json:\"lifetime\"" }{Lifetime:0.1016},
+                        },
                     },
                     {
                         ID:     "ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",
                         Name:   "ruby",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:2500, DurationInMillis:489610},
+                        Flow:   struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" }{
+                            WorkerUtilization:    struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:100, Lifetime:97.74},
+                            WorkerMillisPerEvent: struct { Lifetime float64 "json:\"lifetime\"" }{Lifetime:195.8},
+                        },
                     },
                     {
                         ID:     "drop-non-existent",
                         Name:   "drop",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                        Flow:   struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" }{},
                     },
                     {
                         ID:     "json-filter",
                         Name:   "json",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:214},
+                        Flow:   struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" }{
+                            WorkerUtilization:    struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:0.04272},
+                            WorkerMillisPerEvent: struct { Lifetime float64 "json:\"lifetime\"" }{Lifetime:0.1712},
+                        },
                     },
                     {
                         ID:     "mutate-path-001",
                         Name:   "mutate",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1250, In:1250, DurationInMillis:170},
+                        Flow:   struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" }{
+                            WorkerUtilization:    struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:0.03394},
+                            WorkerMillisPerEvent: struct { Lifetime float64 "json:\"lifetime\"" }{Lifetime:0.136},
+                        },
                     },
                     {
                         ID:     "drop-80-percent",
                         Name:   "drop",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
+                        Flow:   struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Lifetime float64 "json:\"lifetime\"" } "json:\"worker_millis_per_event\"" }{},
                     },
                 },
                 Outputs: {
@@ -182,6 +203,9 @@ responses.NodeStatsResponse{
                         BulkRequests: struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" }{
                             WithErrors: 0,
                             Responses:  {"200":10},
+                        },
+                        Flow: struct { WorkerUtilization struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" } "json:\"worker_utilization\"" }{
+                            WorkerUtilization: struct { Current float64 "json:\"current\""; Lifetime float64 "json:\"lifetime\"" }{Current:0, Lifetime:0.9756},
                         },
                     },
                 },
