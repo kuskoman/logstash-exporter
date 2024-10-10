@@ -158,6 +158,7 @@ See more in the [Migration](#migration) section.
 
 - `make all`: Builds binary executables for all OS (Win, Darwin, Linux).
 - `make run`: Runs the Go Exporter application.
+- `make run-and-watch-config`: Runs the Go Exporter application with watching the configuration file.
 - `make build-linux`: Builds a binary executable for Linux.
 - `make build-darwin`: Builds a binary executable for Darwin.
 - `make build-windows`: Builds a binary executable for Windows.

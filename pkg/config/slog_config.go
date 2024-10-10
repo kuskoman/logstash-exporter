@@ -10,6 +10,13 @@ import (
 // ErrUnknownLogFormat is returned when the log format is not recognized by the slog package
 var ErrUnknownLogFormat = fmt.Errorf("unknown log format")
 
+const (
+	// LogFormatJSON is the JSON log format
+	LogFormatJSON = "json"
+	// LogFormatText is the text log format
+	LogFormatText = "text"
+)
+
 func SetupSlog(logLevel string, logFormat string) (*slog.Logger, error) {
 	level := slog.LevelInfo
 	err := level.UnmarshalText([]byte(logLevel))
@@ -19,11 +26,11 @@ func SetupSlog(logLevel string, logFormat string) (*slog.Logger, error) {
 
 	var handler slog.Handler
 	switch strings.ToLower(logFormat) {
-	case "text":
+	case LogFormatText:
 		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: level,
 		})
-	case "json":
+	case LogFormatJSON:
 		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			Level: level,
 		})

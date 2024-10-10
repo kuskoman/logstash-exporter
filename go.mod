@@ -3,7 +3,7 @@ module github.com/kuskoman/logstash-exporter
 go 1.23
 
 require (
-	github.com/joho/godotenv v1.5.1
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/prometheus/client_golang v1.20.4
 	gopkg.in/yaml.v2 v2.4.0
 )

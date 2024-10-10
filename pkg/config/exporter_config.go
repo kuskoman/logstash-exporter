@@ -3,8 +3,9 @@ package config
 import (
 	"log/slog"
 	"os"
+	"reflect"
 	"time"
-    
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,8 +29,8 @@ type LogstashServer struct {
 
 // LogstashConfig holds the configuration for all Logstash servers
 type LogstashConfig struct {
-	Servers []*LogstashServer `yaml:"servers"`
-	HttpTimeout time.Duration `yaml:"httpTimeout"`
+	Servers     []*LogstashServer `yaml:"servers"`
+	HttpTimeout time.Duration     `yaml:"httpTimeout"`
 }
 
 // ServerConfig represents the server configuration
@@ -56,6 +57,10 @@ type Config struct {
 	Logstash LogstashConfig `yaml:"logstash"`
 	Server   ServerConfig   `yaml:"server"`
 	Logging  LoggingConfig  `yaml:"logging"`
+}
+
+func (config *Config) Equals(other *Config) bool {
+	return reflect.DeepEqual(config, other)
 }
 
 // loadConfig loads the configuration from the YAML file.

@@ -1,4 +1,4 @@
-package manager
+package collector_manager
 
 import (
 	"context"
@@ -45,6 +45,7 @@ func NewCollectorManager(servers []*config.LogstashServer, httpTimeout time.Dura
 	collectors := getCollectors(clients)
 
 	scrapeDurations := getScrapeDurationsCollector()
+	prometheus.Unregister(version.NewCollector("logstash_exporter"))
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
 	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations, httpTimeout: httpTimeout}

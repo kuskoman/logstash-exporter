@@ -32,6 +32,10 @@ out/main-%:
 run:
 	go run cmd/exporter/main.go
 
+#: Runs the Go Exporter application with watching the configuration file
+run-and-watch-config:
+	go run cmd/exporter/main.go -watch
+
 #: Builds a binary executable for Linux
 build-linux: out/main-linux
 #: Builds a binary executable for Darwin
