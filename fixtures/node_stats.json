@@ -323,7 +323,7 @@
                 "lifetime": 195.8
               },
               "worker_utilization": {
-                "current": 100.0,
+                "current": "-Infinity",
                 "lifetime": 97.74
               }
             }
