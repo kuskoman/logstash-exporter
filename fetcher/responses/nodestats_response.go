@@ -306,7 +306,8 @@ func (i *InfinityFloat) UnmarshalJSON(data []byte) error {
 			*i = InfinityFloat(math.Inf(-1))
 			return nil
 		}
-		fmt.Errorf("Invalid string value for InfinityFloat: %s", s)
+
+		return fmt.Errorf("invalid string value for InfinityFloat: %s", s)
 	}
 
 	var f float64
