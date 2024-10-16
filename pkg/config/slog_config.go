@@ -17,26 +17,43 @@ const (
 	LogFormatText = "text"
 )
 
-func SetupSlog(logLevel string, logFormat string) (*slog.Logger, error) {
+func getSlogHandler(logFormat string, level slog.Level) slog.Handler {
+	handlerOptions := &slog.HandlerOptions{
+		Level: level,
+	}
+
+	switch strings.ToLower(logFormat) {
+	case LogFormatText:
+		return slog.NewTextHandler(os.Stdout, handlerOptions)
+	case LogFormatJSON:
+		return slog.NewJSONHandler(os.Stdout, handlerOptions)
+	default:
+		return nil
+	}
+}
+
+func getSlogLogger(logLevel string, logFormat string) (*slog.Logger, error) {
 	level := slog.LevelInfo
 	err := level.UnmarshalText([]byte(logLevel))
 	if err != nil {
 		return nil, err
 	}
 
-	var handler slog.Handler
-	switch strings.ToLower(logFormat) {
-	case LogFormatText:
-		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: level,
-		})
-	case LogFormatJSON:
-		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: level,
-		})
-	default:
+	handler := getSlogHandler(logFormat, level)
+	if handler == nil {
 		return nil, ErrUnknownLogFormat
 	}
 
 	return slog.New(handler), nil
+}
+
+func SetupSlog(cfg *Config) error {
+	logLevel, logFormat := cfg.Logging.Level, cfg.Logging.Format
+	logger, err := getSlogLogger(logLevel, logFormat)
+	if err != nil {
+		return err
+	}
+
+	slog.SetDefault(logger)
+	return nil
 }

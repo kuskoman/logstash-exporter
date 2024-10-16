@@ -79,7 +79,7 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 		return errors.New("config is nil")
 	}
 
-	err = sm.setLogger(cfg)
+	err = config.SetupSlog(cfg)
 	if err != nil {
 		return err
 	}
@@ -125,17 +125,6 @@ func (sm *StartupManager) Shutdown(ctx context.Context) error {
 
 	sm.shutdownPrometheus()
 
-	return nil
-}
-
-func (sm *StartupManager) setLogger(cfg *config.Config) error {
-	logLevel, logFormat := cfg.Logging.Level, cfg.Logging.Format
-	logger, err := config.SetupSlog(logLevel, logFormat)
-	if err != nil {
-		return err
-	}
-
-	slog.SetDefault(logger)
 	return nil
 }
 
