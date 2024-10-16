@@ -48,13 +48,17 @@ func TestParseFlags(t *testing.T) {
 func TestHandleFlags(t *testing.T) {
 	t.Run("prints help when Help flag is true", func(t *testing.T) {
 		// Capture the output of the print functions
-		output := captureOutput(func() {
+		output, err := captureOutput(func() {
 			flagsConfig := &FlagsConfig{Help: true}
 			result := HandleFlags(flagsConfig)
 			if !result {
 				t.Error("expected HandleFlags to return true, but got false")
 			}
 		})
+
+		if err != nil {
+			t.Fatalf("unexpected error capturing output: %v", err)
+		}
 
 		if !contains(output, "Usage of") {
 			t.Errorf("expected 'Usage of' to be printed, but it was not found in output: %s", output)
@@ -66,13 +70,17 @@ func TestHandleFlags(t *testing.T) {
 		// Mock config.SemanticVersion
 		config.SemanticVersion = "v1.0.0"
 
-		output := captureOutput(func() {
+		output, err := captureOutput(func() {
 			flagsConfig := &FlagsConfig{Version: true}
 			result := HandleFlags(flagsConfig)
 			if !result {
 				t.Error("expected HandleFlags to return true, but got false")
 			}
 		})
+
+		if err != nil {
+			t.Fatalf("unexpected error capturing output: %v", err)
+		}
 
 		if !contains(output, "v1.0.0") {
 			t.Errorf("expected version 'v1.0.0' to be printed, but it was not found in output: %s", output)
@@ -90,7 +98,7 @@ func TestHandleFlags(t *testing.T) {
 }
 
 // Helper function to capture output printed to stdout
-func captureOutput(f func()) string {
+func captureOutput(f func()) (string, error) {
 	var buf bytes.Buffer
 	stdout := os.Stdout
 	r, w, _ := os.Pipe()
@@ -100,9 +108,12 @@ func captureOutput(f func()) string {
 
 	w.Close()
 	os.Stdout = stdout
-	buf.ReadFrom(r)
+	_, err := buf.ReadFrom(r)
+	if err != nil {
+		return "", err
+	}
 
-	return buf.String()
+	return buf.String(), nil
 }
 
 // Helper function to check if a string contains a substring
