@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -14,18 +13,20 @@ import (
 // and registers the prometheus handler and the healthcheck handler
 // to the server's mux. The prometheus handler is managed under the
 // hood by the prometheus client library.
-func NewAppServer(host, port string, cfg *config.Config, httpTimeout time.Duration) *http.Server {
+func NewAppServer(cfg *config.Config) *http.Server {
+	logstashUrls := convertServersToUrls(cfg.Logstash.Servers)
+
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/metrics", http.StatusMovedPermanently)
 	})
 
-	logstashUrls := convertServersToUrls(cfg.Logstash.Servers)
-	mux.HandleFunc("/healthcheck", getHealthCheck(logstashUrls, httpTimeout))
+	mux.HandleFunc("/healthcheck", getHealthCheck(logstashUrls, cfg.Logstash.HttpTimeout))
 	mux.HandleFunc("/version", getVersionInfoHandler(config.GetVersionInfo()))
 
-	listenUrl := fmt.Sprintf("%s:%s", host, port)
+	host, port := cfg.Server.Host, cfg.Server.Port
+	listenUrl := fmt.Sprintf("%s:%d", host, port)
 
 	server := &http.Server{
 		Addr:    listenUrl,

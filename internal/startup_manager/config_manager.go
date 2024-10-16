@@ -22,7 +22,8 @@ func NewConfigManager(configPath string) *ConfigManager {
 	}
 }
 
-// LoadAndCompareConfig loads the configuration and compares it with the current one
+// LoadAndCompareConfig loads the configuration and compares it with the current one.
+// If the configuration has changed, it returns true, otherwise false.
 func (cc *ConfigManager) LoadAndCompareConfig(ctx context.Context) (bool, error) {
 	slog.Debug("loading and comparing config")
 	cc.mutex.Lock()
