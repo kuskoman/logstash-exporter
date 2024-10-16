@@ -28,7 +28,7 @@ func main() {
 
 	ctx := context.TODO()
 	if err := startupManager.Initialize(ctx); err != nil {
-		slog.Error(err.Error())
+		slog.Error("critical error", "error", err)
 		os.Exit(1)
 	}
 }

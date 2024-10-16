@@ -3,6 +3,7 @@ package startup_manager
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -154,11 +155,17 @@ func (sm *StartupManager) shutdownServer(ctx context.Context) error {
 
 	slog.Info("shutting down server")
 	err := sm.server.Shutdown(ctx)
+	slog.Debug("server shutdown error", "error", err)
 	if errors.Is(err, http.ErrServerClosed) {
 		slog.Debug("server closed gracefully")
 		return nil
 	}
 
+	if err != nil {
+		return err
+	}
+
+	slog.Debug("server closed")
 	return nil
 }
 
@@ -173,10 +180,12 @@ func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 }
 
 func (sm *StartupManager) startServer(cfg *config.Config) {
+	slog.Debug("creating new app server instance", "config", fmt.Sprintf("%+v", cfg.Server))
 	appServer := server.NewAppServer(cfg)
 	sm.server = appServer
 
 	go func() {
+		slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
 		err := appServer.ListenAndServe()
 		sm.serverErrorChan <- err
 	}()
@@ -216,7 +225,7 @@ func (sm *StartupManager) Reload(ctx context.Context) error {
 
 		slog.Info("application reloaded")
 	} else {
-		slog.Debug("config is unchanged")
+		slog.Debug("skipping reload, config is unchanged")
 	}
 
 	return nil
@@ -231,6 +240,7 @@ func (sm *StartupManager) handleServerErrors() {
 				slog.Info("server closed for hot reload")
 				continue
 			} else {
+				slog.Error("server closed while hot reload is disabled")
 				sm.applicationErrorChan <- err
 			}
 		} else if err != nil {

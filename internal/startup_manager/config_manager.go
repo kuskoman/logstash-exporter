@@ -2,6 +2,7 @@ package startup_manager
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 
@@ -36,6 +37,7 @@ func (cc *ConfigManager) LoadAndCompareConfig(ctx context.Context) (bool, error)
 
 	if cc.currentConfig == nil || !cc.currentConfig.Equals(newConfig) {
 		cc.currentConfig = newConfig
+		slog.Debug("config has changed", "newConfig", fmt.Sprintf("%+v", newConfig))
 		return true, nil
 	} else {
 		slog.Debug("config is unchanged")
