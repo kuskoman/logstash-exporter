@@ -28,7 +28,7 @@ func main() {
 
 	ctx := context.TODO()
 	if err := startupManager.Initialize(ctx); err != nil {
-		slog.Error("failed to initialize startup manager", "err", err)
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }

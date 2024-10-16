@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net/http"
 	"sync"
 	"time"
 
@@ -28,21 +29,24 @@ type AppServer interface {
 }
 
 type StartupManager struct {
-	mutex               sync.Mutex
-	watchEnabled        bool
-	isInitialized       bool
-	server              AppServer
-	configManager       *ConfigManager
-	watcher             *file_watcher.FileWatcher
-	prometheusCollector prometheus.Collector
+	mutex                sync.Mutex
+	watchEnabled         bool
+	isInitialized        bool
+	server               AppServer
+	configManager        *ConfigManager
+	watcher              *file_watcher.FileWatcher
+	prometheusCollector  prometheus.Collector
+	serverErrorChan      chan error
+	applicationErrorChan chan error
 }
 
 func NewStartupManager(configPath string, flagsCfg *flags.FlagsConfig) (*StartupManager, error) {
 	sm := &StartupManager{
-		configManager: NewConfigManager(configPath),
-		isInitialized: false,
-		mutex:         sync.Mutex{},
-		watchEnabled:  flagsCfg.HotReload,
+		configManager:   NewConfigManager(configPath),
+		isInitialized:   false,
+		mutex:           sync.Mutex{},
+		watchEnabled:    flagsCfg.HotReload,
+		serverErrorChan: make(chan error), // Channel for server errors
 	}
 
 	watcher, err := file_watcher.NewFileWatcher(configPath, sm.handleConfigChange)
@@ -90,13 +94,16 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 		slog.Debug("watching for config changes is disabled")
 	}
 
+	slog.Debug("starting application components")
 	sm.startPrometheus(cfg)
-	err = sm.startServer(cfg)
-	if err != nil {
-		return err
-	}
+	sm.startServer(cfg)
 
-	return nil
+	slog.Info("application initialized")
+	slog.Debug("starting server error handler in a separate goroutine")
+	go sm.handleServerErrors()
+
+	err = <-sm.serverErrorChan
+	return err
 }
 
 func (sm *StartupManager) Shutdown(ctx context.Context) error {
@@ -130,55 +137,56 @@ func (sm *StartupManager) setLogger(cfg *config.Config) error {
 	return nil
 }
 
-func (cm *StartupManager) shutdownPrometheus() {
-	if cm.prometheusCollector != nil {
+func (sm *StartupManager) shutdownPrometheus() {
+	if sm.prometheusCollector != nil {
 		slog.Info("unregistering prometheus collector")
-		prometheus.Unregister(cm.prometheusCollector)
+		prometheus.Unregister(sm.prometheusCollector)
 	} else {
 		slog.Debug("prometheus collector is nil")
 	}
 }
 
-func (cm *StartupManager) shutdownServer(ctx context.Context) error {
-	if cm.server != nil {
-		slog.Info("shutting down server")
-		return cm.server.Shutdown(ctx)
-	} else {
+func (sm *StartupManager) shutdownServer(ctx context.Context) error {
+	if sm.server == nil {
 		slog.Debug("server is nil")
+		return nil
+	}
+
+	slog.Info("shutting down server")
+	err := sm.server.Shutdown(ctx)
+	if errors.Is(err, http.ErrServerClosed) {
+		slog.Debug("server closed gracefully")
+		return nil
 	}
 
 	return nil
 }
 
-func (cm *StartupManager) startPrometheus(cfg *config.Config) {
+func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 	collectorManager := collector_manager.NewCollectorManager(
 		cfg.Logstash.Servers,
 		cfg.Logstash.HttpTimeout,
 	)
 
-	cm.prometheusCollector = collectorManager
-	prometheus.MustRegister(cm.prometheusCollector)
+	sm.prometheusCollector = collectorManager
+	prometheus.MustRegister(sm.prometheusCollector)
 }
 
-func (cm *StartupManager) startServer(cfg *config.Config) error {
+func (sm *StartupManager) startServer(cfg *config.Config) {
 	appServer := server.NewAppServer(cfg)
-	cm.server = appServer
+	sm.server = appServer
 
 	go func() {
 		err := appServer.ListenAndServe()
-		if err != nil {
-			slog.Error("server error", "error", err)
-		}
+		sm.serverErrorChan <- err
 	}()
-
-	return nil
 }
 
-func (cm *StartupManager) handleConfigChange() error {
+func (sm *StartupManager) handleConfigChange() error {
 	ctx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
 	defer cancel()
 
-	err := cm.Reload(ctx)
+	err := sm.Reload(ctx)
 	if err != nil {
 		return err
 	}
@@ -186,33 +194,47 @@ func (cm *StartupManager) handleConfigChange() error {
 	return nil
 }
 
-func (cm *StartupManager) Reload(ctx context.Context) error {
-	changed, err := cm.configManager.LoadAndCompareConfig(ctx)
+func (sm *StartupManager) Reload(ctx context.Context) error {
+	changed, err := sm.configManager.LoadAndCompareConfig(ctx)
 	if err != nil {
 		return err
 	}
 
 	if changed {
-		cfg := cm.configManager.GetCurrentConfig()
+		cfg := sm.configManager.GetCurrentConfig()
 		if cfg == nil {
 			return errors.New("config is nil")
 		}
 
 		slog.Info("config has changed, reloading server")
 
-		cm.shutdownPrometheus()
-		cm.shutdownServer(ctx)
+		sm.shutdownPrometheus()
+		sm.shutdownServer(ctx)
 
-		cm.startPrometheus(cfg)
-		err = cm.startServer(cfg)
-		if err != nil {
-			return err
-		}
+		sm.startPrometheus(cfg)
+		sm.startServer(cfg)
 
-		slog.Info("server reloaded")
+		slog.Info("application reloaded")
 	} else {
 		slog.Debug("config is unchanged")
 	}
 
 	return nil
+}
+
+func (sm *StartupManager) handleServerErrors() {
+	for err := range sm.serverErrorChan {
+		slog.Debug("server error occurred", "error", err)
+
+		if errors.Is(err, http.ErrServerClosed) {
+			if sm.watchEnabled {
+				slog.Info("server closed for hot reload")
+				continue
+			} else {
+				sm.applicationErrorChan <- err
+			}
+		} else if err != nil {
+			sm.applicationErrorChan <- err
+		}
+	}
 }
