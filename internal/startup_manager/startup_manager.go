@@ -30,15 +30,14 @@ type AppServer interface {
 }
 
 type StartupManager struct {
-	mutex                sync.Mutex
-	watchEnabled         bool
-	isInitialized        bool
-	server               AppServer
-	configManager        *ConfigManager
-	watcher              *file_watcher.FileWatcher
-	prometheusCollector  prometheus.Collector
-	serverErrorChan      chan error
-	applicationErrorChan chan error
+	mutex               sync.Mutex
+	watchEnabled        bool
+	isInitialized       bool
+	server              AppServer
+	configManager       *ConfigManager
+	watcher             *file_watcher.FileWatcher
+	prometheusCollector prometheus.Collector
+	serverErrorChan     chan error
 }
 
 func NewStartupManager(configPath string, flagsCfg *flags.FlagsConfig) (*StartupManager, error) {
@@ -47,7 +46,7 @@ func NewStartupManager(configPath string, flagsCfg *flags.FlagsConfig) (*Startup
 		isInitialized:   false,
 		mutex:           sync.Mutex{},
 		watchEnabled:    flagsCfg.HotReload,
-		serverErrorChan: make(chan error), // Channel for server errors
+		serverErrorChan: make(chan error),
 	}
 
 	watcher, err := file_watcher.NewFileWatcher(configPath, sm.handleConfigChange)
@@ -101,9 +100,11 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 
 	slog.Info("application initialized")
 	slog.Debug("starting server error handler in a separate goroutine")
-	go sm.handleServerErrors()
 
-	err = <-sm.serverErrorChan
+	applicationErrorChan := make(chan error)
+	go sm.handleServerErrors(applicationErrorChan)
+
+	err = <-applicationErrorChan
 	return err
 }
 
@@ -155,13 +156,13 @@ func (sm *StartupManager) shutdownServer(ctx context.Context) error {
 
 	slog.Info("shutting down server")
 	err := sm.server.Shutdown(ctx)
-	slog.Debug("server shutdown error", "error", err)
 	if errors.Is(err, http.ErrServerClosed) {
 		slog.Debug("server closed gracefully")
 		return nil
 	}
 
 	if err != nil {
+		slog.Debug("server shutdown error", "error", err)
 		return err
 	}
 
@@ -231,7 +232,7 @@ func (sm *StartupManager) Reload(ctx context.Context) error {
 	return nil
 }
 
-func (sm *StartupManager) handleServerErrors() {
+func (sm *StartupManager) handleServerErrors(applicationErrorChan chan error) {
 	for err := range sm.serverErrorChan {
 		slog.Debug("server error occurred", "error", err)
 
@@ -241,10 +242,10 @@ func (sm *StartupManager) handleServerErrors() {
 				continue
 			} else {
 				slog.Error("server closed while hot reload is disabled")
-				sm.applicationErrorChan <- err
+				applicationErrorChan <- err
 			}
 		} else if err != nil {
-			sm.applicationErrorChan <- err
+			applicationErrorChan <- err
 		}
 	}
 }
