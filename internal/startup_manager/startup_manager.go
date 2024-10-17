@@ -208,7 +208,10 @@ func (sm *StartupManager) Reload(ctx context.Context) error {
 		slog.Info("config has changed, reloading server")
 
 		sm.shutdownPrometheus()
-		sm.shutdownServer(ctx)
+		err := sm.shutdownServer(ctx)
+		if err != nil {
+			return err
+		}
 
 		sm.startPrometheus(cfg)
 		sm.startServer(cfg)
