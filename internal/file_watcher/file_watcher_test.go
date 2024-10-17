@@ -12,8 +12,10 @@ import (
 const testTimeout = 1 * time.Second
 
 func TestFileWatcher(t *testing.T) {
-	// todo: parallelize tests
+	t.Parallel()
+
 	t.Run("executes listener on file modification", func(t *testing.T) {
+		t.Parallel()
 		listenerCalled := make(chan struct{})
 		tempFile := file_utils.CreateTempFile(t, "initial content")
 		defer file_utils.RemoveFile(t, tempFile)
@@ -47,6 +49,7 @@ func TestFileWatcher(t *testing.T) {
 	})
 
 	t.Run("does not execute listener if content hash is unchanged", func(t *testing.T) {
+		t.Parallel()
 		listenerCalled := make(chan struct{})
 		tempFile := file_utils.CreateTempFile(t, "same content")
 		defer file_utils.RemoveFile(t, tempFile)
@@ -77,6 +80,7 @@ func TestFileWatcher(t *testing.T) {
 	})
 
 	t.Run("handles multiple listeners", func(t *testing.T) {
+		t.Parallel()
 		listener1Called := make(chan struct{})
 		listener2Called := make(chan struct{})
 		tempFile := file_utils.CreateTempFile(t, "initial content")
