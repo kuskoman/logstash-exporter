@@ -1,4 +1,4 @@
-package manager
+package collector_manager
 
 import (
 	"context"
