@@ -23,7 +23,7 @@ func TestFileWatcher(t *testing.T) {
 			t.Fatalf("failed to create file watcher: %v", err)
 		}
 
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(testTimeout))
 		defer cancel()
 
 		go func() {
@@ -56,7 +56,7 @@ func TestFileWatcher(t *testing.T) {
 			t.Fatalf("failed to create file watcher: %v", err)
 		}
 
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(testTimeout))
 		defer cancel()
 
 		go func() {
@@ -87,7 +87,7 @@ func TestFileWatcher(t *testing.T) {
 			t.Fatalf("failed to create file watcher: %v", err)
 		}
 
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(testTimeout))
 		defer cancel()
 
 		go func() {
