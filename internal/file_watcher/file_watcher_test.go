@@ -16,6 +16,9 @@ func TestFileWatcher(t *testing.T) {
 	t.Run("executes listener on file modification", func(t *testing.T) {
 		listenerCalled := make(chan struct{})
 		dname, err := os.MkdirTemp("", "sampledir")
+		if err != nil {
+			t.Fatalf("failed to create dir: %v", err)
+		}
 
 		tempFile := file_utils.CreateTempFileInDir(t, "initial content", dname)
 		defer file_utils.RemoveDir(t, dname)
@@ -35,35 +38,6 @@ func TestFileWatcher(t *testing.T) {
 			}
 		}()
 
-		// ************ Add a content three times to make sure its written ***********
-		//f, err := os.OpenFile(tempFile, os.O_APPEND | os.O_WRONLY, 0644)
-		//defer f.Close()
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//f.Sync()
-
-		//if _, err := f.Write([]byte("appended some data\n")); err != nil {
-		//	f.Close() // ignore error; Write error takes precedence
-		//	t.Fatal(err)
-		//}
-		//f.Sync()
-
-		//f.Sync()
-		//time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
-		//if _, err := f.Write([]byte("appended some data\n")); err != nil {
-		//	f.Close() // ignore error; Write error takes precedence
-		//	t.Fatal(err)
-		//}
-
-		//f.Sync()
-		//time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
-		//if _, err := f.Write([]byte("appended some data\n")); err != nil {
-		//	f.Close() // ignore error; Write error takes precedence
-		//	t.Fatal(err)
-		//}
-		//f.Sync()
-		// ***************************************************************************
 		file_utils.ModifyFile(t, tempFile, "new content")
 
 		select {

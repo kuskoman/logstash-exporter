@@ -30,32 +30,41 @@ func ModifyFile(t *testing.T, file, content string) {
 	t.Helper()
 	// ************ Add a content three times to make sure its written ***********
 	f, err := os.OpenFile(file, os.O_WRONLY, 0644)
-	defer f.Close()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("failed to open a file: %v", err)
 	}
-	f.Sync()
+
+	defer f.Close()
+	
+	if err := f.Sync(); err != nil {
+		t.Fatalf("failed to sync file: %v", err)
+	}
 
 	if _, err := f.Write([]byte(content)); err != nil {
 		f.Close() // ignore error; Write error takes precedence
-		t.Fatal(err)
+		t.Fatalf("failed to write to file: %v", err)
 	}
-	f.Sync()
+	if err := f.Sync(); err != nil {
+		t.Fatalf("failed to sync file: %v", err)
+	}
 
-	f.Sync()
 	time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
 	if _, err := f.Write([]byte(content)); err != nil {
 		f.Close() // ignore error; Write error takes precedence
-		t.Fatal(err)
+		t.Fatalf("failed to write to file: %v", err)
 	}
 
-	f.Sync()
+	if err := f.Sync(); err != nil {
+		t.Fatalf("failed to sync file: %v", err)
+	}
 	time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
 	if _, err := f.Write([]byte(content)); err != nil {
 		f.Close() // ignore error; Write error takes precedence
-		t.Fatal(err)
+		t.Fatalf("failed to write to file: %v", err)
 	}
-	f.Sync()
+	if err := f.Sync(); err != nil {
+		t.Fatalf("failed to sync file: %v", err)
+	}
 }
 
 // CreateTempFile creates a temporary file with the given content and returns the path to it.
