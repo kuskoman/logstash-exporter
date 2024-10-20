@@ -26,10 +26,10 @@ func CreateTempFileInDir(t *testing.T, content, dir string) string {
 	return tempFile.Name()
 }
 
-func ModifyFile(t *testing.T, file, content string) {
+func AppendToFilex3(t *testing.T, file, content string) {
 	t.Helper()
 	// ************ Add a content three times to make sure its written ***********
-	f, err := os.OpenFile(file, os.O_WRONLY, 0644)
+	f, err := os.OpenFile(file, os.O_APPEND | os.O_WRONLY, 0644)
 	if err != nil {
 		t.Fatalf("failed to open a file: %v", err)
 	}

@@ -38,7 +38,7 @@ func TestFileWatcher(t *testing.T) {
 			}
 		}()
 
-		file_utils.ModifyFile(t, tempFile, "new content")
+		file_utils.AppendToFilex3(t, tempFile, "new content")
 
 		select {
 		case <-listenerCalled:
@@ -100,7 +100,7 @@ func TestFileWatcher(t *testing.T) {
 			}
 		}()
 
-		file_utils.ModifyFile(t, tempFile, "new content")
+		file_utils.AppendToFilex3(t, tempFile, "new content")
 		//if err := os.WriteFile(tempFile, []byte("new content"), 0644); err != nil {
 		//	t.Fatalf("failed to modify file: %v", err)
 		//}
