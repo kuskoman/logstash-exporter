@@ -3,13 +3,13 @@ package file_utils
 import (
 	"os"
 	"testing"
+	"time"
 )
 
-// CreateTempFile creates a temporary file with the given content and returns the path to it.
-func CreateTempFile(t *testing.T, content string) string {
+func CreateTempFileInDir(t *testing.T, content, dir string) string {
 	t.Helper()
 
-	tempFile, err := os.CreateTemp("", "testfile")
+	tempFile, err := os.CreateTemp(dir, "testfile")
 	if err != nil {
 		t.Fatalf("failed to create temp file: %v", err)
 	}
@@ -24,6 +24,51 @@ func CreateTempFile(t *testing.T, content string) string {
 	}
 
 	return tempFile.Name()
+}
+
+func ModifyFile(t *testing.T, file, content string) {
+	t.Helper()
+	// ************ Add a content three times to make sure its written ***********
+	f, err := os.OpenFile(file, os.O_WRONLY, 0644)
+	defer f.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.Sync()
+
+	if _, err := f.Write([]byte(content)); err != nil {
+		f.Close() // ignore error; Write error takes precedence
+		t.Fatal(err)
+	}
+	f.Sync()
+
+	f.Sync()
+	time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
+	if _, err := f.Write([]byte(content)); err != nil {
+		f.Close() // ignore error; Write error takes precedence
+		t.Fatal(err)
+	}
+
+	f.Sync()
+	time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
+	if _, err := f.Write([]byte(content)); err != nil {
+		f.Close() // ignore error; Write error takes precedence
+		t.Fatal(err)
+	}
+	f.Sync()
+}
+
+// CreateTempFile creates a temporary file with the given content and returns the path to it.
+func CreateTempFile(t *testing.T, content string) string {
+	return CreateTempFileInDir(t, content, "")
+}
+
+func RemoveDir(t *testing.T, path string) {
+	t.Helper()
+
+	if err := os.RemoveAll(path); err != nil {
+		t.Errorf("failed to remove temp file: %v", err)
+	}
 }
 
 // RemoveFile removes the file at the given path.
