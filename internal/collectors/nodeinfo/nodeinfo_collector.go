@@ -129,7 +129,7 @@ func (collector *NodeinfoCollector) collectSingleInstance(client logstash_client
 	metricsHelper.Labels = []string{endpoint}
 
 	// ***** UP *****
-	metricsHelper.NewIntMetric(collector.Up, prometheus.CounterValue, 1)
+	metricsHelper.NewIntMetric(collector.Up, prometheus.GaugeValue, 1)
 	// **************
 
 	// ***** PIPELINE *****
