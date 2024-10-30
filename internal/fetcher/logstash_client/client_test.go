@@ -20,7 +20,7 @@ func TestNewClient(t *testing.T) {
 	t.Run("should return a new client for the default endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("")
+		client := NewClient("", false)
 
 		if client.(*DefaultClient).endpoint != defaultLogstashEndpoint {
 			t.Errorf("expected endpoint to be %s, got %s", defaultLogstashEndpoint, client.(*DefaultClient).endpoint)
@@ -31,11 +31,23 @@ func TestNewClient(t *testing.T) {
 		t.Parallel()
 
 		expectedEndpoint := "http://localhost:9601"
-		client := NewClient(expectedEndpoint)
+		client := NewClient(expectedEndpoint, false)
 
 		receivedEndpoint := client.GetEndpoint()
 		if receivedEndpoint != expectedEndpoint {
 			t.Errorf("expected endpoint to be %s, got %s", expectedEndpoint, receivedEndpoint)
+		}
+	})
+
+	t.Run("should return a new client with http insecure configuration", func(t *testing.T) {
+		t.Parallel()
+
+		client := NewClient("", true)
+
+		checkHttpInsecure := client.(*DefaultClient).httpClient.Transport.
+								(*http.Transport).TLSClientConfig.InsecureSkipVerify
+		if checkHttpInsecure != true {
+			t.Errorf("expected http insecure to be %t, got %t", true, checkHttpInsecure)
 		}
 	})
 }

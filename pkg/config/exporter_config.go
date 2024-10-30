@@ -15,6 +15,7 @@ const (
 	defaultLogFormat      = "text"
 	defaultLogstashURL    = "http://localhost:9600"
 	defaultHttpTimeout    = time.Second * 2
+	defaultHttpInsecure   = false
 )
 
 var (
@@ -30,6 +31,7 @@ type LogstashServer struct {
 type LogstashConfig struct {
 	Servers []*LogstashServer `yaml:"servers"`
 	HttpTimeout time.Duration `yaml:"httpTimeout"`
+	HttpInsecure bool `yaml:"httpInsecure"`
 }
 
 // ServerConfig represents the server configuration
@@ -105,6 +107,11 @@ func mergeWithDefault(config *Config) *Config {
 	if config.Logstash.HttpTimeout == 0 {
 		slog.Debug("using default http timeout", "httpTimeout", defaultHttpTimeout)
 		config.Logstash.HttpTimeout = defaultHttpTimeout
+	}
+
+	if !config.Logstash.HttpInsecure {
+		slog.Debug("using default http insecure", "httpInsecure", defaultHttpInsecure)
+		config.Logstash.HttpInsecure = defaultHttpInsecure
 	}
 
 	return config
