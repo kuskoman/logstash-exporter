@@ -68,6 +68,7 @@ func main() {
 	collectorManager := manager.NewCollectorManager(
 		exporterConfig.Logstash.Servers,
 		exporterConfig.Logstash.HttpTimeout,
+		exporterConfig.Logstash.HttpInsecure,
 	)
 	prometheus.MustRegister(collectorManager)
 

@@ -2,6 +2,7 @@ package logstash_client
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"net/http"
 
@@ -29,14 +30,18 @@ func (client *DefaultClient) GetEndpoint() string {
 const defaultLogstashEndpoint = "http://localhost:9600"
 
 // NewClient returns a new instance of the DefaultClient configured with the given endpoint
-func NewClient(endpoint string) Client {
+func NewClient(endpoint string, httpInsecure bool) Client {
 	if endpoint == "" {
 		endpoint = defaultLogstashEndpoint
 	}
 
 	return &DefaultClient{
-		httpClient: &http.Client{},
-		endpoint:   endpoint,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: httpInsecure},
+			},
+		},
+		endpoint: endpoint,
 	}
 }
 
