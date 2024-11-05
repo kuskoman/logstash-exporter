@@ -4,6 +4,28 @@ logstash:
   ## @param logstash.url Logstash instance URL
   ##
   url: "http://logstash:9600"
+  httpTimeout: "3s"
+  httpInsecure: false
+
+web:
+  ## Path under which to expose metrics.
+  ##
+  path: /
+
+podMonitor:
+  ## If true, a PodMonitor CRD is created for a Prometheus Operator
+  ## https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.PodMonitor
+  ##
+  enabled: false
+  apiVersion: "monitoring.coreos.com/v1"
+  namespace: ""
+  labels: {}
+  interval: 60s
+  scrapeTimeout: 10s
+  honorLabels: true
+  scheme: http
+  relabelings: []
+  metricRelabelings: []
 
 ## @section Image settings
 ##
@@ -120,6 +142,8 @@ deployment:
     ## @param deployment.rollingUpdate.maxUnavailable Maximum unavailable for rolling update
     ##
     maxUnavailable: 0
+  metricsPort:
+    name: http
 
 ## @section Service settings
 ##

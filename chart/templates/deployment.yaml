@@ -89,6 +89,10 @@ spec:
           value: {{ required "logstash.url is required" .Values.logstash.url | quote }}
         - name: PORT
           value: {{ required "service.port is required" .Values.service.port | quote }}
+        - name: HTTP_TIMEOUT
+          value: {{ required "logstash.httpTimeout is required" .Values.logstash.httpTimeout | quote }}
+        - name: HTTP_INSECURE
+          value: {{ required "logstash.httpInsecure is required" .Values.logstash.httpInsecure | quote }}
         {{- range $key, $value := .Values.deployment.env }}
         - name: {{ $key | quote }}
           value: {{ $value | quote }}
