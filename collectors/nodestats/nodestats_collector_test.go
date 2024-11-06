@@ -104,6 +104,8 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_mem_pool_peak_max_bytes",
 		"logstash_stats_jvm_mem_pool_max_bytes",
 		"logstash_stats_jvm_mem_pool_committed_bytes",
+		"logstash_stats_jvm_gc_collection_count",
+		"logstash_stats_jvm_gc_collection_time_millis_total",
 	}
 
 	var foundMetrics []string

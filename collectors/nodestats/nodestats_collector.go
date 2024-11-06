@@ -36,6 +36,9 @@ type NodestatsCollector struct {
 	JvmMemPoolMaxInBytes       *prometheus.Desc
 	JvmMemPoolCommittedInBytes *prometheus.Desc
 
+	JvmGcCollectionCount        *prometheus.Desc
+	JvmGcCollectionTimeInMillis *prometheus.Desc
+
 	JvmUptimeMillis *prometheus.Desc
 
 	ProcessOpenFileDescriptors    *prometheus.Desc
@@ -97,6 +100,11 @@ func NewNodestatsCollector(client logstashclient.Client) *NodestatsCollector {
 			"jvm_mem_pool_max_bytes", "Maximum amount of bytes that can be used in a given JVM memory pool.", "pool"),
 		JvmMemPoolCommittedInBytes: descHelper.NewDescWithHelpAndLabels(
 			"jvm_mem_pool_committed_bytes", "Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool.", "pool"),
+
+		JvmGcCollectionCount: descHelper.NewDescWithHelpAndLabels(
+			"jvm_gc_collection_count", "Count of garbage collection runs for a given JVM memory pool.", "pool"),
+		JvmGcCollectionTimeInMillis: descHelper.NewDescWithHelpAndLabels(
+			"jvm_gc_collection_time_millis_total", "Total time spent running garbage collection for a given JVM memory pool.", "pool"),
 
 		JvmUptimeMillis: descHelper.NewDescWithHelp("jvm_uptime_millis", "Uptime of the JVM in milliseconds."),
 
@@ -168,6 +176,14 @@ func (c *NodestatsCollector) Collect(ctx context.Context, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.PeakMaxInBytes), "survivor")
 	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolMaxInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.MaxInBytes), "survivor")
 	ch <- prometheus.MustNewConstMetric(c.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, float64(nodeStats.Jvm.Mem.Pools.Survivor.CommittedInBytes), "survivor")
+
+	// GC
+	// young
+	ch <- prometheus.MustNewConstMetric(c.JvmGcCollectionCount, prometheus.CounterValue, float64(nodeStats.Jvm.Gc.Collectors.Young.CollectionCount), "young")
+	ch <- prometheus.MustNewConstMetric(c.JvmGcCollectionTimeInMillis, prometheus.CounterValue, float64(nodeStats.Jvm.Gc.Collectors.Young.CollectionTimeInMillis), "young")
+	// old
+	ch <- prometheus.MustNewConstMetric(c.JvmGcCollectionCount, prometheus.CounterValue, float64(nodeStats.Jvm.Gc.Collectors.Old.CollectionCount), "old")
+	ch <- prometheus.MustNewConstMetric(c.JvmGcCollectionTimeInMillis, prometheus.CounterValue, float64(nodeStats.Jvm.Gc.Collectors.Old.CollectionTimeInMillis), "old")
 
 	ch <- prometheus.MustNewConstMetric(c.JvmUptimeMillis, prometheus.GaugeValue, float64(nodeStats.Jvm.UptimeInMillis))
 
