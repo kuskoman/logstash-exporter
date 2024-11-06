@@ -170,7 +170,11 @@ deployment:
     ## @param deployment.rollingUpdate.maxUnavailable Maximum unavailable for rolling update
     ##
     maxUnavailable: 0
+  ## @section metricsPort settings
+  ##
   metricsPort:
+    ## @param metricsPort.name Name of the port
+    ##
     name: http
 
 ## @section Service settings
