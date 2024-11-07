@@ -54,6 +54,143 @@ func TestLoadConfig(t *testing.T) {
 	})
 }
 
+func TestConfigEquals(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns true for equal configs", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		config2 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		if !config1.Equals(config2) {
+			t.Error("expected configs to be equal")
+		}
+	})
+
+	t.Run("returns false for unequal configs (when nested fields differ)", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9603"},
+				},
+			},
+		}
+
+		config2 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		if config1.Equals(config2) {
+			t.Error("expected configs to be unequal")
+		}
+	})
+
+	t.Run("returns false for nil config", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		if config1.Equals(nil) {
+			t.Error("expected configs to be unequal")
+		}
+	})
+
+	t.Run("returns false for unequal configs (when one field is empty)", func(t *testing.T) {
+		config1 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: []*LogstashServer{
+					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9602"},
+				},
+			},
+		}
+
+		config2 := &Config{
+			Server: ServerConfig{
+				Port: 1234,
+			},
+			Logging: LoggingConfig{
+				Level:  "debug",
+				Format: "json",
+			},
+			Logstash: LogstashConfig{
+				Servers: nil,
+			},
+		}
+
+		if config1.Equals(config2) {
+			t.Error("expected configs to be unequal")
+		}
+	})
+}
+
 func TestMergeWithDefault(t *testing.T) {
 	t.Parallel()
 
@@ -78,9 +215,6 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
-		if mergedConfig.Logstash.HttpInsecure != defaultHttpInsecure {
-			t.Errorf("expected http insecure to be %v, got %v", defaultHttpInsecure, mergedConfig.Logstash.HttpInsecure)
-		}
 	})
 
 	t.Run("merge with nil config", func(t *testing.T) {
@@ -103,9 +237,6 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
 		}
-		if mergedConfig.Logstash.HttpInsecure != defaultHttpInsecure {
-			t.Errorf("expected http insecure to be %v, got %v", defaultHttpInsecure, mergedConfig.Logstash.HttpInsecure)
-		}
 	})
 
 	t.Run("merge with non-empty config", func(t *testing.T) {
@@ -121,11 +252,10 @@ func TestMergeWithDefault(t *testing.T) {
 			},
 			Logstash: LogstashConfig{
 				Servers: []*LogstashServer{
-					{Host: "http://localhost:9601"},
+					{Host: "http://localhost:9601", HttpInsecure: true},
 					{Host: "http://localhost:9602"},
 				},
 				HttpTimeout: 3 * time.Second,
-				HttpInsecure: true,
 			},
 		}
 
@@ -152,9 +282,6 @@ func TestMergeWithDefault(t *testing.T) {
 		}
 		if mergedConfig.Logstash.HttpTimeout != 3*time.Second {
 			t.Errorf("expected http timeout to be %v, got %v", 3*time.Second, mergedConfig.Logstash.HttpTimeout)
-		}
-		if mergedConfig.Logstash.HttpInsecure != true {
-			t.Errorf("expected http insecure to be %v, got %v", true, mergedConfig.Logstash.HttpInsecure)
 		}
 	})
 }

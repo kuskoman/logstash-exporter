@@ -3,8 +3,9 @@ package config
 import (
 	"log/slog"
 	"os"
+	"reflect"
 	"time"
-    
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -24,14 +25,14 @@ var (
 
 // LogstashServer represents individual Logstash server configuration
 type LogstashServer struct {
-	Host string `yaml:"url"`
+	Host         string `yaml:"url"`
+	HttpInsecure bool   `yaml:"httpInsecure"`
 }
 
 // LogstashConfig holds the configuration for all Logstash servers
 type LogstashConfig struct {
-	Servers []*LogstashServer `yaml:"servers"`
-	HttpTimeout time.Duration `yaml:"httpTimeout"`
-	HttpInsecure bool `yaml:"httpInsecure"`
+	Servers     []*LogstashServer `yaml:"servers"`
+	HttpTimeout time.Duration     `yaml:"httpTimeout"`
 }
 
 // ServerConfig represents the server configuration
@@ -58,6 +59,10 @@ type Config struct {
 	Logstash LogstashConfig `yaml:"logstash"`
 	Server   ServerConfig   `yaml:"server"`
 	Logging  LoggingConfig  `yaml:"logging"`
+}
+
+func (config *Config) Equals(other *Config) bool {
+	return reflect.DeepEqual(config, other)
 }
 
 // loadConfig loads the configuration from the YAML file.
@@ -107,11 +112,6 @@ func mergeWithDefault(config *Config) *Config {
 	if config.Logstash.HttpTimeout == 0 {
 		slog.Debug("using default http timeout", "httpTimeout", defaultHttpTimeout)
 		config.Logstash.HttpTimeout = defaultHttpTimeout
-	}
-
-	if !config.Logstash.HttpInsecure {
-		slog.Debug("using default http insecure", "httpInsecure", defaultHttpInsecure)
-		config.Logstash.HttpInsecure = defaultHttpInsecure
 	}
 
 	return config

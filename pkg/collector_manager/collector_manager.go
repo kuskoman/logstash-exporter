@@ -1,4 +1,4 @@
-package manager
+package collector_manager
 
 import (
 	"context"
@@ -28,23 +28,24 @@ type CollectorManager struct {
 	httpTimeout     time.Duration
 }
 
-func getClientsForEndpoints(endpoints []*config.LogstashServer, httpInsecure bool) []logstash_client.Client {
+func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstash_client.Client {
 	clients := make([]logstash_client.Client, len(endpoints))
 
 	for i, endpoint := range endpoints {
-		clients[i] = logstash_client.NewClient(endpoint.Host, httpInsecure)
+		clients[i] = logstash_client.NewClient(endpoint.Host, endpoint.HttpInsecure)
 	}
 
 	return clients
 }
 
 // NewCollectorManager creates a new CollectorManager with the provided logstash servers and http timeout
-func NewCollectorManager(servers []*config.LogstashServer, httpTimeout time.Duration, httpInsecure bool) *CollectorManager {
-	clients := getClientsForEndpoints(servers, httpInsecure)
+func NewCollectorManager(servers []*config.LogstashServer, httpTimeout time.Duration) *CollectorManager {
+	clients := getClientsForEndpoints(servers)
 
 	collectors := getCollectors(clients)
 
 	scrapeDurations := getScrapeDurationsCollector()
+	prometheus.Unregister(version.NewCollector("logstash_exporter"))
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
 	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations, httpTimeout: httpTimeout}

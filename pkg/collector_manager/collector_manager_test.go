@@ -1,4 +1,4 @@
-package manager
+package collector_manager
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func TestNewCollectorManager(t *testing.T) {
 		}
 
 		mockEndpoints := []*config.LogstashServer{endpoint1, endpoint2}
-		cm := NewCollectorManager(mockEndpoints, httpTimeout, false)
+		cm := NewCollectorManager(mockEndpoints, httpTimeout)
 
 		if cm == nil {
 			t.Error("expected collector manager to be initialized")
