@@ -8,20 +8,41 @@ import (
 	"os"
 )
 
-func CalculateFileHash(filePath string) (string, error) {
+// openFile opens the file at the given path and returns the file pointer.
+func openFile(filePath string) (*os.File, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", fmt.Errorf("could not open file: %v", err)
+		return nil, fmt.Errorf("could not open file: %v", err)
+	}
+	return file, nil
+}
+
+// computeHash reads the file data and computes the SHA-256 hash.
+func computeHash(file io.Reader) ([]byte, error) {
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return nil, fmt.Errorf("could not calculate hash: %v", err)
+	}
+	return hash.Sum(nil), nil
+}
+
+// encodeHashToString encodes the hash sum into a hexadecimal string.
+func encodeHashToString(hashSum []byte) string {
+	return hex.EncodeToString(hashSum)
+}
+
+// CalculateFileHash calculates the SHA-256 hash of a file and returns it as a string.
+func CalculateFileHash(filePath string) (string, error) {
+	file, err := openFile(filePath)
+	if err != nil {
+		return "", err
 	}
 	defer file.Close()
 
-	hash := sha256.New()
-
-	if _, err := io.Copy(hash, file); err != nil {
-		return "", fmt.Errorf("could not calculate hash: %v", err)
+	hashSum, err := computeHash(file)
+	if err != nil {
+		return "", err
 	}
 
-	hashSum := hash.Sum(nil)
-
-	return hex.EncodeToString(hashSum), nil
+	return encodeHashToString(hashSum), nil
 }

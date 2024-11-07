@@ -1,10 +1,92 @@
 package file_watcher
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/kuskoman/logstash-exporter/internal/file_utils"
 )
+
+func TestOpenFile(t *testing.T) {
+	t.Parallel()
+
+	t.Run("opens existing file", func(t *testing.T) {
+		t.Parallel()
+
+		content := "hello world"
+		path := file_utils.CreateTempFile(t, content)
+
+		file, err := openFile(path)
+
+		if err != nil {
+			t.Fatalf("failed to open file: %v", err)
+		}
+
+		if file == nil {
+			t.Fatal("expected file to be opened, got nil")
+		}
+
+		err = file.Close()
+		if err != nil {
+			t.Fatalf("failed to close file: %v", err)
+		}
+	})
+
+	t.Run("returns error for non-existent file", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := openFile("non_existent_file.txt")
+		if err == nil {
+			t.Fatal("expected error, got none")
+		}
+	})
+}
+
+type errorReader struct{}
+
+func (errorReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("error reading")
+}
+
+func TestComputeHash(t *testing.T) {
+	t.Parallel()
+
+	t.Run("computes hash for reader", func(t *testing.T) {
+		t.Parallel()
+
+		content := "hello world"
+		path := file_utils.CreateTempFile(t, content)
+		defer file_utils.RemoveFile(t, path)
+
+		file, err := openFile(path)
+		if err != nil {
+			t.Fatalf("failed to open file: %v", err)
+		}
+		defer file.Close()
+
+		hash, err := computeHash(file)
+		if err != nil {
+			t.Fatalf("got an error: %v", err)
+		}
+
+		if len(hash) == 0 {
+			t.Fatal("expected hash to be non-empty, got empty")
+		}
+	})
+
+	t.Run("should return error for reader that returns error", func(t *testing.T) {
+		t.Parallel()
+		_, err := computeHash(errorReader{})
+		if err == nil {
+			t.Fatal("expected error, got none")
+		}
+
+		if !strings.Contains(err.Error(), "error reading") {
+			t.Errorf("expected error to be 'error reading', got '%v'", err)
+		}
+	})
+}
 
 func TestCalculateFileHash(t *testing.T) {
 	t.Parallel()
