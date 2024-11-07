@@ -39,6 +39,9 @@ type NodestatsCollector struct {
 	JvmMemPoolMaxInBytes       *prometheus.Desc
 	JvmMemPoolCommittedInBytes *prometheus.Desc
 
+	JvmGcCollectionCount        *prometheus.Desc
+	JvmGcCollectionTimeInMillis *prometheus.Desc
+
 	JvmUptimeMillis *prometheus.Desc
 
 	ProcessOpenFileDescriptors    *prometheus.Desc
@@ -107,6 +110,11 @@ func NewNodestatsCollector(clients []logstash_client.Client) *NodestatsCollector
 			"Maximum amount of bytes that can be used in a given JVM memory pool.", "pool"),
 		JvmMemPoolCommittedInBytes: descHelper.NewDesc("jvm_mem_pool_committed_bytes",
 			"Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool.", "pool"),
+
+		JvmGcCollectionCount: descHelper.NewDesc(
+			"jvm_gc_collection_count", "Count of garbage collection runs for a given JVM memory pool.", "pool"),
+		JvmGcCollectionTimeInMillis: descHelper.NewDesc(
+			"jvm_gc_collection_time_millis_total", "Total time spent running garbage collection for a given JVM memory pool.", "pool"),
 
 		JvmUptimeMillis: descHelper.NewDesc("jvm_uptime_millis",
 			"Uptime of the JVM in milliseconds."),
@@ -231,6 +239,20 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolMaxInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.MaxInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolCommittedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.CommittedInBytes)
 	//         ****************
+	//	  *************************
+	// ********************************
+
+	// ************ GC ************
+	//	  ********* YOUNG *********
+	metricsHelper.Labels = []string{"young", endpoint}
+	metricsHelper.NewIntMetric(collector.JvmGcCollectionCount, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Young.CollectionCount)
+	metricsHelper.NewIntMetric(collector.JvmGcCollectionTimeInMillis, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Young.CollectionTimeInMillis)
+	//	  *************************
+
+	//	  ********* OLD *********
+	metricsHelper.Labels = []string{"old", endpoint}
+	metricsHelper.NewIntMetric(collector.JvmGcCollectionCount, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Old.CollectionCount)
+	metricsHelper.NewIntMetric(collector.JvmGcCollectionTimeInMillis, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Old.CollectionTimeInMillis)
 	//	  *************************
 	// ********************************
 
