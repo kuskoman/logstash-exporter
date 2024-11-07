@@ -286,7 +286,7 @@ Table of exported metrics:
 | logstash_info_pipeline_batch_size | gauge | Number of events to retrieve from the input queue before sending to the filter and output stages. |
 | logstash_info_pipeline_workers | gauge | Number of worker threads that will process pipeline events. |
 | logstash_info_status | counter | A metric with a constant '1' value labeled by status. |
-| logstash_info_up | counter | A metric that returns 1 if the node is up, 0 otherwise. |
+| logstash_info_up | gauge | A metric that returns 1 if the node is up, 0 otherwise. |
 | logstash_stats_events_duration_millis | gauge | Duration of events processing in milliseconds. |
 | logstash_stats_events_filtered | gauge | Number of events filtered out. |
 | logstash_stats_events_in | gauge | Number of events received. |
@@ -302,6 +302,8 @@ Table of exported metrics:
 | logstash_stats_flow_queue_backpressure_lifetime | gauge | Lifetime number of events in the backpressure queue. |
 | logstash_stats_flow_worker_concurrency_current | gauge | Current number of workers. |
 | logstash_stats_flow_worker_concurrency_lifetime | gauge | Lifetime number of workers. |
+| logstash_stats_jvm_gc_collection_count | counter | Count of garbage collection runs for a given JVM memory pool. |
+| logstash_stats_jvm_gc_collection_time_millis_total | counter | Total time spent running garbage collection for a given JVM memory pool. |
 | logstash_stats_jvm_mem_heap_committed_bytes | gauge | Amount of heap memory in bytes that is committed for the Java virtual machine to use. |
 | logstash_stats_jvm_mem_heap_max_bytes | gauge | Maximum amount of heap memory in bytes that can be used for memory management. |
 | logstash_stats_jvm_mem_heap_used_bytes | gauge | Amount of used heap memory in bytes. |
