@@ -85,16 +85,8 @@ deployment:
   restartPolicy: Always
   ## @param deployment.annotations Additional deployment annotations
   ##
-  ## Example:
-  ## annotations:
-  ##   kubernetes.io/foo: bar
-  ##
   annotations: {}
   ## @param deployment.labels Additional deployment labels
-  ##
-  ## Example:
-  ## labels:
-  ##   foo: bar
   ##
   labels: {}
   ## @param deployment.pullSecret Kubernetes secret for pulling the image
@@ -173,7 +165,7 @@ deployment:
   ## @section metricsPort settings
   ##
   metricsPort:
-    ## @param metricsPort.name Name of the port
+    ## @param deployment.metricsPort.name Name of the port
     ##
     name: http
 

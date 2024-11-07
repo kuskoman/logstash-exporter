@@ -4,9 +4,32 @@
 
 ### Logstash configuration
 
-| Name           | Description           | Value                  |
-| -------------- | --------------------- | ---------------------- |
-| `logstash.url` | Logstash instance URL | `http://logstash:9600` |
+| Name                    | Description           | Value                  |
+| ----------------------- | --------------------- | ---------------------- |
+| `logstash.url`          | Logstash instance URL | `http://logstash:9600` |
+| `logstash.httpTimeout`  | http timeout          | `3s`                   |
+| `logstash.httpInsecure` | http insecure         | `false`                |
+
+### Web settings
+
+| Name       | Description                         | Value |
+| ---------- | ----------------------------------- | ----- |
+| `web.path` | Path under which to expose metrics. | `/`   |
+
+### PodMonitor settings
+
+| Name                           | Description                       | Value                      |
+| ------------------------------ | --------------------------------- | -------------------------- |
+| `podMonitor.enabled`           | Enable pod monitor creation       | `false`                    |
+| `podMonitor.apiVersion`        | Set pod monitor apiVersion        | `monitoring.coreos.com/v1` |
+| `podMonitor.namespace`         | Set pod monitor namespace         | `""`                       |
+| `podMonitor.labels`            | Set pod monitor labels            | `{}`                       |
+| `podMonitor.interval`          | Set pod monitor interval          | `60s`                      |
+| `podMonitor.scrapeTimeout`     | Set pod monitor scrapeTimeout     | `10s`                      |
+| `podMonitor.honorLabels`       | Set pod monitor honorLabels       | `true`                     |
+| `podMonitor.scheme`            | Set pod monitor scheme            | `http`                     |
+| `podMonitor.relabelings`       | Set pod monitor relabelings       | `[]`                       |
+| `podMonitor.metricRelabelings` | Set pod monitor metricRelabelings | `[]`                       |
 
 ### Image settings
 
@@ -57,6 +80,12 @@
 | ----------------------------------------- | -------------------------------------- | ----- |
 | `deployment.rollingUpdate.maxSurge`       | Maximum surge for rolling update       | `1`   |
 | `deployment.rollingUpdate.maxUnavailable` | Maximum unavailable for rolling update | `0`   |
+
+### metricsPort settings
+
+| Name                          | Description      | Value  |
+| ----------------------------- | ---------------- | ------ |
+| `deployment.metricsPort.name` | Name of the port | `http` |
 
 ### Service settings
 
