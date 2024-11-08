@@ -9,6 +9,83 @@
                     "type": "string",
                     "description": "Logstash instance URL",
                     "default": "http://logstash:9600"
+                },
+                "httpTimeout": {
+                    "type": "string",
+                    "description": "http timeout",
+                    "default": "3s"
+                },
+                "httpInsecure": {
+                    "type": "boolean",
+                    "description": "http insecure",
+                    "default": false
+                }
+            }
+        },
+        "web": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "Path under which to expose metrics.",
+                    "default": "/"
+                }
+            }
+        },
+        "podMonitor": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Enable pod monitor creation",
+                    "default": false
+                },
+                "apiVersion": {
+                    "type": "string",
+                    "description": "Set pod monitor apiVersion",
+                    "default": "monitoring.coreos.com/v1"
+                },
+                "namespace": {
+                    "type": "string",
+                    "description": "Set pod monitor namespace",
+                    "default": ""
+                },
+                "labels": {
+                    "type": "object",
+                    "description": "Set pod monitor labels",
+                    "default": {}
+                },
+                "interval": {
+                    "type": "string",
+                    "description": "Set pod monitor interval",
+                    "default": "60s"
+                },
+                "scrapeTimeout": {
+                    "type": "string",
+                    "description": "Set pod monitor scrapeTimeout",
+                    "default": "10s"
+                },
+                "honorLabels": {
+                    "type": "boolean",
+                    "description": "Set pod monitor honorLabels",
+                    "default": true
+                },
+                "scheme": {
+                    "type": "string",
+                    "description": "Set pod monitor scheme",
+                    "default": "http"
+                },
+                "relabelings": {
+                    "type": "array",
+                    "description": "Set pod monitor relabelings",
+                    "default": [],
+                    "items": {}
+                },
+                "metricRelabelings": {
+                    "type": "array",
+                    "description": "Set pod monitor metricRelabelings",
+                    "default": [],
+                    "items": {}
                 }
             }
         },
@@ -185,6 +262,16 @@
                             "type": "number",
                             "description": "Maximum unavailable for rolling update",
                             "default": 0
+                        }
+                    }
+                },
+                "metricsPort": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the port",
+                            "default": "http"
                         }
                     }
                 }

@@ -4,6 +4,56 @@ logstash:
   ## @param logstash.url Logstash instance URL
   ##
   url: "http://logstash:9600"
+  ## @param logstash.httpTimeout http timeout
+  ##
+  httpTimeout: "3s"
+  ## @param logstash.httpInsecure http insecure
+  ##
+  httpInsecure: false
+
+## @section Web settings
+##
+web:
+  ## @param web.path Path under which to expose metrics.
+  ##
+  path: /
+
+## @section PodMonitor settings
+##
+podMonitor:
+  ## If true, a PodMonitor CRD is created for a Prometheus Operator
+  ## https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.PodMonitor
+  ##
+  ## @param podMonitor.enabled Enable pod monitor creation
+  ##
+  enabled: false
+  ## @param podMonitor.apiVersion Set pod monitor apiVersion
+  ##
+  apiVersion: "monitoring.coreos.com/v1"
+  ## @param podMonitor.namespace Set pod monitor namespace
+  ##
+  namespace: ""
+  ## @param podMonitor.labels Set pod monitor labels
+  ##
+  labels: {}
+  ## @param podMonitor.interval Set pod monitor interval
+  ##
+  interval: 60s
+  ## @param podMonitor.scrapeTimeout Set pod monitor scrapeTimeout
+  ##
+  scrapeTimeout: 10s
+  ## @param podMonitor.honorLabels Set pod monitor honorLabels
+  ##
+  honorLabels: true
+  ## @param podMonitor.scheme Set pod monitor scheme
+  ##
+  scheme: http
+  ## @param podMonitor.relabelings Set pod monitor relabelings
+  ##
+  relabelings: []
+  ## @param podMonitor.metricRelabelings Set pod monitor metricRelabelings
+  ##
+  metricRelabelings: []
 
 ## @section Image settings
 ##
@@ -35,16 +85,8 @@ deployment:
   restartPolicy: Always
   ## @param deployment.annotations Additional deployment annotations
   ##
-  ## Example:
-  ## annotations:
-  ##   kubernetes.io/foo: bar
-  ##
   annotations: {}
   ## @param deployment.labels Additional deployment labels
-  ##
-  ## Example:
-  ## labels:
-  ##   foo: bar
   ##
   labels: {}
   ## @param deployment.pullSecret Kubernetes secret for pulling the image
@@ -120,6 +162,12 @@ deployment:
     ## @param deployment.rollingUpdate.maxUnavailable Maximum unavailable for rolling update
     ##
     maxUnavailable: 0
+  ## @section metricsPort settings
+  ##
+  metricsPort:
+    ## @param deployment.metricsPort.name Name of the port
+    ##
+    name: http
 
 ## @section Service settings
 ##
