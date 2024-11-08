@@ -10,9 +10,9 @@ import (
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
-func convertServersToUrls(servers []*config.LogstashServer) []string {
-	urls := make([]string, len(servers))
-	for i, server := range servers {
+func convertInstancesToUrls(instances []*config.LogstashInstance) []string {
+	urls := make([]string, len(instances))
+	for i, server := range instances {
 		urls[i] = server.Host
 	}
 

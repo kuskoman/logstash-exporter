@@ -11,7 +11,7 @@ data:
     {{- .Values.customConfig.config | nindent 4 }}
   {{- else }}
     logstash:
-      servers:
+      instances:
         {{ range .Values.logstash.urls -}}
         - url: {{ . | quote }}
         {{ end }}

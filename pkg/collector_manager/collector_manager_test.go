@@ -17,15 +17,15 @@ func TestNewCollectorManager(t *testing.T) {
 	t.Parallel()
 
 	t.Run("multiple endpoints", func(t *testing.T) {
-		endpoint1 := &config.LogstashServer{
+		endpoint1 := &config.LogstashInstance{
 			Host: "http://localhost:9600",
 		}
 
-		endpoint2 := &config.LogstashServer{
+		endpoint2 := &config.LogstashInstance{
 			Host: "http://localhost:9601",
 		}
 
-		mockEndpoints := []*config.LogstashServer{endpoint1, endpoint2}
+		mockEndpoints := []*config.LogstashInstance{endpoint1, endpoint2}
 		cm := NewCollectorManager(mockEndpoints, httpTimeout)
 
 		if cm == nil {

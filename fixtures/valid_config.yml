@@ -1,5 +1,5 @@
 logstash:
-  servers:
+  instances:
     - url: "http://localhost:9601"
   httpTimeout: 3s
   httpInsecure: true

@@ -23,11 +23,11 @@
 
 ### Custom logstash-exporter configuration
 
-| Name                   | Description                 | Value                                                |
-| ---------------------- | --------------------------- | ---------------------------------------------------- |
-| `customConfig.enabled` | Enable custom configuration | `false`                                              |
+| Name                   | Description                 | Value                                                  |
+| ---------------------- | --------------------------- | ------------------------------------------------------ |
+| `customConfig.enabled` | Enable custom configuration | `false`                                                |
 | `customConfig.config`  | Custom configuration        | `logstash:
-  servers:
+  instances:
     - "http://logstash:9600"
 ` |
 

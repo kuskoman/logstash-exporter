@@ -108,9 +108,11 @@ The Helm chart has its own [README](./chart/README.md).
 
 The application is now configured using a YAML file instead of environment variables. An example configuration is as follows:
 
+**Important:** The `servers` section got renamed to `instances`. For now both names are supported, but the `servers` name will be removed in the future.
+
 ```yaml
 logstash:
-  servers:
+  instances:
     - url: "http://logstash:9600" # URL to Logstash API
     - url: "http://logstash2:9600"
 server:

@@ -33,7 +33,7 @@ customConfig:
   ##
   config: |
     logstash:
-      servers:
+      instances:
         - "http://logstash:9600"
 
 ## @section Image settings

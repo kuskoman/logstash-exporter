@@ -1,5 +1,5 @@
 logstash:
-  servers:
+  instances:
     - url: "http://logstash:9600"
     - url: "http://logstash2:9600"
 server:
