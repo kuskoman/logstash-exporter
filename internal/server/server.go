@@ -14,7 +14,7 @@ import (
 // to the server's mux. The prometheus handler is managed under the
 // hood by the prometheus client library.
 func NewAppServer(cfg *config.Config) *http.Server {
-	logstashUrls := convertServersToUrls(cfg.Logstash.Servers)
+	logstashUrls := convertInstancesToUrls(cfg.Logstash.Instances)
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())

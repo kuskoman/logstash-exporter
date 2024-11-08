@@ -19,8 +19,8 @@ func TestLoadConfig(t *testing.T) {
 		if config == nil {
 			t.Fatal("expected config to be non-nil")
 		}
-		if config.Logstash.Servers[0].Host != "http://localhost:9601" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", config.Logstash.Servers[0].Host)
+		if config.Logstash.Instances[0].Host != "http://localhost:9601" {
+			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", config.Logstash.Instances[0].Host)
 		}
 	})
 
@@ -67,7 +67,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
@@ -83,7 +83,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
@@ -105,7 +105,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9603"},
 				},
@@ -121,7 +121,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
@@ -143,7 +143,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
@@ -165,7 +165,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
@@ -181,7 +181,7 @@ func TestConfigEquals(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: nil,
+				Instances: nil,
 			},
 		}
 
@@ -209,8 +209,8 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logging.Format != defaultLogFormat {
 			t.Errorf("expected format to be %v, got %v", defaultLogFormat, mergedConfig.Logging.Format)
 		}
-		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
-			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
+		if mergedConfig.Logstash.Instances[0].Host != defaultLogstashURL {
+			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Instances[0].Host)
 		}
 		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
@@ -231,8 +231,8 @@ func TestMergeWithDefault(t *testing.T) {
 		if mergedConfig.Logging.Format != defaultLogFormat {
 			t.Errorf("expected format to be %v, got %v", defaultLogFormat, mergedConfig.Logging.Format)
 		}
-		if mergedConfig.Logstash.Servers[0].Host != defaultLogstashURL {
-			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Servers[0].Host)
+		if mergedConfig.Logstash.Instances[0].Host != defaultLogstashURL {
+			t.Errorf("expected URL to be %v, got %v", defaultLogstashURL, mergedConfig.Logstash.Instances[0].Host)
 		}
 		if mergedConfig.Logstash.HttpTimeout != defaultHttpTimeout {
 			t.Errorf("expected http timeout to be %v, got %v", defaultHttpTimeout, mergedConfig.Logstash.HttpTimeout)
@@ -251,7 +251,7 @@ func TestMergeWithDefault(t *testing.T) {
 				Format: "json",
 			},
 			Logstash: LogstashConfig{
-				Servers: []*LogstashServer{
+				Instances: []*LogstashInstance{
 					{Host: "http://localhost:9601", HttpInsecure: true},
 					{Host: "http://localhost:9602"},
 				},
@@ -273,12 +273,12 @@ func TestMergeWithDefault(t *testing.T) {
 			t.Errorf("expected format to be %v, got %v", "json", mergedConfig.Logging.Format)
 		}
 
-		if mergedConfig.Logstash.Servers[0].Host != "http://localhost:9601" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", mergedConfig.Logstash.Servers[0].Host)
+		if mergedConfig.Logstash.Instances[0].Host != "http://localhost:9601" {
+			t.Errorf("expected URL to be %v, got %v", "http://localhost:9601", mergedConfig.Logstash.Instances[0].Host)
 		}
 
-		if mergedConfig.Logstash.Servers[1].Host != "http://localhost:9602" {
-			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Servers[1].Host)
+		if mergedConfig.Logstash.Instances[1].Host != "http://localhost:9602" {
+			t.Errorf("expected URL to be %v, got %v", "http://localhost:9602", mergedConfig.Logstash.Instances[1].Host)
 		}
 		if mergedConfig.Logstash.HttpTimeout != 3*time.Second {
 			t.Errorf("expected http timeout to be %v, got %v", 3*time.Second, mergedConfig.Logstash.HttpTimeout)

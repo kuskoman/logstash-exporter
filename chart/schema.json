@@ -53,7 +53,7 @@
                 "config": {
                     "type": "string",
                     "description": "Custom configuration",
-                    "default": "logstash:\n  servers:\n    - \"http://logstash:9600\"\n"
+                    "default": "logstash:\n  instances:\n    - \"http://logstash:9600\"\n"
                 }
             }
         },

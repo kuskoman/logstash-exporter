@@ -28,7 +28,7 @@ type CollectorManager struct {
 	httpTimeout     time.Duration
 }
 
-func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstash_client.Client {
+func getClientsForEndpoints(endpoints []*config.LogstashInstance) []logstash_client.Client {
 	clients := make([]logstash_client.Client, len(endpoints))
 
 	for i, endpoint := range endpoints {
@@ -38,9 +38,9 @@ func getClientsForEndpoints(endpoints []*config.LogstashServer) []logstash_clien
 	return clients
 }
 
-// NewCollectorManager creates a new CollectorManager with the provided logstash servers and http timeout
-func NewCollectorManager(servers []*config.LogstashServer, httpTimeout time.Duration) *CollectorManager {
-	clients := getClientsForEndpoints(servers)
+// NewCollectorManager creates a new CollectorManager with the provided logstash instances and http timeout
+func NewCollectorManager(instances []*config.LogstashInstance, httpTimeout time.Duration) *CollectorManager {
+	clients := getClientsForEndpoints(instances)
 
 	collectors := getCollectors(clients)
 

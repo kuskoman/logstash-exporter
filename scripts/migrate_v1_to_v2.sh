@@ -31,7 +31,7 @@ log_level=$(get_env_with_default "LOG_LEVEL" "info")
 
 cat << EOF
 logstash:
-  servers:
+  instances:
     - url: "$logstash_url"
 server:
   host: "${host:-0.0.0.0}"

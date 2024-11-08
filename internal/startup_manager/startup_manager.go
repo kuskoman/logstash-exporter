@@ -161,7 +161,7 @@ func (sm *StartupManager) shutdownServer(ctx context.Context) error {
 
 func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 	collectorManager := collector_manager.NewCollectorManager(
-		cfg.Logstash.Servers,
+		cfg.Logstash.Instances,
 		cfg.Logstash.HttpTimeout,
 	)
 

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"reflect"
@@ -23,16 +24,19 @@ var (
 	ExporterConfigLocation = getEnvWithDefault("EXPORTER_CONFIG_LOCATION", defaultConfigLocation)
 )
 
-// LogstashServer represents individual Logstash server configuration
-type LogstashServer struct {
+// LogstashInstance represents individual Logstash server configuration
+type LogstashInstance struct {
 	Host         string `yaml:"url"`
 	HttpInsecure bool   `yaml:"httpInsecure"`
 }
 
-// LogstashConfig holds the configuration for all Logstash servers
+// LogstashConfig holds the configuration for all Logstash instances
 type LogstashConfig struct {
-	Servers     []*LogstashServer `yaml:"servers"`
-	HttpTimeout time.Duration     `yaml:"httpTimeout"`
+	// LegacyServers is a deprecated field, use Instances instead
+	LegacyServers []*LogstashInstance `yaml:"servers"`
+
+	Instances   []*LogstashInstance `yaml:"instances"`
+	HttpTimeout time.Duration       `yaml:"httpTimeout"`
 }
 
 // ServerConfig represents the server configuration
@@ -65,6 +69,15 @@ func (config *Config) Equals(other *Config) bool {
 	return reflect.DeepEqual(config, other)
 }
 
+// handleLegacyServersProperty handles the deprecated 'servers' property.
+// This method will log a warning and append the legacy servers to the new 'instances' property.
+func (config *Config) handleLegacyServersProperty() {
+	if len(config.Logstash.LegacyServers) > 0 {
+		slog.Warn("The 'servers' property is deprecated, please use 'instances' instead", "servers", fmt.Sprintf("%v", config.Logstash.LegacyServers))
+		config.Logstash.Instances = append(config.Logstash.Instances, config.Logstash.LegacyServers...)
+	}
+}
+
 // loadConfig loads the configuration from the YAML file.
 func loadConfig(location string) (*Config, error) {
 	data, err := os.ReadFile(location)
@@ -77,6 +90,8 @@ func loadConfig(location string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	config.handleLegacyServersProperty()
 
 	return &config, nil
 }
@@ -102,9 +117,9 @@ func mergeWithDefault(config *Config) *Config {
 		config.Logging.Format = defaultLogFormat
 	}
 
-	if len(config.Logstash.Servers) == 0 {
+	if len(config.Logstash.Instances) == 0 {
 		slog.Debug("using default logstash server", "url", defaultLogstashURL)
-		config.Logstash.Servers = append(config.Logstash.Servers, &LogstashServer{
+		config.Logstash.Instances = append(config.Logstash.Instances, &LogstashInstance{
 			Host: defaultLogstashURL,
 		})
 	}
