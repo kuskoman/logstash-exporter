@@ -22,7 +22,7 @@ func TestGetNodeInfo(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		client := NewClient(ts.URL, false)
+		client := NewClient(ts.URL, false, "test_client")
 
 		response, err := client.GetNodeInfo(context.Background())
 		if err != nil {
@@ -30,14 +30,13 @@ func TestGetNodeInfo(t *testing.T) {
 		}
 
 		if response.Status != "green" {
-			t.Fatalf("expected status to be properly read as green, got %s", response.Status)
+			t.Fatalf("expected status to be 'green', got %s", response.Status)
 		}
-		// detailed checks are done in the responses package
 	})
 }
 
 func TestGetNodeStats(t *testing.T) {
-	t.Run("should return a valid NodestatsResponse when the request is successful", func(t *testing.T) {
+	t.Run("should return a valid NodeStatsResponse when the request is successful", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fixtureBytes, err := loadFixture("node_stats.json")
 			if err != nil {
@@ -49,7 +48,7 @@ func TestGetNodeStats(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		client := NewClient(ts.URL, false)
+		client := NewClient(ts.URL, false, "test_client")
 
 		response, err := client.GetNodeStats(context.Background())
 		if err != nil {
@@ -57,17 +56,17 @@ func TestGetNodeStats(t *testing.T) {
 		}
 
 		if response.Status != "green" {
-			t.Fatalf("expected status to be properly read as green, got %s", response.Status)
+			t.Fatalf("expected status to be 'green', got %s", response.Status)
 		}
-		// detailed checks are done in the responses package
 	})
 }
 
+// loadFixture loads a fixture file from the fixtures directory
 func loadFixture(filename string) ([]byte, error) {
 	fullPath := fmt.Sprintf("../../../fixtures/%s", filename)
 	fixtureBytes, err := os.ReadFile(fullPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read fixture file %s: %w", filename, err)
 	}
 
 	return fixtureBytes, nil

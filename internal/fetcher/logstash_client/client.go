@@ -5,12 +5,15 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 )
 
 // Client is an interface for the Logstash client able to fetch data from the Logstash API
 type Client interface {
+	Name() string
 	GetNodeInfo(ctx context.Context) (*responses.NodeInfoResponse, error)
 	GetNodeStats(ctx context.Context) (*responses.NodeStatsResponse, error)
 
@@ -21,16 +24,32 @@ type Client interface {
 type DefaultClient struct {
 	httpClient *http.Client
 	endpoint   string
+	name       string
 }
 
 func (client *DefaultClient) GetEndpoint() string {
 	return client.endpoint
 }
 
+func (client *DefaultClient) Name() string {
+	if client.name == "" {
+		return client.convertHostnameToName()
+	}
+
+	return client.name
+}
+
+// convertHostnameToName converts a hostname to a name, that contains only alphanumeric characters and underscores
+// Example: http://localhost:9600 -> localhost_9600
+func (client *DefaultClient) convertHostnameToName() string {
+	re := regexp.MustCompile(`[^a-zA-Z0-9]+`)
+	return strings.Trim(re.ReplaceAllString(client.endpoint, "_"), "_")
+}
+
 const defaultLogstashEndpoint = "http://localhost:9600"
 
 // NewClient returns a new instance of the DefaultClient configured with the given endpoint
-func NewClient(endpoint string, httpInsecure bool) Client {
+func NewClient(endpoint string, httpInsecure bool, name string) Client {
 	if endpoint == "" {
 		endpoint = defaultLogstashEndpoint
 	}
@@ -42,6 +61,7 @@ func NewClient(endpoint string, httpInsecure bool) Client {
 			},
 		},
 		endpoint: endpoint,
+		name:     name,
 	}
 }
 
