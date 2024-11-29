@@ -1,6 +1,11 @@
 package responses
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"math"
+	"time"
+)
 
 type PipelineResponse struct {
 	Workers    int `json:"workers"`
@@ -76,28 +81,28 @@ type EventsResponse struct {
 
 type FlowResponse struct {
 	InputThroughput struct {
-		Current  float64 `json:"current"`
-		Lifetime float64 `json:"lifetime"`
+		Current  InfinityFloat `json:"current"`
+		Lifetime InfinityFloat `json:"lifetime"`
 	} `json:"input_throughput"`
 	FilterThroughput struct {
-		Current  float64 `json:"current"`
-		Lifetime float64 `json:"lifetime"`
+		Current  InfinityFloat `json:"current"`
+		Lifetime InfinityFloat `json:"lifetime"`
 	} `json:"filter_throughput"`
 	OutputThroughput struct {
-		Current  float64 `json:"current"`
-		Lifetime float64 `json:"lifetime"`
+		Current  InfinityFloat `json:"current"`
+		Lifetime InfinityFloat `json:"lifetime"`
 	} `json:"output_throughput"`
 	QueueBackpressure struct {
-		Current  float64 `json:"current"`
-		Lifetime float64 `json:"lifetime"`
+		Current  InfinityFloat `json:"current"`
+		Lifetime InfinityFloat `json:"lifetime"`
 	} `json:"queue_backpressure"`
 	WorkerConcurrency struct {
-		Current  float64 `json:"current"`
-		Lifetime float64 `json:"lifetime"`
+		Current  InfinityFloat `json:"current"`
+		Lifetime InfinityFloat `json:"lifetime"`
 	} `json:"worker_concurrency"`
 	WorkerUtilization struct {
-		Current  float64 `json:"current"`
-		Lifetime float64 `json:"lifetime"`
+		Current  InfinityFloat `json:"current"`
+		Lifetime InfinityFloat `json:"lifetime"`
 	} `json:"worker_utilization"`
 }
 
@@ -137,8 +142,8 @@ type SinglePipelineResponse struct {
 			} `json:"events"`
 			Flow struct {
 				WorkerUtilization struct {
-					Current  float64 `json:"current"`
-					Lifetime float64 `json:"lifetime"`
+					Current  InfinityFloat `json:"current"`
+					Lifetime InfinityFloat `json:"lifetime"`
 				} `json:"worker_utilization"`
 				WorkerMillisPerEvent struct {
 					Lifetime float64 `json:"lifetime"`
@@ -163,8 +168,8 @@ type SinglePipelineResponse struct {
 			} `json:"bulk_requests"`
 			Flow struct {
 				WorkerUtilization struct {
-					Current  float64 `json:"current"`
-					Lifetime float64 `json:"lifetime"`
+					Current  InfinityFloat `json:"current"`
+					Lifetime InfinityFloat `json:"lifetime"`
 				} `json:"worker_utilization"`
 			} `json:"flow"`
 		} `json:"outputs"`
@@ -268,4 +273,30 @@ type NodeStatsResponse struct {
 	Queue       QueueResponse    `json:"queue"`
 
 	Pipelines map[string]SinglePipelineResponse `json:"pipelines"`
+}
+
+// InfinityFloat is a float type that also accepts the string Infinity
+type InfinityFloat float64
+
+func (i *InfinityFloat) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err == nil {
+		if s == "Infinity" {
+			*i = InfinityFloat(math.Inf(1))
+			return nil
+		} else if s == "-Infinity" {
+			*i = InfinityFloat(math.Inf(-1))
+			return nil
+		}
+		return fmt.Errorf("Invalid string value for InfinityFloat: %s", s)
+	}
+
+	var f float64
+	if err := json.Unmarshal(data, &f); err != nil {
+		return err
+	}
+
+	*i = InfinityFloat(f)
+	return nil
 }
