@@ -42,12 +42,23 @@ func TestNodeStatsInfinityResponse(t *testing.T) {
 		}
 	}
 
-	badData := [][]byte{
+	mistypedData := [][]byte{
 		[]byte(`{"F": "-infinity"}`),
 		[]byte(`{"F": "--Infinity"}`),
 		[]byte(`{"F": "13.3"}`),
 	}
-	for _, e := range badData {
+	for _, e := range mistypedData {
+		if err := json.Unmarshal(e, &d); err == nil {
+			t.Errorf("expected error for: %s, got: %+v", string(e), d)
+		}
+	}
+
+	invalidData := [][]byte{
+		[]byte(`{"F": {"xcz": 12}}`),
+		[]byte(`{"F": {}}`),
+		[]byte(`{"F": {21: 12}}`),
+	}
+	for _, e := range invalidData {
 		if err := json.Unmarshal(e, &d); err == nil {
 			t.Errorf("expected error for: %s, got: %+v", string(e), d)
 		}
