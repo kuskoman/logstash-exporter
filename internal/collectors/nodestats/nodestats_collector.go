@@ -294,16 +294,16 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ FLOW ************
 	flowStats := nodeStats.Flow
-	metricsHelper.NewFloatMetric(collector.FlowInputCurrent, prometheus.GaugeValue, flowStats.InputThroughput.Current)
-	metricsHelper.NewFloatMetric(collector.FlowInputLifetime, prometheus.GaugeValue, nodeStats.Flow.InputThroughput.Lifetime)
-	metricsHelper.NewFloatMetric(collector.FlowFilterCurrent, prometheus.GaugeValue, nodeStats.Flow.FilterThroughput.Current)
-	metricsHelper.NewFloatMetric(collector.FlowFilterLifetime, prometheus.GaugeValue, nodeStats.Flow.FilterThroughput.Lifetime)
-	metricsHelper.NewFloatMetric(collector.FlowOutputCurrent, prometheus.GaugeValue, nodeStats.Flow.OutputThroughput.Current)
-	metricsHelper.NewFloatMetric(collector.FlowOutputLifetime, prometheus.GaugeValue, nodeStats.Flow.OutputThroughput.Lifetime)
-	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, nodeStats.Flow.QueueBackpressure.Current)
-	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureLifetime, prometheus.GaugeValue, nodeStats.Flow.QueueBackpressure.Lifetime)
-	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, nodeStats.Flow.WorkerConcurrency.Current)
-	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, nodeStats.Flow.WorkerConcurrency.Lifetime)
+	metricsHelper.NewFloatMetric(collector.FlowInputCurrent, prometheus.GaugeValue, float64(flowStats.InputThroughput.Current))
+	metricsHelper.NewFloatMetric(collector.FlowInputLifetime, prometheus.GaugeValue, float64(flowStats.InputThroughput.Lifetime))
+	metricsHelper.NewFloatMetric(collector.FlowFilterCurrent, prometheus.GaugeValue, float64(flowStats.FilterThroughput.Current))
+	metricsHelper.NewFloatMetric(collector.FlowFilterLifetime, prometheus.GaugeValue, float64(flowStats.FilterThroughput.Lifetime))
+	metricsHelper.NewFloatMetric(collector.FlowOutputCurrent, prometheus.GaugeValue, float64(flowStats.OutputThroughput.Current))
+	metricsHelper.NewFloatMetric(collector.FlowOutputLifetime, prometheus.GaugeValue, float64(flowStats.OutputThroughput.Lifetime))
+	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, float64(flowStats.QueueBackpressure.Current))
+	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureLifetime, prometheus.GaugeValue, float64( flowStats.QueueBackpressure.Lifetime))
+	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, float64(flowStats.WorkerConcurrency.Current))
+	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, float64( flowStats.WorkerConcurrency.Lifetime))
 	// ******************************
 
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
