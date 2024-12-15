@@ -39,6 +39,10 @@ func main() {
 	enableSSL := config.EnableSSL == "TRUE"
 	sslCertDir := config.SSLCertDir
 	sslKeyDir := config.SSLKeyDir
+	tlsConfig, err := config.SetupTLS()
+	if err != nil {
+		log.Fatalf("failed to setup tls: %s",err)
+	}
 
 	slog.Debug("application starting... ")
 	versionInfo := config.GetVersionInfo()
@@ -60,6 +64,7 @@ func main() {
 
 	slog.Info("starting server on", "host", host, "port", port)
 	if enableSSL {
+		appServer.TLSConfig = tlsConfig
 		err = appServer.ListenAndServeTLS(sslCertDir, sslKeyDir)
 	} else {
 		err = appServer.ListenAndServe()
