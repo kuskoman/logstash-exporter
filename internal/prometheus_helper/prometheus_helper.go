@@ -20,7 +20,7 @@ type SimpleDescHelper struct {
 // Labels are used to differentiate between different sources of the same metric.
 // Labels are always appended with "hostname" to differentiate between different instances.
 func (h *SimpleDescHelper) NewDesc(name string, help string, labels ...string) *prometheus.Desc {
-	labels = append(labels, "hostname")
+	labels = append(labels, "hostname", "name")
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, labels, nil)
 }
 
@@ -56,14 +56,20 @@ func ExtractValueFromMetric(metric prometheus.Metric) (float64, error) {
 
 // SimpleMetricsHelper is a helper struct that can be used to channel new prometheus.Metric objects
 type SimpleMetricsHelper struct {
-	Channel chan<- prometheus.Metric
-	Labels  []string
+	Channel       chan<- prometheus.Metric
+	Labels        []string
+	DefaultLabels []string
+}
+
+func (mh *SimpleMetricsHelper) getMergedLabels() []string {
+	return append(mh.Labels, mh.DefaultLabels...)
 }
 
 // NewFloatMetric appends new metric with the desc and metricType, value
 // optional Labels could be specified through property setter
 func (mh *SimpleMetricsHelper) NewFloatMetric(desc *prometheus.Desc, metricType prometheus.ValueType, value float64) {
-	metric := prometheus.MustNewConstMetric(desc, metricType, value, mh.Labels...)
+	mergedLabels := mh.getMergedLabels()
+	metric := prometheus.MustNewConstMetric(desc, metricType, value, mergedLabels...)
 	mh.Channel <- metric
 }
 
@@ -79,7 +85,8 @@ func (mh *SimpleMetricsHelper) NewInt64Metric(desc *prometheus.Desc, metricType 
 
 // newTimestampMetric same as NewFloatMetric but for setting Timestamp value
 func (mh *SimpleMetricsHelper) NewTimestampMetric(desc *prometheus.Desc, metricType prometheus.ValueType, value time.Time) {
-	metric := prometheus.NewMetricWithTimestamp(value, prometheus.MustNewConstMetric(desc, metricType, 1, mh.Labels...))
+	mergedLabels := mh.getMergedLabels()
+	metric := prometheus.NewMetricWithTimestamp(value, prometheus.MustNewConstMetric(desc, metricType, 1, mergedLabels...))
 	mh.Channel <- metric
 }
 

@@ -196,7 +196,8 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	}
 
 	endpoint := client.GetEndpoint()
-	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
+	name := client.Name()
+	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{}, DefaultLabels: []string{endpoint, name}}
 
 	// ************ THREADS ************
 	threadsStats := nodeStats.Jvm.Threads
@@ -214,7 +215,7 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	//	  ********* POOLS *********
 	//          *** YOUNG ***
-	metricsHelper.Labels = []string{"young", endpoint}
+	metricsHelper.Labels = []string{"young"}
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Young.PeakUsedInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Young.UsedInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Young.PeakMaxInBytes)
@@ -223,7 +224,7 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	//          *************
 
 	//           *** OLD ***
-	metricsHelper.Labels = []string{"old", endpoint}
+	metricsHelper.Labels = []string{"old"}
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Old.PeakUsedInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Old.UsedInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Old.PeakMaxInBytes)
@@ -232,7 +233,7 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	//           ***********
 
 	//         *** SURVIVOR ***
-	metricsHelper.Labels = []string{"survivor", endpoint}
+	metricsHelper.Labels = []string{"survivor"}
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakUsedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.PeakUsedInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolUsedInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.UsedInBytes)
 	metricsHelper.NewInt64Metric(collector.JvmMemPoolPeakMaxInBytes, prometheus.GaugeValue, memStats.Pools.Survivor.PeakMaxInBytes)
@@ -244,19 +245,19 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 
 	// ************ GC ************
 	//	  ********* YOUNG *********
-	metricsHelper.Labels = []string{"young", endpoint}
+	metricsHelper.Labels = []string{"young"}
 	metricsHelper.NewIntMetric(collector.JvmGcCollectionCount, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Young.CollectionCount)
 	metricsHelper.NewIntMetric(collector.JvmGcCollectionTimeInMillis, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Young.CollectionTimeInMillis)
 	//	  *************************
 
 	//	  ********* OLD *********
-	metricsHelper.Labels = []string{"old", endpoint}
+	metricsHelper.Labels = []string{"old"}
 	metricsHelper.NewIntMetric(collector.JvmGcCollectionCount, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Old.CollectionCount)
 	metricsHelper.NewIntMetric(collector.JvmGcCollectionTimeInMillis, prometheus.CounterValue, nodeStats.Jvm.Gc.Collectors.Old.CollectionTimeInMillis)
 	//	  *************************
 	// ********************************
 
-	metricsHelper.Labels = []string{endpoint}
+	metricsHelper.Labels = []string{}
 
 	// ************ UPTIME ************
 	metricsHelper.NewIntMetric(collector.JvmUptimeMillis, prometheus.GaugeValue, nodeStats.Jvm.UptimeInMillis)
@@ -307,7 +308,7 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	// ******************************
 
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {
-		collector.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch, endpoint)
+		collector.pipelineSubcollector.Collect(&pipelineStats, pipelineId, ch, endpoint, name)
 	}
 
 	return nil

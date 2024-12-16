@@ -28,6 +28,7 @@ var (
 type LogstashInstance struct {
 	Host         string `yaml:"url"`
 	HttpInsecure bool   `yaml:"httpInsecure"`
+	Name         string `yaml:"name"`
 }
 
 // LogstashConfig holds the configuration for all Logstash instances

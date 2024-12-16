@@ -20,7 +20,7 @@ func TestNewClient(t *testing.T) {
 	t.Run("should return a new client for the default endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("", false)
+		client := NewClient("", false, "default")
 
 		if client.(*DefaultClient).endpoint != defaultLogstashEndpoint {
 			t.Errorf("expected endpoint to be %s, got %s", defaultLogstashEndpoint, client.(*DefaultClient).endpoint)
@@ -31,7 +31,7 @@ func TestNewClient(t *testing.T) {
 		t.Parallel()
 
 		expectedEndpoint := "http://localhost:9601"
-		client := NewClient(expectedEndpoint, false)
+		client := NewClient(expectedEndpoint, false, "custom")
 
 		receivedEndpoint := client.GetEndpoint()
 		if receivedEndpoint != expectedEndpoint {
@@ -42,12 +42,20 @@ func TestNewClient(t *testing.T) {
 	t.Run("should return a new client with http insecure configuration", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("", true)
+		client := NewClient("", true, "insecure")
 
-		checkHttpInsecure := client.(*DefaultClient).httpClient.Transport.
-								(*http.Transport).TLSClientConfig.InsecureSkipVerify
-		if checkHttpInsecure != true {
+		checkHttpInsecure := client.(*DefaultClient).httpClient.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify
+		if !checkHttpInsecure {
 			t.Errorf("expected http insecure to be %t, got %t", true, checkHttpInsecure)
+		}
+	})
+
+	t.Run("should set the client name correctly", func(t *testing.T) {
+		t.Parallel()
+
+		client := NewClient("", false, "testName")
+		if client.Name() != "testName" {
+			t.Errorf("expected client name to be 'testName', got %s", client.Name())
 		}
 	})
 }
@@ -58,7 +66,6 @@ func TestGetMetrics(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		// Pass an invalid URL
 		invalidURL := "http://localhost:96010:invalidurl"
 		result, err := getMetrics[TestResponse](ctx, httpClient, invalidURL)
 
@@ -90,15 +97,15 @@ func TestGetMetrics(t *testing.T) {
 			t.Errorf("expected no error, got %s", err)
 		}
 
-		if result.Foo != "bar" {
-			t.Errorf("expected foo to be bar, got %s", result.Foo)
+		if result == nil || result.Foo != "bar" {
+			t.Errorf("expected foo to be 'bar', got %v", result)
 		}
 	})
 
-	t.Run("should return an error if the response is invalid", func(t *testing.T) {
+	t.Run("should return an error if the response is invalid JSON", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			_, err := w.Write([]byte(`{"foo": "bar"`))
+			_, err := w.Write([]byte(`{"foo": "bar"`)) // Invalid JSON
 			if err != nil {
 				t.Errorf("error writing response: %s", err)
 			}
@@ -151,7 +158,6 @@ func TestGetMetrics(t *testing.T) {
 }
 
 func TestDeserializeHttpResponse(t *testing.T) {
-
 	t.Run("should properly deserialize a valid response", func(t *testing.T) {
 		httpResponseMock := &http.Response{
 			Body: io.NopCloser(strings.NewReader(`{"foo": "bar"}`)),
@@ -162,14 +168,14 @@ func TestDeserializeHttpResponse(t *testing.T) {
 			t.Errorf("expected no error, got %s", err)
 		}
 
-		if result.Foo != "bar" {
-			t.Errorf("expected foo to be bar, got %s", result.Foo)
+		if result == nil || result.Foo != "bar" {
+			t.Errorf("expected foo to be 'bar', got %v", result)
 		}
 	})
 
-	t.Run("should return an error if the response is invalid", func(t *testing.T) {
+	t.Run("should return an error if the response is invalid JSON", func(t *testing.T) {
 		httpResponseMock := &http.Response{
-			Body: io.NopCloser(strings.NewReader(`{"foo": "bar"`)),
+			Body: io.NopCloser(strings.NewReader(`{"foo": "bar"`)), // Invalid JSON
 		}
 
 		result, err := deserializeHttpResponse[TestResponse](httpResponseMock)
@@ -181,4 +187,30 @@ func TestDeserializeHttpResponse(t *testing.T) {
 			t.Errorf("expected result to be nil, got %v", result)
 		}
 	})
+
+	t.Run("should return an error if the response body cannot be read", func(t *testing.T) {
+		httpResponseMock := &http.Response{
+			Body: io.NopCloser(&errorReader{}),
+		}
+
+		result, err := deserializeHttpResponse[TestResponse](httpResponseMock)
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+
+		if result != nil {
+			t.Errorf("expected result to be nil, got %v", result)
+		}
+	})
+}
+
+// errorReader is a mock that simulates a read error
+type errorReader struct{}
+
+func (e *errorReader) Read(p []byte) (n int, err error) {
+	return 0, io.ErrUnexpectedEOF
+}
+
+func (e *errorReader) Close() error {
+	return nil
 }
