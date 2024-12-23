@@ -1,79 +1,111 @@
 package startup_manager
 
 import (
-	"testing"
-	"time"
+	"context"
+	"crypto/tls"
 	"net"
 	"strconv"
-	"context"
+	"testing"
+	"time"
+
+	"os"
+	"crypto/x509"
 
 	"github.com/kuskoman/logstash-exporter/internal/flags"
 )
 
-func TestAppServerNoTLS(t *testing.T) {
-	flagsConfig := &flags.FlagsConfig{ConfigLocation: "../../fixtures/valid_config.yml"}
 
-	ctx := context.TODO()
-	sm, err := NewStartupManager(flagsConfig.ConfigLocation, flagsConfig)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+func TestAppServer(t *testing.T) {
+	t.Parallel()
 
-	_, err = sm.configManager.LoadAndCompareConfig(ctx)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	cfg := sm.configManager.GetCurrentConfig()
-	if cfg == nil {
-		t.Fatal("config is nil")
-	}
-
-	go func() {
-		sm.startServer(cfg)
-	}()
-
+	ctx := context.Background()
 	timeout := time.Second
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)), timeout)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if conn != nil {
-		defer conn.Close()
-	}
-}
 
-func TestAppServerTLS(t *testing.T) {
-	flagsConfig := &flags.FlagsConfig{ConfigLocation: "../../fixtures/valid_config.yml"}
+	t.Run("No TLS", func(t *testing.T) {
+		t.Parallel()
 
-	ctx := context.TODO()
-	sm, err := NewStartupManager(flagsConfig.ConfigLocation, flagsConfig)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+		flagsConfig := &flags.FlagsConfig{ConfigLocation: "../../fixtures/valid_config.yml"}
 
-	_, err = sm.configManager.LoadAndCompareConfig(ctx)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+		sm, err := NewStartupManager(flagsConfig.ConfigLocation, flagsConfig)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
-	cfg := sm.configManager.GetCurrentConfig()
-	if cfg == nil {
-		t.Fatal("config is nil")
-	}
+		_, err = sm.configManager.LoadAndCompareConfig(ctx)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
-	t.Log("Swaggg")
-	t.Logf("Host: %s, port: %d", cfg.Server.Host, cfg.Server.Port)
-	go func() {
-		sm.startServer(cfg)
-	}()
+		cfg := sm.configManager.GetCurrentConfig()
+		if cfg == nil {
+			t.Fatal("config is nil")
+		}
 
-	timeout := time.Second
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)), timeout)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if conn != nil {
-		defer conn.Close()
-	}
+		go func() {
+			sm.startServer(cfg)
+		}()
+
+		name := net.JoinHostPort("localhost", strconv.Itoa(cfg.Server.Port))
+		go func() {
+			conn, err := net.DialTimeout("tcp", name, timeout)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if conn != nil {
+				defer conn.Close()
+			}
+		}()
+		sm.shutdownServer(ctx)
+	})
+
+	t.Run("TLS", func(t *testing.T) {
+		t.Parallel()
+
+		flagsConfig := &flags.FlagsConfig{ConfigLocation: "../../fixtures/https/config.yml"}
+
+		sm, err := NewStartupManager(flagsConfig.ConfigLocation, flagsConfig)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		_, err = sm.configManager.LoadAndCompareConfig(ctx)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		cfg := sm.configManager.GetCurrentConfig()
+		if cfg == nil {
+			t.Fatal("config is nil")
+		}
+
+		go func() {
+			sm.startServer(cfg)
+		}()
+
+		cert, err := os.ReadFile("../../fixtures/https/ca.crt")
+		if err != nil {
+			t.Fatalf("Failed to read certificate file: %v", err)
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(cert)
+
+		tlsConfig := &tls.Config{
+			RootCAs: caCertPool,
+		}
+
+		dialer := net.Dialer{Timeout: timeout}
+		name := net.JoinHostPort("localhost", strconv.Itoa(cfg.Server.Port))
+		go func() {
+			conn, err := tls.DialWithDialer(&dialer, "tcp", name, tlsConfig)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if conn != nil {
+				defer conn.Close()
+			}
+		}()
+
+		sm.shutdownServer(ctx)
+	})
 }
