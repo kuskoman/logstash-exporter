@@ -46,15 +46,19 @@ func TestAppServer(t *testing.T) {
 		}()
 
 		name := net.JoinHostPort("localhost", strconv.Itoa(cfg.Server.Port))
-		go func(t *testing.T) {
+		errs := make(chan error, 1)
+		go func() {
 			conn, err := net.DialTimeout("tcp", name, timeout)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
+			errs <- err
 			if conn != nil {
 				defer conn.Close()
 			}
-		}(t)
+		}()
+
+		err = <-errs
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		err = sm.shutdownServer(ctx)
 		if err != nil {
@@ -100,15 +104,19 @@ func TestAppServer(t *testing.T) {
 
 		dialer := net.Dialer{Timeout: timeout}
 		name := net.JoinHostPort("localhost", strconv.Itoa(cfg.Server.Port))
-		go func(t *testing.T) {
+
+		errs := make(chan error, 1)
+		go func() {
 			conn, err := tls.DialWithDialer(&dialer, "tcp", name, tlsConfig)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
+			errs <- err
 			if conn != nil {
 				defer conn.Close()
 			}
-		}(t)
+		}()
+		err = <-errs
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		err = sm.shutdownServer(ctx)
 		if err != nil {
