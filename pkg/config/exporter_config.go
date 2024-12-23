@@ -48,8 +48,11 @@ type ServerConfig struct {
 	// with the default windows firewall configuration.
 	// Alternatively you can change the firewall configuration to allow
 	// connections to the port from all interfaces.
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Host      string `yaml:"host"`
+	Port      int    `yaml:"port"`
+	CertFile  string `yaml:"certFile"`
+	KeyFile   string `yaml:"keyFile"`
+	EnableSSL bool   `yaml:"enableSSL"`
 }
 
 // LoggingConfig represents the logging configuration
