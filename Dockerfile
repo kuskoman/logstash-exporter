@@ -1,4 +1,4 @@
-FROM golang:1.23.2-alpine3.20 as build
+FROM golang:1.23.4-alpine3.21 AS build
 
 ARG VERSION \
     GIT_COMMIT \
@@ -21,7 +21,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
 
 RUN grep "nobody:x:65534" /etc/passwd > /app/user
 
-FROM scratch as release
+FROM scratch AS release
 
 COPY --from=build /app/main /app/main
 COPY --from=build /app/user /etc/passwd
