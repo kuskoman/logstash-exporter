@@ -26,6 +26,7 @@ var (
 // AppServer defines the behavior of an application server
 type AppServer interface {
 	ListenAndServe() error
+	ListenAndServeTLS(certFile, keyFile string) error
 	Shutdown(ctx context.Context) error
 }
 
@@ -176,7 +177,13 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 
 	go func() {
 		slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
-		err := appServer.ListenAndServe()
+		var err error
+		if cfg.Server.EnableSSL {
+			err = appServer.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+		} else {
+			err = appServer.ListenAndServe()
+		}
+
 		sm.serverErrorChan <- err
 	}()
 }

@@ -1,0 +1,12 @@
+logstash:
+  instances:
+    - url: "http://localhost:9234"
+  timeout: 3s
+server:
+  host: "127.0.0.1"
+  port: 9183
+  keyFile: "../../fixtures/https/server.key"
+  certFile: "../../fixtures/https/server.crt"
+  enableSSL: true
+logging:
+  level: "info"
