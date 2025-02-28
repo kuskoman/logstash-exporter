@@ -4,9 +4,12 @@
 
 ### Logstash configuration
 
-| Name            | Description                                                                             | Value                      |
-| --------------- | --------------------------------------------------------------------------------------- | -------------------------- |
-| `logstash.urls` | Logstash instance URL. Multiple URLs can be specified. Defaults to http://logstash:9600 | `["http://logstash:9600"]` |
+
+### logstash.instances Logstash instances
+
+| Name                     | Description  | Value                      |
+| ------------------------ | ------------ | -------------------------- |
+| `logstash.instances.url` | Logstash URL | `["http://logstash:9600"]` |
 
 ### Logstash exporter server configuration
 

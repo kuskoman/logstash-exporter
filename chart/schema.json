@@ -5,14 +5,19 @@
         "logstash": {
             "type": "object",
             "properties": {
-                "urls": {
-                    "type": "array",
-                    "description": "Logstash instance URL. Multiple URLs can be specified. Defaults to http://logstash:9600",
-                    "default": [
-                        "http://logstash:9600"
-                    ],
-                    "items": {
-                        "type": "string"
+                "instances": {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "array",
+                            "description": "Logstash URL",
+                            "default": [
+                                "http://logstash:9600"
+                            ],
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     }
                 },
                 "server": {
