@@ -2,10 +2,13 @@
 ## Discarded if customConfig is enabled
 ##
 logstash:
-  ## @param logstash.urls Logstash instance URL. Multiple URLs can be specified. Defaults to http://logstash:9600
+  ## @section logstash.instances Logstash instances
   ##
-  urls:
-    - "http://logstash:9600"
+  instances:
+    ## @param logstash.instances.url Logstash URL
+    ##
+    url:
+      - "http://logstash:9600"
   ## @section Logstash exporter server configuration
   ##
   server:
