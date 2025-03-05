@@ -1,0 +1,12 @@
+logstash:
+  instances:
+    - url: "http://localhost:9600"
+  timeout: 3s
+server:
+  host: "127.0.0.1"
+  port: 9183
+  enableSSL: true
+  certFile: "fixtures/https/server.crt" # Note: paths are relative to where exporter is run
+  keyFile: "fixtures/https/server.key"
+logging:
+  level: "info"

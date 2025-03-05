@@ -24,6 +24,7 @@ var (
 // AppServer defines the behavior of an application server
 type AppServer interface {
 	ListenAndServe() error
+	ListenAndServeTLS(certFile, keyFile string) error
 	Shutdown(ctx context.Context) error
 }
 

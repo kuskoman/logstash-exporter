@@ -128,12 +128,19 @@ The application is now configured using a YAML file instead of environment varia
 logstash:
   instances:
     - url: "http://logstash:9600" # URL to Logstash API
+      httpInsecure: false         # Skip TLS certificate verification for Logstash instance (default: false)
     - url: "http://logstash2:9600"
+      name: "prod_logstash"       # Custom name for the Logstash instance (optional)
+  timeout: 2s                     # HTTP timeout for Logstash API requests
 server:
-  host: "0.0.0.0" # Host on which the application will be exposed (default: all interfaces)
-  port: 9198      # Port on which the application will be exposed
+  host: "0.0.0.0"                 # Host on which the application will be exposed (default: all interfaces)
+  port: 9198                      # Port on which the application will be exposed
+  enableSSL: false                # Enable HTTPS (default: false)
+  certFile: "/path/to/cert.pem"   # Path to TLS certificate (required if enableSSL is true)
+  keyFile: "/path/to/key.pem"     # Path to TLS key (required if enableSSL is true)
 logging:
-  level: "debug"  # Log level (debug, info, warn, error)
+  level: "debug"                  # Log level (debug, info, warn, error)
+  format: "text"                  # Log format (text, json)
 ```
 
 All configuration variables can be checked in the [config directory](./config/).

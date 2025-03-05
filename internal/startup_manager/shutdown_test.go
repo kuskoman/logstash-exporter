@@ -19,6 +19,10 @@ func (s *blockingMockServer) ListenAndServe() error {
 	return nil
 }
 
+func (s *blockingMockServer) ListenAndServeTLS(certFile, keyFile string) error {
+	return nil
+}
+
 func (s *blockingMockServer) Shutdown(ctx context.Context) error {
 	// Signal that Shutdown was called
 	s.shutdownCalled <- struct{}{}
