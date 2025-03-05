@@ -18,7 +18,7 @@ import (
 
 const (
 	testServerShutdownTimeout = 1 * time.Second
-	testTimeout              = 5 * time.Second
+	testTimeout               = 5 * time.Second
 )
 
 // mockAppServer implements the AppServer interface for testing
@@ -52,29 +52,6 @@ func (m *mockAppServer) Shutdown(ctx context.Context) error {
 	return m.shutdownError
 }
 
-// mockFileWatcher implements a simple file watcher for testing
-type mockFileWatcher struct {
-	watchCalled      chan struct{}
-	watchError       error
-	watchReturnReady chan struct{}
-}
-
-func newMockFileWatcher(watchError error) *mockFileWatcher {
-	return &mockFileWatcher{
-		watchCalled:      make(chan struct{}, 1),
-		watchError:       watchError,
-		watchReturnReady: make(chan struct{}),
-	}
-}
-
-func (m *mockFileWatcher) Watch(ctx context.Context) (chan struct{}, error) {
-	m.watchCalled <- struct{}{}
-	if m.watchError != nil {
-		return nil, m.watchError
-	}
-	return m.watchReturnReady, nil
-}
-
 // mockPrometheusCollector implements a simple prometheus collector for testing
 type mockPrometheusCollector struct {
 	describeCalled chan struct{}
@@ -101,16 +78,16 @@ func (m *mockPrometheusCollector) Collect(ch chan<- prometheus.Metric) {
 type testableStartupManager struct {
 	StartupManager
 	mockConfigManager configManagerInterface
-	
+
 	// Function pointers we can replace for testing
-	mockReload        func(ctx context.Context) error
+	mockReload             func(ctx context.Context) error
 	mockHandleConfigChange func() error
 }
 
 // Creates a StartupManager that uses our mock config manager
 func newTestableStartupManager(
-	mockCfgMgr configManagerInterface, 
-	watchEnabled bool, 
+	mockCfgMgr configManagerInterface,
+	watchEnabled bool,
 	initialized bool,
 	server AppServer,
 	collector prometheus.Collector,
@@ -128,11 +105,11 @@ func newTestableStartupManager(
 		},
 		mockConfigManager: mockCfgMgr,
 	}
-	
+
 	// Set default implementations to call our mock methods
 	sm.mockReload = sm.defaultReload
 	sm.mockHandleConfigChange = sm.defaultHandleConfigChange
-	
+
 	return sm
 }
 
@@ -166,7 +143,7 @@ func (tsm *testableStartupManager) defaultHandleConfigChange() error {
 	ctx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
 	defer cancel()
 
-	err := tsm.Reload(ctx) 
+	err := tsm.Reload(ctx)
 	if err != nil {
 		return err
 	}
@@ -266,7 +243,7 @@ func (m *mockConfigManager) GetCurrentConfig() *config.Config {
 
 func TestNewStartupManager(t *testing.T) {
 	// Do not run in parallel at the top level to avoid concurrent Prometheus registration issues
-	
+
 	t.Run("should_create_startup_manager", func(t *testing.T) {
 		// Do not run subtests in parallel
 
@@ -362,7 +339,7 @@ func TestStartupManager_Initialize(t *testing.T) {
 				Port: 8080,
 			},
 			Logging: config.LoggingConfig{
-				Level: "info",
+				Level:  "info",
 				Format: "text",
 			},
 		}
@@ -375,8 +352,8 @@ func TestStartupManager_Initialize(t *testing.T) {
 			false, // watchEnabled
 			false, // initialized
 			mockSrv,
-			nil,  // No collector initially
-			nil,  // No watcher for this test
+			nil, // No collector initially
+			nil, // No watcher for this test
 		)
 
 		// Add an HTTP server error to trigger shutdown
@@ -449,7 +426,7 @@ func TestStartupManager_Initialize(t *testing.T) {
 		// Setup
 		loadError := errors.New("config load error")
 		mockCfgManager := newMockConfigManager(nil, false, loadError)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled
@@ -476,7 +453,7 @@ func TestStartupManager_Initialize(t *testing.T) {
 
 		// Setup - Config is nil but LoadAndCompareConfig succeeds
 		mockCfgManager := newMockConfigManager(nil, true, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled
@@ -543,7 +520,7 @@ func TestStartupManager_Shutdown(t *testing.T) {
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled
@@ -572,7 +549,7 @@ func TestStartupManager_Shutdown(t *testing.T) {
 		shutdownError := errors.New("shutdown error")
 		mockSrv := newMockAppServer(nil, shutdownError)
 		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled
@@ -599,7 +576,7 @@ func TestStartupManager_Shutdown(t *testing.T) {
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled
@@ -641,7 +618,7 @@ func TestStartupManager_Reload(t *testing.T) {
 				Port: 8080,
 			},
 			Logging: config.LoggingConfig{
-				Level: "info",
+				Level:  "info",
 				Format: "text",
 			},
 		}
@@ -701,7 +678,7 @@ func TestStartupManager_Reload(t *testing.T) {
 				Port: 8080,
 			},
 			Logging: config.LoggingConfig{
-				Level: "info",
+				Level:  "info",
 				Format: "text",
 			},
 		}
@@ -754,7 +731,7 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 		// Setup
 		customError := errors.New("custom server error")
 		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled - hot reload disabled
@@ -789,7 +766,7 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled - hot reload disabled
@@ -824,14 +801,14 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
-			true,  // watchEnabled - hot reload enabled
-			true,  // initialized
-			nil,   // No server
-			nil,   // No collector
-			nil,   // No watcher
+			true, // watchEnabled - hot reload enabled
+			true, // initialized
+			nil,  // No server
+			nil,  // No collector
+			nil,  // No watcher
 		)
 		sm.serverErrorChan = make(chan error, 1)
 
@@ -881,13 +858,13 @@ func TestStartupManager_handleConfigChange(t *testing.T) {
 				Port: 8080,
 			},
 			Logging: config.LoggingConfig{
-				Level: "info",
+				Level:  "info",
 				Format: "text",
 			},
 		}
 
 		mockCfgManager := newMockConfigManager(cfg, false, nil)
-		
+
 		sm := newTestableStartupManager(
 			mockCfgManager,
 			false, // watchEnabled
