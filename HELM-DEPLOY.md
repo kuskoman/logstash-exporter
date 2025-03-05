@@ -130,82 +130,6 @@ logstash:
 
 Each instance will be monitored independently, with metrics labeled accordingly.
 
-### High Availability Setup
-
-For improved reliability in production environments:
-
-```yaml
-deployment:
-  replicas: 2
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app.kubernetes.io/name
-              operator: In
-              values:
-              - logstash-exporter
-          topologyKey: kubernetes.io/hostname
-```
-
-### Security Best Practices
-
-Implement these security measures for production deployments:
-
-```yaml
-deployment:
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    fsGroup: 1000
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-      - ALL
-    readOnlyRootFilesystem: true
-
-serviceAccount:
-  enabled: true
-  create: true
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/logstash-exporter-role  # For AWS
-```
-
-Create a NetworkPolicy to restrict traffic:
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: logstash-exporter-network-policy
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: logstash-exporter
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: monitoring
-    ports:
-    - protocol: TCP
-      port: 9198
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 10.0.0.0/16  # Your Logstash subnet
-    ports:
-    - protocol: TCP
-      port: 9600
-```
-
 ## Upgrading
 
 To upgrade your Logstash Exporter deployment:
@@ -228,7 +152,7 @@ helm upgrade logstash-exporter ./chart -f values.yaml
    ```bash
    # Get a shell in the exporter pod
    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/name=logstash-exporter -o name | head -n 1) -- sh
-   
+
    # Test connection to Logstash
    wget -O- http://logstash-service:9600 || echo "Connection failed"
    ```
@@ -237,7 +161,7 @@ helm upgrade logstash-exporter ./chart -f values.yaml
    ```bash
    # Check if service is properly labeled
    kubectl get service -l app.kubernetes.io/name=logstash-exporter -o yaml
-   
+
    # If using ServiceMonitor, check its status
    kubectl get servicemonitor logstash-exporter -n monitoring -o yaml
    ```
