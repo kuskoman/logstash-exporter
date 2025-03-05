@@ -26,12 +26,17 @@ func TestTLSConfig(t *testing.T) {
 			listenAndServeCalled:    make(chan struct{}, 1),
 			listenAndServeTLSCalled: make(chan struct{}, 1),
 		}
+		var err error
 		mockServerFunc := func(cfg *config.Config) {
 			if cfg.Server.EnableSSL {
-				mockSrv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+				err = mockSrv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
 			} else {
-				mockSrv.ListenAndServe()
+				err = mockSrv.ListenAndServe()
 			}
+		}
+
+		if err != nil {
+			t.Errorf("unexpected error when starting server: %v", err)
 		}
 
 		// Call our function directly - no goroutines
@@ -74,12 +79,18 @@ func TestTLSConfig(t *testing.T) {
 			listenAndServeCalled:    make(chan struct{}, 1),
 			listenAndServeTLSCalled: make(chan struct{}, 1),
 		}
+
+		var err error
 		mockServerFunc := func(cfg *config.Config) {
 			if cfg.Server.EnableSSL {
-				mockSrv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+				err = mockSrv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
 			} else {
-				mockSrv.ListenAndServe()
+				err = mockSrv.ListenAndServe()
 			}
+		}
+
+		if err != nil {
+			t.Errorf("unexpected error when starting server: %v", err)
 		}
 
 		// Call our function directly - no goroutines
