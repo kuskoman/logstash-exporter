@@ -29,7 +29,7 @@ The application can be run in several ways:
 For detailed deployment instructions, see:
 
 - [Standalone Deployment Guide](./STANDALONE.md) - For deploying as a systemd service
-- [Helm Chart Documentation](./chart/README.md) - For deploying to Kubernetes
+- [Helm Deployment Guide](./HELM-DEPLOY.md) - For deploying to Kubernetes using Helm
 
 ### Flags
 
@@ -101,13 +101,16 @@ The Docker image can be run using the following command:
 
 #### Helm Chart
 
-For detailed instructions on deploying Logstash Exporter to Kubernetes using Helm, see the [Helm Chart Documentation](./chart/README.md). The documentation includes:
+The Helm chart provides a Kubernetes deployment for Logstash Exporter. For detailed instructions, see the [Helm Deployment Guide](./HELM-DEPLOY.md) which includes:
 
 - Installation instructions
-- Configuration parameters
-- Examples for monitoring multiple Logstash instances
+- Prometheus integration
+- Multiple Logstash instances monitoring setup
+- High availability configuration
 - Security best practices
 - Troubleshooting tips
+
+The chart's parameters are documented in its [README](./chart/README.md).
 
 ### Endpoints
 
