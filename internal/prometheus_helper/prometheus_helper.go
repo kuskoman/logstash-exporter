@@ -20,7 +20,7 @@ type SimpleDescHelper struct {
 // Labels are used to differentiate between different sources of the same metric.
 // Labels are always appended with "hostname" to differentiate between different instances.
 func (h *SimpleDescHelper) NewDesc(name string, help string, labels ...string) *prometheus.Desc {
-	labels = append(labels, "hostname", "name")
+	labels = append(labels, "hostname", "instance_name")
 	return prometheus.NewDesc(prometheus.BuildFQName(h.Namespace, h.Subsystem, name), help, labels, nil)
 }
 
