@@ -18,31 +18,44 @@ import (
 
 const (
 	testServerShutdownTimeout = 1 * time.Second
-	testTimeout               = 5 * time.Second
+	testTimeout               = 500 * time.Millisecond // Shorter timeout for unit tests
 )
 
 // mockAppServer implements the AppServer interface for testing
 type mockAppServer struct {
-	listenAndServeError    error
-	listenAndServeCalled   chan struct{}
-	shutdownCalled         chan struct{}
-	shutdownError          error
-	shutdownCalledWithCtx  context.Context
-	shutdownCalledWithTime time.Time
+	listenAndServeError       error
+	listenAndServeCalled      chan struct{}
+	listenAndServeTLSCalled   chan struct{}
+	listenAndServeTLSCertFile string
+	listenAndServeTLSKeyFile  string
+	listenAndServeTLSError    error
+	shutdownCalled            chan struct{}
+	shutdownError             error
+	shutdownCalledWithCtx     context.Context
+	shutdownCalledWithTime    time.Time
 }
 
 func newMockAppServer(listenAndServeError, shutdownError error) *mockAppServer {
 	return &mockAppServer{
-		listenAndServeError:  listenAndServeError,
-		shutdownError:        shutdownError,
-		listenAndServeCalled: make(chan struct{}, 1),
-		shutdownCalled:       make(chan struct{}, 1),
+		listenAndServeError:     listenAndServeError,
+		listenAndServeTLSError:  listenAndServeError, // Use same error for both by default
+		shutdownError:           shutdownError,
+		listenAndServeCalled:    make(chan struct{}, 1),
+		listenAndServeTLSCalled: make(chan struct{}, 1),
+		shutdownCalled:          make(chan struct{}, 1),
 	}
 }
 
 func (m *mockAppServer) ListenAndServe() error {
 	m.listenAndServeCalled <- struct{}{}
 	return m.listenAndServeError
+}
+
+func (m *mockAppServer) ListenAndServeTLS(certFile, keyFile string) error {
+	m.listenAndServeTLSCertFile = certFile
+	m.listenAndServeTLSKeyFile = keyFile
+	m.listenAndServeTLSCalled <- struct{}{}
+	return m.listenAndServeTLSError
 }
 
 func (m *mockAppServer) Shutdown(ctx context.Context) error {
@@ -828,15 +841,6 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 			// Success - no error propagated
 		}
 	})
-}
-
-// We can skip direct testing of startPrometheus and startServer
-// since they are sufficiently tested through the integration tests above.
-// If needed, these could be tested in isolation with custom registries and mocks.
-func TestStartupManager_startAndShutdownComponents(t *testing.T) {
-	// Skip this test since it's redundant and Prometheus has a global registry
-	// that doesn't work well with parallel tests
-	t.Skip("Component startup/shutdown is already covered by other tests")
 }
 
 func TestStartupManager_handleConfigChange(t *testing.T) {

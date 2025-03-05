@@ -85,7 +85,22 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 
 	go func() {
 		slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
-		err := appServer.ListenAndServe()
+		
+		var err error
+		if cfg.Server.EnableSSL {
+			// Validate TLS configuration
+			if cfg.Server.CertFile == "" || cfg.Server.KeyFile == "" {
+				err = fmt.Errorf("TLS is enabled but certFile or keyFile is missing")
+				sm.serverErrorChan <- err
+				return
+			}
+			
+			slog.Info("starting HTTPS server", "certFile", cfg.Server.CertFile, "keyFile", cfg.Server.KeyFile)
+			err = appServer.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+		} else {
+			err = appServer.ListenAndServe()
+		}
+		
 		sm.serverErrorChan <- err
 	}()
 }

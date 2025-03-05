@@ -1,9 +1,18 @@
 logstash:
   instances:
     - url: "http://localhost:9600"
+      httpInsecure: false
+    - url: "https://logstash-secure:9600"
+      httpInsecure: true
+      name: "secure_instance"
   timeout: 3s
 server:
   host: "127.0.0.1"
   port: 9200
+  # TLS/HTTPS configuration (optional)
+  # enableSSL: true
+  # certFile: "/path/to/cert.pem"
+  # keyFile: "/path/to/key.pem"
 logging:
   level: "info"
+  format: "text"
