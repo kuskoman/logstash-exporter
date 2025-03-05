@@ -13,29 +13,7 @@ import (
 
 const httpTimeout = 2 * time.Second
 
-func TestNewCollectorManager(t *testing.T) {
-	t.Parallel()
-
-	t.Run("multiple endpoints", func(t *testing.T) {
-		endpoint1 := &config.LogstashInstance{
-			Host: "http://localhost:9600",
-		}
-
-		endpoint2 := &config.LogstashInstance{
-			Host: "http://localhost:9601",
-		}
-
-		mockEndpoints := []*config.LogstashInstance{endpoint1, endpoint2}
-		cm := NewCollectorManager(mockEndpoints, httpTimeout)
-
-		if cm == nil {
-			t.Error("expected collector manager to be initialized")
-		}
-	})
-
-	// prometheus has a global state, so we cannot register the same collector twice, therefore there is no single endpoint test
-}
-
+// mockCollector implements the Collector interface for testing
 type mockCollector struct {
 	shouldFail bool
 }
@@ -59,8 +37,43 @@ func (m *mockCollector) Collect(ctx context.Context, ch chan<- prometheus.Metric
 	return nil
 }
 
+func TestNewCollectorManager(t *testing.T) {
+	t.Parallel()
+
+	t.Run("with_multiple_endpoints", func(t *testing.T) {
+		t.Parallel()
+
+		// Setup
+		endpoint1 := &config.LogstashInstance{
+			Host: "http://localhost:9600",
+		}
+
+		endpoint2 := &config.LogstashInstance{
+			Host: "http://localhost:9601",
+		}
+
+		mockEndpoints := []*config.LogstashInstance{endpoint1, endpoint2}
+		
+		// Execute
+		cm := NewCollectorManager(mockEndpoints, httpTimeout)
+
+		// Verify
+		if cm == nil {
+			t.Errorf("expected collector manager to be initialized, got nil")
+		}
+	})
+
+	// Note: prometheus has a global state, so we cannot register the same collector twice, 
+	// therefore there is no single endpoint test
+}
+
 func TestCollect(t *testing.T) {
-	t.Run("should fail", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should_fail_when_collector_returns_error", func(t *testing.T) {
+		t.Parallel()
+
+		// Setup
 		cm := &CollectorManager{
 			collectors: map[string]Collector{
 				"mock": newMockCollector(true),
@@ -72,14 +85,17 @@ func TestCollect(t *testing.T) {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
+		
+		// Execute
 		go func() {
 			cm.Collect(ch)
 			wg.Done()
 		}()
 
+		// Verify
 		select {
 		case <-ch:
-			t.Error("expected no metric to be sent to the channel")
+			t.Errorf("expected no metric to be sent to the channel, but received one")
 		case <-func() chan struct{} {
 			done := make(chan struct{})
 			go func() {
@@ -88,11 +104,14 @@ func TestCollect(t *testing.T) {
 			}()
 			return done
 		}():
-			// No metric was sent to the channel, which is expected.
+			// Success: No metric was sent to the channel, which is expected
 		}
 	})
 
-	t.Run("should succeed", func(t *testing.T) {
+	t.Run("should_succeed_when_collector_returns_metric", func(t *testing.T) {
+		t.Parallel()
+
+		// Setup
 		cm := &CollectorManager{
 			collectors: map[string]Collector{
 				"mock": newMockCollector(false),
@@ -101,19 +120,29 @@ func TestCollect(t *testing.T) {
 		}
 
 		ch := make(chan prometheus.Metric)
+		
+		// Execute
 		go cm.Collect(ch)
 
+		// Verify
 		metric := <-ch
+		if metric == nil {
+			t.Errorf("expected metric to be non-nil")
+			return
+		}
 
 		desc := metric.Desc()
 		expectedDesc := "Desc{fqName: \"mock_metric\", help: \"mock metric description\", constLabels: {}, variableLabels: {}}"
 		if desc.String() != expectedDesc {
-			t.Errorf("expected metric description to be '%s', got %s", expectedDesc, desc.String())
+			t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc.String())
 		}
 	})
 }
 
 func TestDescribe(t *testing.T) {
+	t.Parallel()
+
+	// Setup
 	cm := &CollectorManager{
 		collectors: map[string]Collector{
 			"mock": newMockCollector(false),
@@ -122,11 +151,19 @@ func TestDescribe(t *testing.T) {
 	}
 
 	ch := make(chan *prometheus.Desc, 1)
+	
+	// Execute
 	cm.Describe(ch)
 
+	// Verify
 	desc := <-ch
+	if desc == nil {
+		t.Errorf("expected description to be non-nil")
+		return
+	}
+	
 	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: {collector,result}}"
 	if desc.String() != expectedDesc {
-		t.Errorf("expected metric description to be '%s', got %s", expectedDesc, desc.String())
+		t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc.String())
 	}
 }

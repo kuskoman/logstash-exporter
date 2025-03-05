@@ -122,7 +122,7 @@ The chart's parameters are documented in its [README](./chart/README.md).
 
 The application is now configured using a YAML file instead of environment variables. An example configuration is as follows:
 
-**Important:** The `servers` section got renamed to `instances`. For now both names are supported, but the `servers` name will be removed in the future.
+**Important:** The `servers` section got renamed to `instances`. The `servers` section is no longer supported.
 
 ```yaml
 logstash:
@@ -267,6 +267,17 @@ To run them you must setup development [docker-compose](./docker-compose.yml) fi
 Then you can run the tests:
 
     make verify-metrics
+    
+### Testing Standards
+
+For consistency across the codebase, we follow a set of [Testing Standards](./TESTING-STANDARDS.md) that outlines:
+
+- Test structure and naming conventions
+- Error handling patterns
+- Best practices for mocks and fixtures 
+- Guidelines for specific test types
+
+Contributors should review these standards before submitting pull requests.
 
 ## Grafana Dashboard
 

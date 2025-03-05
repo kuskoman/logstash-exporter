@@ -48,11 +48,17 @@ func NewFileWatcher(configLocation string, listeners ...func() error) (*FileWatc
 	return fileWatcher, nil
 }
 
-// Watch sets up file watching
-func (fw *FileWatcher) Watch(ctx context.Context) error {
+// Watch sets up file watching and returns a channel that is closed when watching is ready
+func (fw *FileWatcher) Watch(ctx context.Context) (<-chan struct{}, error) {
 	slog.Info("watching file", "file", fw.filePath)
+	
+	// Return a value to notify when we're ready to watch
+	readyCh := make(chan struct{})
 
 	go func() {
+		// Signal that we're ready to watch
+		close(readyCh)
+		
 		for {
 			select {
 			case <-ctx.Done():
@@ -62,8 +68,8 @@ func (fw *FileWatcher) Watch(ctx context.Context) error {
 					slog.Error("failed to stop file watcher", "err", err)
 				}
 				return
-			case <-fw.watcher.Events:
-				if !fw.isRelevantFileEvent(<-fw.watcher.Events) {
+			case event := <-fw.watcher.Events:
+				if !fw.isRelevantFileEvent(event) {
 					continue
 				}
 
@@ -84,12 +90,11 @@ func (fw *FileWatcher) Watch(ctx context.Context) error {
 				} else {
 					slog.Debug("file modified, but content hash is unchanged", "file", fw.filePath)
 				}
-
 			}
 		}
 	}()
 
-	return nil
+	return readyCh, nil
 }
 
 func (fw *FileWatcher) executeListeners() error {

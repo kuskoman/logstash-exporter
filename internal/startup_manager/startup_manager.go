@@ -86,10 +86,12 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 
 	if sm.watchEnabled {
 		slog.Info("watching for config changes", "configPath", sm.configManager.configPath)
-		err := sm.watcher.Watch(ctx)
+		readyCh, err := sm.watcher.Watch(ctx)
 		if err != nil {
 			return err
 		}
+		// Wait for the watcher to be ready
+		<-readyCh
 	} else {
 		slog.Debug("watching for config changes is disabled")
 	}
