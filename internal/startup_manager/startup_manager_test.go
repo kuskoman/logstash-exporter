@@ -101,6 +101,10 @@ func (m *mockPrometheusCollector) Collect(ch chan<- prometheus.Metric) {
 type testableStartupManager struct {
 	StartupManager
 	mockConfigManager configManagerInterface
+	
+	// Function pointers we can replace for testing
+	mockReload        func(ctx context.Context) error
+	mockHandleConfigChange func() error
 }
 
 // Creates a StartupManager that uses our mock config manager
@@ -125,10 +129,52 @@ func newTestableStartupManager(
 		mockConfigManager: mockCfgMgr,
 	}
 	
+	// Set default implementations to call our mock methods
+	sm.mockReload = sm.defaultReload
+	sm.mockHandleConfigChange = sm.defaultHandleConfigChange
+	
 	return sm
 }
 
-// Override methods that use configManager to use our mock instead
+// Default implementations that use our mocks
+func (tsm *testableStartupManager) defaultReload(ctx context.Context) error {
+	changed, err := tsm.mockConfigManager.LoadAndCompareConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	if changed {
+		cfg := tsm.mockConfigManager.GetCurrentConfig()
+		if cfg == nil {
+			return errors.New("config is nil")
+		}
+
+		tsm.shutdownPrometheus()
+		err := tsm.shutdownServer(ctx)
+		if err != nil {
+			return err
+		}
+
+		tsm.startPrometheus(cfg)
+		tsm.startServer(cfg)
+	}
+
+	return nil
+}
+
+func (tsm *testableStartupManager) defaultHandleConfigChange() error {
+	ctx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
+	defer cancel()
+
+	err := tsm.Reload(ctx) 
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Override methods to use our mockable functions
 func (tsm *testableStartupManager) Initialize(ctx context.Context) error {
 	tsm.mutex.Lock()
 	defer tsm.mutex.Unlock()
@@ -178,40 +224,11 @@ func (tsm *testableStartupManager) Initialize(ctx context.Context) error {
 }
 
 func (tsm *testableStartupManager) Reload(ctx context.Context) error {
-	changed, err := tsm.mockConfigManager.LoadAndCompareConfig(ctx)
-	if err != nil {
-		return err
-	}
-
-	if changed {
-		cfg := tsm.mockConfigManager.GetCurrentConfig()
-		if cfg == nil {
-			return errors.New("config is nil")
-		}
-
-		tsm.shutdownPrometheus()
-		err := tsm.shutdownServer(ctx)
-		if err != nil {
-			return err
-		}
-
-		tsm.startPrometheus(cfg)
-		tsm.startServer(cfg)
-	}
-
-	return nil
+	return tsm.mockReload(ctx)
 }
 
 func (tsm *testableStartupManager) handleConfigChange() error {
-	ctx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
-	defer cancel()
-
-	err := tsm.Reload(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return tsm.mockHandleConfigChange()
 }
 
 // configManagerInterface defines the interface for ConfigManager
@@ -248,10 +265,10 @@ func (m *mockConfigManager) GetCurrentConfig() *config.Config {
 }
 
 func TestNewStartupManager(t *testing.T) {
-	t.Parallel()
-
+	// Do not run in parallel at the top level to avoid concurrent Prometheus registration issues
+	
 	t.Run("should_create_startup_manager", func(t *testing.T) {
-		t.Parallel()
+		// Do not run subtests in parallel
 
 		// Setup
 		dname, err := os.MkdirTemp("", "sm-test")
@@ -327,10 +344,10 @@ server:
 }
 
 func TestStartupManager_Initialize(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid Prometheus registration issues
 
 	t.Run("should_initialize_successfully", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		cfg := &config.Config{
@@ -401,7 +418,7 @@ func TestStartupManager_Initialize(t *testing.T) {
 	})
 
 	t.Run("should_return_error_on_already_initialized", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
@@ -427,7 +444,7 @@ func TestStartupManager_Initialize(t *testing.T) {
 	})
 
 	t.Run("should_return_error_on_config_load_failure", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		loadError := errors.New("config load error")
@@ -455,7 +472,7 @@ func TestStartupManager_Initialize(t *testing.T) {
 	})
 
 	t.Run("should_return_error_if_config_is_nil", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup - Config is nil but LoadAndCompareConfig succeeds
 		mockCfgManager := newMockConfigManager(nil, true, nil)
@@ -483,10 +500,10 @@ func TestStartupManager_Initialize(t *testing.T) {
 }
 
 func TestStartupManager_Shutdown(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid Prometheus registration issues
 
 	t.Run("should_shutdown_successfully", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		mockSrv := newMockAppServer(nil, nil)
@@ -522,7 +539,7 @@ func TestStartupManager_Shutdown(t *testing.T) {
 	})
 
 	t.Run("should_return_error_when_not_initialized", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
@@ -549,7 +566,7 @@ func TestStartupManager_Shutdown(t *testing.T) {
 	})
 
 	t.Run("should_return_error_from_server_shutdown", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		shutdownError := errors.New("shutdown error")
@@ -578,7 +595,7 @@ func TestStartupManager_Shutdown(t *testing.T) {
 	})
 
 	t.Run("should_handle_nil_server_gracefully", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
@@ -606,10 +623,10 @@ func TestStartupManager_Shutdown(t *testing.T) {
 }
 
 func TestStartupManager_Reload(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid Prometheus registration issues
 
 	t.Run("should_reload_when_config_changes", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		cfg := &config.Config{
@@ -669,7 +686,7 @@ func TestStartupManager_Reload(t *testing.T) {
 	})
 
 	t.Run("should_not_reload_when_config_unchanged", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		cfg := &config.Config{
@@ -729,10 +746,10 @@ func TestStartupManager_Reload(t *testing.T) {
 }
 
 func TestStartupManager_handleServerErrors(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid Prometheus registration issues
 
 	t.Run("should_propagate_non_server_closed_errors", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		customError := errors.New("custom server error")
@@ -768,7 +785,7 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 	})
 
 	t.Run("should_propagate_server_closed_error_when_hot_reload_disabled", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
@@ -803,7 +820,7 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 	})
 
 	t.Run("should_not_propagate_server_closed_error_when_hot_reload_enabled", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		mockCfgManager := newMockConfigManager(nil, false, nil)
@@ -846,10 +863,10 @@ func TestStartupManager_startAndShutdownComponents(t *testing.T) {
 }
 
 func TestStartupManager_handleConfigChange(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid Prometheus registration issues
 
 	t.Run("should_call_reload", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		// Setup
 		cfg := &config.Config{
