@@ -26,6 +26,18 @@ It is recommended to track the code coverage of your changes. You can do this by
 
 The aim is to have 100% code coverage. If you are unable to achieve this, please explain why in your pull request.
 
+### Test Standards
+
+We maintain a set of [Testing Standards](./TESTING-STANDARDS.md) to ensure consistency across the codebase. Please follow these standards when writing or modifying tests:
+
+- Use table-driven tests when testing multiple cases
+- Follow the naming conventions defined in the standards
+- Use a consistent error checking pattern
+- Organize test code in Setup-Execute-Verify sections
+- Make tests parallel when possible
+
+New tests should follow these standards, and changes to existing tests should move them toward compliance with these standards.
+
 ### Changing Helm chart
 
 Testing the Helm chart is currently handled on CI using [kind](https://kind.sigs.k8s.io/). Chart testing process is described by code in [pipeline definition file](./.github/workflows/go-application.yml).
