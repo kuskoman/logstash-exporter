@@ -13,12 +13,12 @@ const (
 )
 
 func TestConfigComparator_LoadAndCompareConfig(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid file system issues and ensure test isolation
 
 	ctx := context.Background()
 
 	t.Run("loads initial config", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		validConfigContent := `
 server:
@@ -44,7 +44,7 @@ server:
 	})
 
 	t.Run("config remains unchanged", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		validConfigContent := `
 server:
@@ -74,7 +74,7 @@ server:
 	})
 
 	t.Run("config changes and reloads", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		validConfigContent := `
 server:
@@ -111,7 +111,7 @@ server:
 	})
 
 	t.Run("returns error on invalid config", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		invalidConfigContent := `invalid yaml content`
 		configPath := file_utils.CreateTempFile(t, invalidConfigContent)
@@ -131,12 +131,12 @@ server:
 }
 
 func TestConfigComparator_GetCurrentConfig(t *testing.T) {
-	t.Parallel()
+	// Do not run in parallel to avoid file system issues and ensure test isolation
 
 	ctx := context.Background()
 
 	t.Run("returns nil if no config is loaded", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		validConfigContent := `
 server:
@@ -152,7 +152,7 @@ server:
 	})
 
 	t.Run("returns current config after load", func(t *testing.T) {
-		t.Parallel()
+		// Do not run in parallel
 
 		validConfigContent := `
 server:

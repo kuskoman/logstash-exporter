@@ -57,7 +57,8 @@ func TestCreateTempFileInDir(t *testing.T) {
 }
 
 func TestAppendToFilex3(t *testing.T) {
-	t.Run("removes the dir at the given path", func(t *testing.T) {
+	t.Run("appends content to a file three times", func(t *testing.T) {
+		// Setup
 		content := "hello world"
 		new_content := "!"
 		expected := "hello world!!!"
@@ -74,6 +75,7 @@ func TestAppendToFilex3(t *testing.T) {
 			t.Errorf("expected file content to be '%s', got '%s'", content, string(readContent))
 		}
 
+		// Execute
 		AppendToFilex3(t, path, new_content)
 
 		// Read the file content after modification and verify it matches
@@ -83,9 +85,74 @@ func TestAppendToFilex3(t *testing.T) {
 		}
 
 		if string(readContent) != expected {
-			t.Errorf("expected file content to be '%s', got '%s'", content, string(readContent))
+			t.Errorf("expected file content to be '%s', got '%s'", expected, string(readContent))
+		}
+	})
+
+	t.Run("handles multi-character content correctly", func(t *testing.T) {
+		// Setup
+		initialContent := "base content"
+		appendContent := "APPEND"
+		expected := "base contentAPPENDAPPENDAPPEND"
+		path := CreateTempFile(t, initialContent)
+		defer RemoveFile(t, path)
+
+		// Execute
+		AppendToFilex3(t, path, appendContent)
+
+		// Verify
+		resultContent, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("failed to read temp file: %v", err)
 		}
 
+		if string(resultContent) != expected {
+			t.Errorf("expected file content to be '%s', got '%s'", expected, string(resultContent))
+		}
+	})
+
+	t.Run("works with empty initial content", func(t *testing.T) {
+		// Setup
+		initialContent := ""
+		appendContent := "data"
+		expected := "datadatadata"
+		path := CreateTempFile(t, initialContent)
+		defer RemoveFile(t, path)
+
+		// Execute
+		AppendToFilex3(t, path, appendContent)
+
+		// Verify
+		resultContent, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("failed to read temp file: %v", err)
+		}
+
+		if string(resultContent) != expected {
+			t.Errorf("expected file content to be '%s', got '%s'", expected, string(resultContent))
+		}
+	})
+
+	t.Run("works with empty append content", func(t *testing.T) {
+		// Setup - should not change the file
+		initialContent := "unchanged"
+		appendContent := ""
+		expected := "unchanged"
+		path := CreateTempFile(t, initialContent)
+		defer RemoveFile(t, path)
+
+		// Execute
+		AppendToFilex3(t, path, appendContent)
+
+		// Verify
+		resultContent, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("failed to read temp file: %v", err)
+		}
+
+		if string(resultContent) != expected {
+			t.Errorf("expected file content to be '%s', got '%s'", expected, string(resultContent))
+		}
 	})
 }
 
