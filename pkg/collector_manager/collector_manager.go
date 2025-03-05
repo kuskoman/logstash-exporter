@@ -28,11 +28,11 @@ type CollectorManager struct {
 	httpTimeout     time.Duration
 }
 
-func getClientsForEndpoints(endpoints []*config.LogstashInstance) []logstash_client.Client {
-	clients := make([]logstash_client.Client, len(endpoints))
+func getClientsForEndpoints(instances []*config.LogstashInstance) []logstash_client.Client {
+	clients := make([]logstash_client.Client, len(instances))
 
-	for i, endpoint := range endpoints {
-		clients[i] = logstash_client.NewClient(endpoint.Host, endpoint.HttpInsecure)
+	for i, instance := range instances {
+		clients[i] = logstash_client.NewClient(instance.Host, instance.HttpInsecure, instance.Name)
 	}
 
 	return clients

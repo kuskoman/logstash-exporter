@@ -18,7 +18,7 @@ func TestSimpleDescHelper(t *testing.T) {
 
 	t.Run("NewDescWithHelpAndLabel", func(t *testing.T) {
 		desc := helper.NewDesc("metric", "help", "customLabel")
-		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {customLabel,hostname}}"
+		expectedDesc := "Desc{fqName: \"logstash_exporter_test_metric\", help: \"help\", constLabels: {}, variableLabels: {customLabel,hostname,instance_name}}"
 		if desc.String() != expectedDesc {
 			t.Errorf("incorrect metric description, expected %s but got %s", expectedDesc, desc.String())
 		}
@@ -163,7 +163,7 @@ func TestSimpleMetricsHelper(t *testing.T) {
 		go func() {
 			helper := &SimpleMetricsHelper{
 				Channel: ch,
-				Labels:  []string{"customLabelValue", "hostnameEndpoint"},
+				Labels:  []string{"customLabelValue", "hostnameEndpoint", "instanceName"},
 			}
 			helper.NewFloatMetric(metricDesc, prometheus.GaugeValue, metricValue)
 		}()

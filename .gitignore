@@ -45,3 +45,6 @@ helm-generator/
 
 # Local config.yml
 /config.yml
+
+# Claude AI
+CLAUDE.md

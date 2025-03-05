@@ -103,7 +103,9 @@ func (c *NodeinfoCollector) Collect(ctx context.Context, ch chan<- prometheus.Me
 
 func (collector *NodeinfoCollector) collectSingleInstance(client logstash_client.Client, ctx context.Context, ch chan<- prometheus.Metric) error {
 	endpoint := client.GetEndpoint()
-	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{endpoint}}
+	name := client.Name()
+	defaultLabels := []string{endpoint, name}
+	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{}, DefaultLabels: defaultLabels}
 
 	nodeInfo, err := client.GetNodeInfo(ctx)
 	if err != nil {
@@ -117,16 +119,16 @@ func (collector *NodeinfoCollector) collectSingleInstance(client logstash_client
 	}
 
 	// ***** NODE *****
-	metricsHelper.Labels = []string{nodeInfo.Name, nodeInfo.Version, nodeInfo.Host, nodeInfo.HTTPAddress, nodeInfo.ID, endpoint}
+	metricsHelper.Labels = []string{nodeInfo.Name, nodeInfo.Version, nodeInfo.Host, nodeInfo.HTTPAddress, nodeInfo.ID}
 	metricsHelper.NewIntMetric(collector.NodeInfos, prometheus.CounterValue, 1)
 	// ****************
 
 	// ***** BUILD *****
-	metricsHelper.Labels = []string{nodeInfo.BuildDate, nodeInfo.BuildSHA, strconv.FormatBool(nodeInfo.BuildSnapshot), endpoint}
+	metricsHelper.Labels = []string{nodeInfo.BuildDate, nodeInfo.BuildSHA, strconv.FormatBool(nodeInfo.BuildSnapshot)}
 	metricsHelper.NewIntMetric(collector.BuildInfos, prometheus.CounterValue, 1)
 	// *****************
 
-	metricsHelper.Labels = []string{endpoint}
+	metricsHelper.Labels = []string{}
 
 	// ***** UP *****
 	metricsHelper.NewIntMetric(collector.Up, prometheus.GaugeValue, 1)
@@ -139,7 +141,7 @@ func (collector *NodeinfoCollector) collectSingleInstance(client logstash_client
 	// ********************
 
 	// ***** STATUS *****
-	metricsHelper.Labels = []string{nodeInfo.Status, endpoint}
+	metricsHelper.Labels = []string{nodeInfo.Status}
 	metricsHelper.NewIntMetric(collector.Status, prometheus.CounterValue, 1)
 	// ******************
 

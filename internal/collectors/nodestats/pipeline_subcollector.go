@@ -115,11 +115,11 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 	}
 }
 
-func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric, endpoint string) {
+func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePipelineResponse, pipelineID string, ch chan<- prometheus.Metric, endpoint string, name string) {
 	collectingStart := time.Now()
 	slog.Debug("collecting pipeline stats for pipeline", "pipelineID", pipelineID)
 
-	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID, endpoint}}
+	metricsHelper := prometheus_helper.SimpleMetricsHelper{Channel: ch, Labels: []string{pipelineID}, DefaultLabels: []string{endpoint, name}}
 
 	// ***** EVENTS *****
 	metricsHelper.NewInt64Metric(subcollector.EventsOut, prometheus.CounterValue, pipeStats.Events.Out)
@@ -183,11 +183,11 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 
 		// Response codes returned by output Bulk Requests
 		for code, count := range plugin.BulkRequests.Responses {
-			metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, code, pipelineID, endpoint}
+			metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, code, pipelineID}
 			metricsHelper.NewIntMetric(subcollector.PipelinePluginBulkRequestResponses, prometheus.CounterValue, count)
 		}
 
-		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginDocumentsSuccesses, prometheus.CounterValue, plugin.Documents.Successes)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginDocumentsNonRetryableFailures, prometheus.CounterValue, plugin.Documents.NonRetryableFailures)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginBulkRequestErrors, prometheus.CounterValue, plugin.BulkRequests.WithErrors)
@@ -199,7 +199,7 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		pluginType := "input"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
-		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsQueuePushDuration, prometheus.GaugeValue, plugin.Events.QueuePushDurationInMillis)
 	}
@@ -211,12 +211,12 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
 		pluginType = "codec:encode"
-		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Encode.WritesIn)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Encode.DurationInMillis)
 
 		pluginType = "codec:decode"
-		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Decode.WritesIn)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Decode.Out)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Decode.DurationInMillis)
@@ -228,7 +228,7 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		pluginType := "filter"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
-		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
@@ -240,7 +240,7 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		pluginType := "output"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
 
-		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID, endpoint}
+		metricsHelper.Labels = []string{pluginType, plugin.Name, plugin.ID, pipelineID}
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
