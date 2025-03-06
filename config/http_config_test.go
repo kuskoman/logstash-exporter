@@ -8,7 +8,6 @@ import (
 
 func TestGetHttpTimeout(t *testing.T) {
 	t.Run("DefaultTimeout", func(t *testing.T) {
-		t.Parallel()
 		os.Unsetenv(httpTimeoutEnvVar)
 		timeout, err := GetHttpTimeout()
 		if err != nil {
@@ -20,7 +19,6 @@ func TestGetHttpTimeout(t *testing.T) {
 	})
 
 	t.Run("CustomTimeout", func(t *testing.T) {
-		t.Parallel()
 		expectedTimeout := "5s"
 		os.Setenv(httpTimeoutEnvVar, expectedTimeout)
 		defer os.Unsetenv(httpTimeoutEnvVar)
@@ -35,7 +33,6 @@ func TestGetHttpTimeout(t *testing.T) {
 	})
 
 	t.Run("InvalidTimeout", func(t *testing.T) {
-		t.Parallel()
 		os.Setenv(httpTimeoutEnvVar, "invalid")
 		defer os.Unsetenv(httpTimeoutEnvVar)
 		_, err := GetHttpTimeout()
@@ -47,7 +44,6 @@ func TestGetHttpTimeout(t *testing.T) {
 
 func TestGetHttpInsecure(t *testing.T) {
 	t.Run("DefaultInsecure", func(t *testing.T) {
-		t.Parallel()
 		os.Unsetenv(httpInsecureEnvVar)
 		insecure := GetHttpInsecure()
 		if insecure != false {
@@ -56,7 +52,6 @@ func TestGetHttpInsecure(t *testing.T) {
 	})
 
 	t.Run("CustomInsecure", func(t *testing.T) {
-		t.Parallel()
 		expectedInsecure := true
 		os.Setenv(httpInsecureEnvVar, "true")
 		defer os.Unsetenv(httpInsecureEnvVar)
@@ -67,7 +62,6 @@ func TestGetHttpInsecure(t *testing.T) {
 	})
 
 	t.Run("InvalidInsecure", func(t *testing.T) {
-		t.Parallel()
 		expectedInsecure := false
 		os.Setenv(httpInsecureEnvVar, "invalid")
 		defer os.Unsetenv(httpInsecureEnvVar)
