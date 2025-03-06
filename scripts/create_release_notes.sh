@@ -63,10 +63,10 @@ previous_tag=$(git describe --abbrev=0 --tags --first-parent 2>/dev/null)
 if is_head_tagged; then
   # Get all tags on the current branch, sorted by commit date
   all_tags_on_branch=$(git tag --sort=-committerdate --merged HEAD)
-  
+
   # The first tag is the current one, so we need to get the second tag
   previous_tag=$(echo "$all_tags_on_branch" | grep -v "$current_tag" | head -n 1)
-  
+
   # If no previous tag found, get the earliest commit as reference
   if [ -z "$previous_tag" ]; then
     echo "No previous tag found, using the first commit as reference"
@@ -89,24 +89,17 @@ if [ -z "$commits_since_previous_tag" ]; then
 else
   # Count the commits for a summary
   commit_count=$(echo "$commits_since_previous_tag" | wc -l | tr -d ' ')
-  
-  # Start release notes with header
-  if is_head_tagged; then
-    echo "# Release Notes for $current_tag" > "$notes_file"
-  else
-    echo "# Release Notes for upcoming release" > "$notes_file"
-  fi
-  
+
   {
     echo ""
-    echo "## Changes since $previous_tag ($commit_count commits)"
+    echo "Changes since $previous_tag ($commit_count commits)"
     echo ""
     echo "$commits_since_previous_tag"
     echo ""
     echo "---"
     echo "Generated on $(date '+%Y-%m-%d %H:%M:%S')"
   } >> "$notes_file"
-  
+
   echo "Successfully created release notes for $commit_count commits since $previous_tag"
 fi
 
