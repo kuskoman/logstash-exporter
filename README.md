@@ -97,6 +97,28 @@ The application can be configured using the following environment variables, whi
 | `LOG_LEVEL`   | [Log level](https://pkg.go.dev/golang.org/x/exp/slog#Level) (defaults to "info" if not set)   | `""` (empty string)     |
 | `HTTP_TIMEOUT`| Timeout for HTTP requests to Logstash API in [Go duration format](https://golang.org/pkg/time/#ParseDuration) | `2s` |
 
+#### SSL/TLS Configuration
+
+The exporter supports serving metrics over HTTPS with the following configuration options:
+
+| Variable Name | Description                                                                                   | Default Value           |
+|---------------|-----------------------------------------------------------------------------------------------|-------------------------|
+| `ENABLE_SSL`  | Enable SSL/TLS for the HTTP server (TRUE or FALSE)                                            | `FALSE`                 |
+| `SSL_CERT_FILE_PATH` | File path to the SSL certificate file (required when ENABLE_SSL=TRUE)                  | `""`                    |
+| `SSL_KEY_FILE_PATH`  | File path to the SSL private key file (required when ENABLE_SSL=TRUE)                  | `""`                    |
+| `SSL_CIPHER_LIST`    | Comma-separated list of SSL cipher suites to use                                       | TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_CBC_SHA |
+| `SSL_MIN_VERSION`    | Minimum TLS version (1.0, 1.1, 1.2, 1.3)                                               | `1.2`                   |
+
+When `ENABLE_SSL` is set to `TRUE`, you must provide valid paths to both certificate and key files. Example:
+
+```sh
+ENABLE_SSL=TRUE
+SSL_CERT_FILE_PATH=/path/to/certificate.crt
+SSL_KEY_FILE_PATH=/path/to/private.key
+```
+
+For security reasons, TLS 1.2 is configured as the minimum supported version by default. You can modify the TLS version and cipher suites based on your security requirements.
+
 All configuration variables can be checked in the [config directory](./config/).
 
 ## Building

@@ -36,6 +36,13 @@ func main() {
 
 	port, host := config.Port, config.Host
 	logstashUrl := config.LogstashUrl
+	enableSSL := config.EnableSSL == "TRUE"
+	sslCertFilePath := config.SSLCertFilePath
+	sslKeyFilePath := config.SSLKeyFilePath
+	tlsConfig, err := config.SetupTLS()
+	if err != nil {
+		log.Fatalf("failed to setup tls: %s",err)
+	}
 
 	slog.Debug("application starting... ")
 	versionInfo := config.GetVersionInfo()
@@ -56,8 +63,15 @@ func main() {
 	prometheus.MustRegister(collectorManager)
 
 	slog.Info("starting server on", "host", host, "port", port)
-	if err := appServer.ListenAndServe(); err != nil {
+	if enableSSL {
+		appServer.TLSConfig = tlsConfig
+		err = appServer.ListenAndServeTLS(sslCertFilePath, sslKeyFilePath)
+	} else {
+		err = appServer.ListenAndServe()
+	}
+	
+	if err != nil {
 		slog.Error("failed to listen and serve", "err", err)
-		os.Exit(1)
+	    os.Exit(1)
 	}
 }

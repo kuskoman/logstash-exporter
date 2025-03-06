@@ -69,7 +69,7 @@ func TestHandleVersionInfo(t *testing.T) {
 	})
 
 	t.Run("invalid JSON", func(t *testing.T) {
-		t.Parallel()
+		// Don't use t.Parallel() for this test to avoid race conditions
 		versionInfo := &config.VersionInfo{
 			Version:   "version",
 			GitCommit: "git commit",
@@ -88,14 +88,26 @@ func TestHandleVersionInfo(t *testing.T) {
 			t.Errorf("expected 2 writes, but got: %d", len(w.writes))
 		}
 
-		firstWrite := string(w.writes[0])
+		// Create a copy of the data to avoid race conditions
+		var firstWrite, secondWrite string
+		if len(w.writes) > 0 {
+			firstWriteData := make([]byte, len(w.writes[0]))
+			copy(firstWriteData, w.writes[0])
+			firstWrite = string(firstWriteData)
+		}
+		
+		if len(w.writes) > 1 {
+			secondWriteData := make([]byte, len(w.writes[1]))
+			copy(secondWriteData, w.writes[1])
+			secondWrite = string(secondWriteData)
+		}
+
 		expectedFirstWrite := `{"Version":"version","SemanticVersion":"","GitCommit":"git commit","GoVersion":"go version","BuildArch":"build arch","BuildOS":"build os","BuildDate":"build date"}`
 		expectedFirstWrite = expectedFirstWrite + "\n"
 		if firstWrite != expectedFirstWrite {
 			t.Errorf("expected first write to be %s, but got: %s", expectedFirstWrite, firstWrite)
 		}
 
-		secondWrite := string(w.writes[1])
 		expectedSecondWrite := "EOF\n"
 		if secondWrite != expectedSecondWrite {
 			t.Errorf("expected second write to be %s, but got: %s", expectedSecondWrite, secondWrite)
