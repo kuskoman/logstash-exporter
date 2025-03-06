@@ -6,15 +6,15 @@ var (
 	// Can be overridden by setting the SSL environment variable
 	EnableSSL = getEnvWithDefault("ENABLE_SSL", "FALSE")
 
-	// SSL_CERT_DIR specifies the directory path containing the SSL certificate file
+	// SSL_CERT_FILE_PATH specifies the file path to the SSL certificate file
 	// Must be set if SSL is "TRUE"
-	// Can be overridden by setting the SSL_CERT_DIR environment variable
-	SSLCertDir = getEnvWithDefault("SSL_CERT_DIR","")
+	// Can be overridden by setting the SSL_CERT_FILE_PATH environment variable
+	SSLCertFilePath = getEnvWithDefault("SSL_CERT_FILE_PATH","")
 
-	// SSL_KEY_DIR specifies the directory path containing the SSL private key file
+	// SSL_KEY_FILE_PATH specifies the file path to the SSL private key file
 	// Must be set if SSL is "TRUE"
-	// Can be overridden by setting the SSL_KEY_DIR environment variable
-	SSLKeyDir = getEnvWithDefault("SSL_KEY_DIR","")
+	// Can be overridden by setting the SSL_KEY_FILE_PATH environment variable
+	SSLKeyFilePath = getEnvWithDefault("SSL_KEY_FILE_PATH","")
 
 	// Port is the port the exporter will listen on.
 	// Defaults to 9198

@@ -37,8 +37,8 @@ func main() {
 	port, host := config.Port, config.Host
 	logstashUrl := config.LogstashUrl
 	enableSSL := config.EnableSSL == "TRUE"
-	sslCertDir := config.SSLCertDir
-	sslKeyDir := config.SSLKeyDir
+	sslCertFilePath := config.SSLCertFilePath
+	sslKeyFilePath := config.SSLKeyFilePath
 	tlsConfig, err := config.SetupTLS()
 	if err != nil {
 		log.Fatalf("failed to setup tls: %s",err)
@@ -65,7 +65,7 @@ func main() {
 	slog.Info("starting server on", "host", host, "port", port)
 	if enableSSL {
 		appServer.TLSConfig = tlsConfig
-		err = appServer.ListenAndServeTLS(sslCertDir, sslKeyDir)
+		err = appServer.ListenAndServeTLS(sslCertFilePath, sslKeyFilePath)
 	} else {
 		err = appServer.ListenAndServe()
 	}
