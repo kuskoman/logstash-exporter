@@ -7,9 +7,10 @@
 
 ### logstash.instances Logstash instances
 
-| Name                     | Description  | Value                      |
-| ------------------------ | ------------ | -------------------------- |
-| `logstash.instances.url` | Logstash URL | `["http://logstash:9600"]` |
+| Name                        | Description                          | Value                   |
+| --------------------------- | ------------------------------------ | ----------------------- |
+| `logstash.instances[0].url` | Logstash URL for the first instance  | `http://logstash:9600`  |
+| `logstash.instances[1].url` | Logstash URL for the second instance | `http://logstash2:9600` |
 
 ### Logstash exporter server configuration
 

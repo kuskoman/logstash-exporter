@@ -5,10 +5,12 @@ logstash:
   ## @section logstash.instances Logstash instances
   ##
   instances:
-    ## @param logstash.instances.url Logstash URL
+    ## @param logstash.instances[0].url Logstash URL for the first instance
     ##
-    url:
-      - "http://logstash:9600"
+    - url: "http://logstash:9600"
+    ## @param logstash.instances[1].url Logstash URL for the second instance
+    ##
+    - url: "http://logstash2:9600"
   ## @section Logstash exporter server configuration
   ##
   server:

@@ -6,16 +6,14 @@
             "type": "object",
             "properties": {
                 "instances": {
-                    "type": "object",
-                    "properties": {
-                        "url": {
-                            "type": "array",
-                            "description": "Logstash URL",
-                            "default": [
-                                "http://logstash:9600"
-                            ],
-                            "items": {
-                                "type": "string"
+                    "type": "array",
+                    "description": "Logstash URL for the first instance",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "Logstash URL for the second instance"
                             }
                         }
                     }
