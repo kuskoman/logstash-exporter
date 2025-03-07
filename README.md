@@ -32,6 +32,52 @@ For detailed deployment instructions, see:
 - [Helm Deployment Guide](./HELM-DEPLOY.md) - For deploying to Kubernetes using Helm
 - [Helm chart auto-generated README](./chart/README.md) - For Helm chart configuration
 
+### Kubernetes Controller Mode
+
+Logstash Exporter provides a Kubernetes Controller mode that can automatically discover and monitor Logstash instances running in Kubernetes pods. This mode works by:
+
+1. Watching pods with specific annotations
+2. Dynamically configuring the exporter to scrape metrics from these instances
+3. Automatically updating the monitored targets when pods are created, updated, or deleted
+
+To use this mode:
+
+1. Deploy logstash-exporter with the Kubernetes controller enabled:
+   ```yaml
+   logstash:
+     kubernetes:
+       enabled: true
+       namespaces: ["default", "monitoring"] # Optional: specific namespaces to watch
+   ```
+
+2. Set the appropriate RBAC permissions:
+   ```yaml
+   serviceAccount:
+     create: true
+     enabled: true
+   
+   rbac:
+     create: true
+   ```
+
+3. Add annotations to your Logstash pods:
+   ```yaml
+   annotations:
+     logstash-exporter.io/url: "http://localhost:9600"
+     # Optional auth credentials
+     logstash-exporter.io/username: "user"
+     logstash-exporter.io/password: "pass"
+   ```
+
+4. The controller uses a separate Docker image (`kuskoman/logstash-exporter-controller`). If you need to specify a custom controller image:
+   ```yaml
+   image:
+     repository: "kuskoman/logstash-exporter"
+     controllerRepository: "custom/logstash-exporter-controller"
+   ```
+
+For more details, see the Helm chart configuration.
+
 ### Flags
 
 The application supports the following flags:

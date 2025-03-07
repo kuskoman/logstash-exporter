@@ -26,6 +26,8 @@ type CollectorManager struct {
 	collectors      map[string]Collector
 	scrapeDurations *prometheus.SummaryVec
 	httpTimeout     time.Duration
+	mu              sync.RWMutex
+	instancesMap    map[string]*config.LogstashInstance // Used for dynamic instance management
 }
 
 func getClientsForEndpoints(instances []*config.LogstashInstance) []logstash_client.Client {
@@ -40,6 +42,16 @@ func getClientsForEndpoints(instances []*config.LogstashInstance) []logstash_cli
 
 // NewCollectorManager creates a new CollectorManager with the provided logstash instances and http timeout
 func NewCollectorManager(instances []*config.LogstashInstance, httpTimeout time.Duration) *CollectorManager {
+	// Build the instance map
+	instancesMap := make(map[string]*config.LogstashInstance)
+	for _, instance := range instances {
+		instanceID := instance.Name
+		if instanceID == "" {
+			instanceID = instance.Host
+		}
+		instancesMap[instanceID] = instance
+	}
+
 	clients := getClientsForEndpoints(instances)
 
 	collectors := getCollectors(clients)
@@ -48,7 +60,12 @@ func NewCollectorManager(instances []*config.LogstashInstance, httpTimeout time.
 	prometheus.Unregister(version.NewCollector("logstash_exporter"))
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
-	return &CollectorManager{collectors: collectors, scrapeDurations: scrapeDurations, httpTimeout: httpTimeout}
+	return &CollectorManager{
+		collectors:      collectors, 
+		scrapeDurations: scrapeDurations, 
+		httpTimeout:     httpTimeout,
+		instancesMap:    instancesMap,
+	}
 }
 
 func getCollectors(clients []logstash_client.Client) map[string]Collector {
@@ -62,12 +79,19 @@ func getCollectors(clients []logstash_client.Client) map[string]Collector {
 // It also sends the duration of the collection to the scrapeDurations collector.
 func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), manager.httpTimeout)
-
 	defer cancel()
 
-	waitGroup := sync.WaitGroup{}
-	waitGroup.Add(len(manager.collectors))
+	// Create a safe copy of collectors to avoid concurrent map access
+	manager.mu.RLock()
+	collectors := make(map[string]Collector, len(manager.collectors))
 	for name, collector := range manager.collectors {
+		collectors[name] = collector
+	}
+	manager.mu.RUnlock()
+
+	waitGroup := sync.WaitGroup{}
+	waitGroup.Add(len(collectors))
+	for name, collector := range collectors {
 		go func(name string, collector Collector) {
 			slog.Debug("executing collector", "name", name)
 			manager.executeCollector(name, ctx, collector, ch)
@@ -112,4 +136,51 @@ func getScrapeDurationsCollector() *prometheus.SummaryVec {
 	)
 
 	return scrapeDurations
+}
+
+// AddInstance adds a new Logstash instance to be monitored
+func (manager *CollectorManager) AddInstance(id string, instance *config.LogstashInstance) {
+	manager.mu.Lock()
+	defer manager.mu.Unlock()
+
+	// Check if already exists
+	if _, exists := manager.instancesMap[id]; exists {
+		slog.Debug("instance already exists, updating", "id", id)
+	}
+
+	// Add to instance map
+	manager.instancesMap[id] = instance
+
+	// Regenerate collectors with updated instances
+	var instances []*config.LogstashInstance
+	for _, inst := range manager.instancesMap {
+		instances = append(instances, inst)
+	}
+
+	clients := getClientsForEndpoints(instances)
+	manager.collectors = getCollectors(clients)
+}
+
+// RemoveInstance removes a Logstash instance from monitoring
+func (manager *CollectorManager) RemoveInstance(id string) {
+	manager.mu.Lock()
+	defer manager.mu.Unlock()
+
+	// Check if exists
+	if _, exists := manager.instancesMap[id]; !exists {
+		slog.Debug("instance does not exist, nothing to remove", "id", id)
+		return
+	}
+
+	// Remove from instance map
+	delete(manager.instancesMap, id)
+
+	// Regenerate collectors with updated instances
+	var instances []*config.LogstashInstance
+	for _, inst := range manager.instancesMap {
+		instances = append(instances, inst)
+	}
+
+	clients := getClientsForEndpoints(instances)
+	manager.collectors = getCollectors(clients)
 }

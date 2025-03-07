@@ -1,12 +1,14 @@
 GOOS_VALUES := linux darwin windows
-GOOS_BINARIES := $(foreach goos,$(GOOS_VALUES),out/main-$(goos))
-GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/main-$(goos),out/main-$(goos)))
+GOOS_EXPORTER_BINARIES := $(foreach goos,$(GOOS_VALUES),out/exporter-$(goos))
+GOOS_CONTROLLER_BINARIES := $(foreach goos,$(GOOS_VALUES),out/controller-$(goos))
+GOOS_BINARIES := $(GOOS_EXPORTER_BINARIES) $(GOOS_CONTROLLER_BINARIES)
+GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/exporter-$(goos),out/exporter-$(goos))) $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/controller-$(goos),out/controller-$(goos)))
 
 GITHUB_REPO := github.com/kuskoman/logstash-exporter
 VERSION ?= $(shell git symbolic-ref --short HEAD)
 SEMANTIC_VERSION ?= $(shell git describe --tags --abbrev=1 --dirty 2> /dev/null)
 GIT_COMMIT := $(shell git rev-parse HEAD)
-DOCKER_IMG ?= "logstash-exporter"
+DOCKER_IMG ?= logstash-exporter
 
 # ****************************** NOTE ****************************** #
 # Commands description was made using the following syntax:          #
@@ -25,35 +27,54 @@ ldflags := -s -w \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).GitCommit=$(GIT_COMMIT)' \
 	-X '$(GITHUB_REPO)/$(VERSIONINFO_PKG).BuildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S%Z)'
 
-out/main-%:
-	CGO_ENABLED=0 GOOS=$* go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/main-$* cmd/exporter/main.go
+out/exporter-%:
+	CGO_ENABLED=0 GOOS=$* go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/exporter-$* cmd/exporter/main.go
+
+out/controller-%:
+	CGO_ENABLED=0 GOOS=$* go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/controller-$* cmd/controller/main.go
 
 #: Runs the Go Exporter application
 run:
 	go run cmd/exporter/main.go
 
+#: Runs the Go Controller application
+run-controller:
+	go run cmd/controller/main.go
+
 #: Runs the Go Exporter application with watching the configuration file
 run-and-watch-config:
 	go run cmd/exporter/main.go -watch
 
-#: Builds a binary executable for Linux
-build-linux: out/main-linux
-#: Builds a binary executable for Darwin
-build-darwin: out/main-darwin
-#: Builds a binary executable for Windows
-build-windows: out/main-windows
-#: Builds a binary executable for Linux ARM
+#: Builds exporter and controller binaries for Linux
+build-linux: out/exporter-linux out/controller-linux
+#: Builds exporter and controller binaries for Darwin
+build-darwin: out/exporter-darwin out/controller-darwin
+#: Builds exporter and controller binaries for Windows
+build-windows: out/exporter-windows out/controller-windows
+#: Builds exporter and controller binaries for Linux ARM
 build-linux-arm:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/main-linux-arm cmd/exporter/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/exporter-linux-arm cmd/exporter/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/controller-linux-arm cmd/controller/main.go
 
 #: Builds a Docker image for the Go Exporter application
 build-docker:
 	docker build -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
 
+#: Builds a Docker image for the Kubernetes Controller
+build-docker-controller:
+	docker build -t "$(DOCKER_IMG)-controller" --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) -f Dockerfile.controller .
+
+#: Builds both exporter and controller Docker images
+build-docker-all: build-docker build-docker-controller
+
 # Builds for Linux X86, Apple Silicon/AWS Graviton. Requires docker buildx (Docker 19.03+)
-#: Builds a multi-arch Docker image (`amd64` and `arm64`)
+#: Builds a multi-arch Docker image (`amd64` and `arm64`) for the exporter
 build-docker-multi:
 	docker buildx build --push --platform linux/amd64,linux/arm64 -t $(DOCKER_IMG) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) .
+
+#: Builds a multi-arch Docker image (`amd64` and `arm64`) for the controller
+build-docker-controller-multi:
+	docker buildx build --push --platform linux/amd64,linux/arm64 -t $(DOCKER_IMG)-controller --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) -f Dockerfile.controller .
 
 #: Deletes all binary executables in the out directory
 clean:

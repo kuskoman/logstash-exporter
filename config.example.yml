@@ -16,3 +16,17 @@ server:
 logging:
   level: "info"
   format: "text"
+# Kubernetes controller configuration (optional)
+kubernetes:
+  enabled: false
+  # Watch only specific namespaces (empty watches all)
+  # namespaces:
+  #   - default
+  #   - monitoring
+  podAnnotationPrefix: "logstash-exporter.io"
+  resyncPeriod: 10m
+  scrapeInterval: 15s
+  logstashURLAnnotation: "logstash-exporter.io/url"
+  logstashUsernameAnnotation: "logstash-exporter.io/username"
+  logstashPasswordAnnotation: "logstash-exporter.io/password"
+  # kubeConfig: /path/to/kubeconfig # Optional: path to kubeconfig file for running outside cluster

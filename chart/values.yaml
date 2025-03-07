@@ -26,6 +26,33 @@ logstash:
     ## @param logstash.logging.level Logstash exporter logging level
     ##
     level: "info"
+  ## @section Kubernetes controller configuration
+  ##
+  kubernetes:
+    ## @param logstash.kubernetes.enabled Enable Kubernetes controller
+    ##
+    enabled: false
+    ## @param logstash.kubernetes.namespaces Namespaces to watch (empty for all)
+    ##
+    namespaces: []
+    ## @param logstash.kubernetes.podAnnotationPrefix Prefix for pod annotations
+    ##
+    podAnnotationPrefix: "logstash-exporter.io"
+    ## @param logstash.kubernetes.resyncPeriod Resync period for the controller cache
+    ##
+    resyncPeriod: 10m
+    ## @param logstash.kubernetes.scrapeInterval Interval to scrape logstash instances
+    ##
+    scrapeInterval: 15s
+    ## @param logstash.kubernetes.logstashURLAnnotation Annotation containing logstash URL
+    ##
+    logstashURLAnnotation: "logstash-exporter.io/url"
+    ## @param logstash.kubernetes.logstashUsernameAnnotation Annotation for logstash username
+    ##
+    logstashUsernameAnnotation: "logstash-exporter.io/username"
+    ## @param logstash.kubernetes.logstashPasswordAnnotation Annotation for logstash password
+    ##
+    logstashPasswordAnnotation: "logstash-exporter.io/password"
 
 ## @section Custom logstash-exporter configuration
 ## Overrides the default .logstash section
@@ -40,6 +67,18 @@ customConfig:
     logstash:
       instances:
         - "http://logstash:9600"
+      server:
+        host: "0.0.0.0"
+        port: 9198
+      logging:
+        level: "info"
+      kubernetes:
+        enabled: false
+        namespaces: []
+        podAnnotationPrefix: "logstash-exporter.io"
+        resyncPeriod: 10m
+        scrapeInterval: 15s
+        logstashURLAnnotation: "logstash-exporter.io/url"
 
 ## @section Image settings
 ##
@@ -54,6 +93,10 @@ image:
   ## Options: Always, Never, IfNotPresent
   ##
   pullPolicy: IfNotPresent
+  ## @param image.controllerRepository Image repository for the controller
+  ## If not set, will use repository with "-controller" suffix
+  ##
+  controllerRepository: ""
 
 ## @param fullnameOverride Override the fullname of the chart
 ##
@@ -194,3 +237,16 @@ serviceAccount:
   ## @param serviceAccount.annotations Additional service account annotations
   ##
   annotations: {}
+
+## @section RBAC settings for Kubernetes controller
+##
+rbac:
+  ## @param rbac.create Create RBAC resources
+  ##
+  create: false
+  ## @param rbac.rules Custom rules to add to the ClusterRole
+  ##
+  rules:
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "list", "watch"]

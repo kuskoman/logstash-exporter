@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/kuskoman/logstash-exporter/internal/k8s_controller"
 	"github.com/kuskoman/logstash-exporter/internal/server"
 	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
@@ -103,4 +104,58 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 		
 		sm.serverErrorChan <- err
 	}()
+}
+
+// startKubernetesController initializes and starts the Kubernetes controller
+func (sm *StartupManager) startKubernetesController(cfg *config.Config) {
+	if !cfg.Kubernetes.Enabled {
+		slog.Info("kubernetes controller is disabled")
+		return
+	}
+
+	slog.Info("starting kubernetes controller")
+	
+	// Get collector manager from Prometheus collector
+	var collectorMgr *collector_manager.CollectorManager
+	if sm.prometheusCollector != nil {
+		var ok bool
+		collectorMgr, ok = sm.prometheusCollector.(*collector_manager.CollectorManager)
+		if !ok {
+			slog.Error("collector is not a CollectorManager, cannot start kubernetes controller")
+			return
+		}
+	}
+	
+	if collectorMgr == nil {
+		slog.Error("collector manager is nil, cannot start kubernetes controller")
+		return
+	}
+
+	controller, err := k8s_controller.NewController(cfg.Kubernetes, collectorMgr)
+	if err != nil {
+		slog.Error("failed to create kubernetes controller", "error", err)
+		return
+	}
+
+	sm.kubernetesController = controller
+
+	// Start the controller in a separate goroutine
+	go func() {
+		if err := controller.Start(context.Background()); err != nil {
+			slog.Error("failed to start kubernetes controller", "error", err)
+		}
+	}()
+}
+
+// shutdownKubernetesController stops the Kubernetes controller
+func (sm *StartupManager) shutdownKubernetesController(ctx context.Context) {
+	if sm.kubernetesController == nil {
+		slog.Debug("kubernetes controller is nil")
+		return
+	}
+
+	slog.Info("shutting down kubernetes controller")
+	if err := sm.kubernetesController.Stop(ctx); err != nil {
+		slog.Error("failed to stop kubernetes controller", "error", err)
+	}
 }

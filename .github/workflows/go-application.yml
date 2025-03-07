@@ -271,24 +271,33 @@ jobs:
           path: out/main-windows
 
   build-linux-docker-image:
-    name: Build Linux Docker image
+    name: Build Linux Docker images
     runs-on: ubuntu-20.04
     needs: [build-linux]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: make build-docker
+      - name: Build Docker images (exporter and controller)
+        run: make build-docker-all
 
-      - name: Package Docker image
-        run: docker save logstash-exporter:latest | gzip > logstash-exporter.tar.gz
+      - name: Package Docker images
+        run: |
+          docker save logstash-exporter:latest | gzip > logstash-exporter.tar.gz
+          docker save logstash-exporter-controller:latest | gzip > logstash-exporter-controller.tar.gz
 
-      - name: Upload Docker image as an artifact
+      - name: Upload Exporter Docker image as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: logstash-exporter-docker-image
           path: logstash-exporter.tar.gz
+          retention-days: 1
+
+      - name: Upload Controller Docker image as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: logstash-exporter-controller-docker-image
+          path: logstash-exporter-controller.tar.gz
           retention-days: 1
 
       - name: Login to GitHub registry
@@ -299,32 +308,58 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
 
-      - name: Tag Docker image with master
+      # Tag and push exporter image
+      - name: Tag Exporter Docker image with master
         if: github.ref == 'refs/heads/master'
         run: docker tag logstash-exporter:latest ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:master
 
-      - name: Tag Docker image with tag to Docker Hub
+      - name: Tag Exporter Docker image with tag to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
         run: docker tag logstash-exporter:latest ${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
 
-      - name: Tag Docker image with tag to ghcr.io
+      - name: Tag Exporter Docker image with tag to ghcr.io
         if: startsWith(github.ref, 'refs/tags/')
         run: docker tag logstash-exporter:latest ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
 
-      - name: Push Docker image to GitHub registry
+      - name: Push Exporter Docker image to GitHub registry
         if: github.ref == 'refs/heads/master'
         run: docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:master
 
-      - name: Push Docker image with tag to Docker Hub
+      - name: Push Exporter Docker image with tag to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
         run: docker push ${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
 
-      - name: Push Docker image with tag to ghcr.io
+      - name: Push Exporter Docker image with tag to ghcr.io
         if: startsWith(github.ref, 'refs/tags/')
         run: docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }}
 
+      # Tag and push controller image
+      - name: Tag Controller Docker image with master
+        if: github.ref == 'refs/heads/master'
+        run: docker tag logstash-exporter-controller:latest ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:master
+
+      - name: Tag Controller Docker image with tag to Docker Hub
+        if: startsWith(github.ref, 'refs/tags/')
+        run: docker tag logstash-exporter-controller:latest ${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:${{ env.TAG_NAME }}
+
+      - name: Tag Controller Docker image with tag to ghcr.io
+        if: startsWith(github.ref, 'refs/tags/')
+        run: docker tag logstash-exporter-controller:latest ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:${{ env.TAG_NAME }}
+
+      - name: Push Controller Docker image to GitHub registry
+        if: github.ref == 'refs/heads/master'
+        run: docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:master
+
+      - name: Push Controller Docker image with tag to Docker Hub
+        if: startsWith(github.ref, 'refs/tags/')
+        run: docker push ${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:${{ env.TAG_NAME }}
+
+      - name: Push Controller Docker image with tag to ghcr.io
+        if: startsWith(github.ref, 'refs/tags/')
+        run: docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:${{ env.TAG_NAME }}
+
   build-docker-linux-arm-image:
-    name: Build Linux ARM Docker image
+    name: Build Linux ARM Docker images
     runs-on: ubuntu-20.04
     needs: [build-linux]
     if: startsWith(github.ref, 'refs/tags/')
@@ -339,8 +374,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: echo ${{ secrets.DOCKER_HUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
 
-      - name: Build Docker image
+      - name: Build Exporter Docker image
         run: "VERSION=${{ env.TAG_NAME }} DOCKER_IMG=${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_NAME }} make build-docker-multi"
+        
+      - name: Build Controller Docker image
+        run: "VERSION=${{ env.TAG_NAME }} DOCKER_IMG=${{ github.repository_owner }}/${{ github.event.repository.name }}-controller:${{ env.TAG_NAME }} make build-docker-controller-multi"
 
   test-helm-integration:
     name: Test integration with Helm chart
@@ -354,7 +392,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Docker image
+      - name: Download Docker images
         uses: actions/download-artifact@v4
         with:
           name: logstash-exporter-docker-image

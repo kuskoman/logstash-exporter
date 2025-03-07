@@ -64,9 +64,10 @@ type LoggingConfig struct {
 
 // Config represents the overall configuration loaded from the YAML file
 type Config struct {
-	Logstash LogstashConfig `yaml:"logstash"`
-	Server   ServerConfig   `yaml:"server"`
-	Logging  LoggingConfig  `yaml:"logging"`
+	Logstash   LogstashConfig   `yaml:"logstash"`
+	Server     ServerConfig     `yaml:"server"`
+	Logging    LoggingConfig    `yaml:"logging"`
+	Kubernetes KubernetesConfig `yaml:"kubernetes"`
 }
 
 func (config *Config) Equals(other *Config) bool {
@@ -131,6 +132,27 @@ func mergeWithDefault(config *Config) *Config {
 	if config.Logstash.HttpTimeout == 0 {
 		slog.Debug("using default http timeout", "httpTimeout", defaultHttpTimeout)
 		config.Logstash.HttpTimeout = defaultHttpTimeout
+	}
+
+	// Set default Kubernetes configuration
+	defaultK8sConfig := DefaultKubernetesConfig()
+	if config.Kubernetes.PodAnnotationPrefix == "" {
+		config.Kubernetes.PodAnnotationPrefix = defaultK8sConfig.PodAnnotationPrefix
+	}
+	if config.Kubernetes.ResyncPeriod == 0 {
+		config.Kubernetes.ResyncPeriod = defaultK8sConfig.ResyncPeriod
+	}
+	if config.Kubernetes.ScrapeInterval == 0 {
+		config.Kubernetes.ScrapeInterval = defaultK8sConfig.ScrapeInterval
+	}
+	if config.Kubernetes.LogstashURLAnnotation == "" {
+		config.Kubernetes.LogstashURLAnnotation = defaultK8sConfig.LogstashURLAnnotation
+	}
+	if config.Kubernetes.LogstashUsernameAnnotation == "" {
+		config.Kubernetes.LogstashUsernameAnnotation = defaultK8sConfig.LogstashUsernameAnnotation
+	}
+	if config.Kubernetes.LogstashPasswordAnnotation == "" {
+		config.Kubernetes.LogstashPasswordAnnotation = defaultK8sConfig.LogstashPasswordAnnotation
 	}
 
 	return config
