@@ -247,13 +247,17 @@ See more in the [Migration](#migration) section.
 
 - `make all`: Builds binary executables for all OS (Win, Darwin, Linux).
 - `make run`: Runs the Go Exporter application.
+- `make run-controller`: Runs the Go Controller application.
 - `make run-and-watch-config`: Runs the Go Exporter application with watching the configuration file.
-- `make build-linux`: Builds a binary executable for Linux.
-- `make build-darwin`: Builds a binary executable for Darwin.
-- `make build-windows`: Builds a binary executable for Windows.
-- `make build-linux-arm`: Builds a binary executable for Linux ARM.
+- `make build-linux`: Builds exporter and controller binaries for Linux.
+- `make build-darwin`: Builds exporter and controller binaries for Darwin.
+- `make build-windows`: Builds exporter and controller binaries for Windows.
+- `make build-linux-arm`: Builds exporter and controller binaries for Linux ARM.
 - `make build-docker`: Builds a Docker image for the Go Exporter application.
-- `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`).
+- `make build-docker-controller`: Builds a Docker image for the Kubernetes Controller.
+- `make build-docker-all`: Builds both exporter and controller Docker images.
+- `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the exporter.
+- `make build-docker-controller-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the controller.
 - `make clean`: Deletes all binary executables in the out directory.
 - `make test`: Runs all tests.
 - `make test-coverage`: Displays test coverage report.
@@ -266,6 +270,7 @@ See more in the [Migration](#migration) section.
 - `make minify`: Minifies the binary executables.
 - `make install-helm-readme`: Installs readme-generator-for-helm tool.
 - `make helm-readme`: Generates Helm chart README.md file.
+- `make helm-test`: Run Helm unit tests.
 - `make clean-elasticsearch`: Cleans Elasticsearch data. The command may take a very long time to complete.
 - `make clean-prometheus`: Cleans Prometheus data.
 - `make upgrade-dependencies`: Upgrades all dependencies.
