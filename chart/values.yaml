@@ -268,9 +268,13 @@ rbac:
   ## @param rbac.create Create RBAC resources
   ##
   create: false
-  ## @param rbac.rules Custom rules to add to the ClusterRole
-  ##
   rules:
+    ## @param rbac.rules[0].apiGroups API groups the rule applies to
+    ##
     - apiGroups: [""]
+      ## @param rbac.rules[0].resources Kubernetes resources the rule applies to
+      ##
       resources: ["pods", "services"]
+      ## @param rbac.rules[0].verbs Allowed verbs for the specified resources
+      ##
       verbs: ["get", "list", "watch"]

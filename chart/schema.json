@@ -42,6 +42,82 @@
                             "default": "info"
                         }
                     }
+                },
+                "kubernetes": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable Kubernetes controller",
+                            "default": false
+                        },
+                        "namespaces": {
+                            "type": "array",
+                            "description": "Namespaces to watch (empty for all)",
+                            "default": [],
+                            "items": {}
+                        },
+                        "resources": {
+                            "type": "object",
+                            "properties": {
+                                "pods": {
+                                    "type": "object",
+                                    "properties": {
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Enable pod monitoring",
+                                            "default": true
+                                        },
+                                        "annotationPrefix": {
+                                            "type": "string",
+                                            "description": "Prefix for pod annotations",
+                                            "default": "logstash-exporter.io"
+                                        }
+                                    }
+                                },
+                                "services": {
+                                    "type": "object",
+                                    "properties": {
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Enable service monitoring",
+                                            "default": false
+                                        },
+                                        "annotationPrefix": {
+                                            "type": "string",
+                                            "description": "Prefix for service annotations",
+                                            "default": "logstash-exporter.io"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "resyncPeriod": {
+                            "type": "string",
+                            "description": "Resync period for the controller cache",
+                            "default": "10m"
+                        },
+                        "scrapeInterval": {
+                            "type": "string",
+                            "description": "Interval to scrape logstash instances",
+                            "default": "15s"
+                        },
+                        "logstashURLAnnotation": {
+                            "type": "string",
+                            "description": "Annotation containing logstash URL",
+                            "default": "logstash-exporter.io/url"
+                        },
+                        "logstashUsernameAnnotation": {
+                            "type": "string",
+                            "description": "Annotation for logstash username",
+                            "default": "logstash-exporter.io/username"
+                        },
+                        "logstashPasswordAnnotation": {
+                            "type": "string",
+                            "description": "Annotation for logstash password",
+                            "default": "logstash-exporter.io/password"
+                        }
+                    }
                 }
             }
         },
@@ -56,7 +132,7 @@
                 "config": {
                     "type": "string",
                     "description": "Custom configuration",
-                    "default": "logstash:\n  instances:\n    - \"http://logstash:9600\"\n"
+                    "default": "logstash:\n  instances:\n    - \"http://logstash:9600\"\n  server:\n    host: \"0.0.0.0\"\n    port: 9198\n  logging:\n    level: \"info\"\n  kubernetes:\n    enabled: false\n    namespaces: []\n    resources:\n      pods:\n        enabled: true\n        annotationPrefix: \"logstash-exporter.io\"\n      services:\n        enabled: false\n        annotationPrefix: \"logstash-exporter.io\"\n    resyncPeriod: 10m\n    scrapeInterval: 15s\n    logstashURLAnnotation: \"logstash-exporter.io/url\"\n"
                 }
             }
         },
@@ -77,6 +153,11 @@
                     "type": "string",
                     "description": "Image pull policy",
                     "default": "IfNotPresent"
+                },
+                "controllerRepository": {
+                    "type": "string",
+                    "description": "Image repository for the controller",
+                    "default": ""
                 }
             }
         },
@@ -295,6 +376,46 @@
                     "type": "object",
                     "description": "Additional service account annotations",
                     "default": {}
+                }
+            }
+        },
+        "rbac": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "description": "Create RBAC resources",
+                    "default": false
+                },
+                "rules": {
+                    "type": "array",
+                    "description": "API groups the rule applies to",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "apiGroups": {
+                                "type": "array",
+                                "description": "API groups the rule applies to",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "resources": {
+                                "type": "array",
+                                "description": "Kubernetes resources the rule applies to",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "verbs": {
+                                "type": "array",
+                                "description": "Allowed verbs for the specified resources",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
