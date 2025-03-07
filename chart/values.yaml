@@ -35,9 +35,27 @@ logstash:
     ## @param logstash.kubernetes.namespaces Namespaces to watch (empty for all)
     ##
     namespaces: []
-    ## @param logstash.kubernetes.podAnnotationPrefix Prefix for pod annotations
+    ## @section Resource type monitoring configuration
     ##
-    podAnnotationPrefix: "logstash-exporter.io"
+    resources:
+      ## @section Pod monitoring configuration
+      ##
+      pods:
+        ## @param logstash.kubernetes.resources.pods.enabled Enable pod monitoring
+        ##
+        enabled: true
+        ## @param logstash.kubernetes.resources.pods.annotationPrefix Prefix for pod annotations
+        ##
+        annotationPrefix: "logstash-exporter.io"
+      ## @section Service monitoring configuration
+      ##
+      services:
+        ## @param logstash.kubernetes.resources.services.enabled Enable service monitoring
+        ##
+        enabled: false
+        ## @param logstash.kubernetes.resources.services.annotationPrefix Prefix for service annotations
+        ##
+        annotationPrefix: "logstash-exporter.io"
     ## @param logstash.kubernetes.resyncPeriod Resync period for the controller cache
     ##
     resyncPeriod: 10m
@@ -75,7 +93,13 @@ customConfig:
       kubernetes:
         enabled: false
         namespaces: []
-        podAnnotationPrefix: "logstash-exporter.io"
+        resources:
+          pods:
+            enabled: true
+            annotationPrefix: "logstash-exporter.io"
+          services:
+            enabled: false
+            annotationPrefix: "logstash-exporter.io"
         resyncPeriod: 10m
         scrapeInterval: 15s
         logstashURLAnnotation: "logstash-exporter.io/url"
@@ -248,5 +272,5 @@ rbac:
   ##
   rules:
     - apiGroups: [""]
-      resources: ["pods"]
+      resources: ["pods", "services"]
       verbs: ["get", "list", "watch"]

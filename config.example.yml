@@ -23,7 +23,16 @@ kubernetes:
   # namespaces:
   #   - default
   #   - monitoring
-  podAnnotationPrefix: "logstash-exporter.io"
+  # Define which resource types to monitor
+  resources:
+    # Pod monitoring configuration
+    pods:
+      enabled: true
+      annotationPrefix: "logstash-exporter.io"
+    # Service monitoring configuration
+    services:
+      enabled: false
+      annotationPrefix: "logstash-exporter.io"
   resyncPeriod: 10m
   scrapeInterval: 15s
   logstashURLAnnotation: "logstash-exporter.io/url"

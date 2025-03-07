@@ -136,9 +136,6 @@ func mergeWithDefault(config *Config) *Config {
 
 	// Set default Kubernetes configuration
 	defaultK8sConfig := DefaultKubernetesConfig()
-	if config.Kubernetes.PodAnnotationPrefix == "" {
-		config.Kubernetes.PodAnnotationPrefix = defaultK8sConfig.PodAnnotationPrefix
-	}
 	if config.Kubernetes.ResyncPeriod == 0 {
 		config.Kubernetes.ResyncPeriod = defaultK8sConfig.ResyncPeriod
 	}
