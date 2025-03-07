@@ -31,6 +31,7 @@ For detailed deployment instructions, see:
 - [Standalone Deployment Guide](./STANDALONE.md) - For deploying as a systemd service
 - [Helm Deployment Guide](./HELM-DEPLOY.md) - For deploying to Kubernetes using Helm
 - [Helm chart auto-generated README](./chart/README.md) - For Helm chart configuration
+- [Helm chart tests](./chart/tests/README.md) - For Helm chart unit tests
 
 ### Kubernetes Controller Mode
 

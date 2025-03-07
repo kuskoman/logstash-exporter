@@ -125,6 +125,10 @@ install-helm-readme:
 helm-readme:
 	./scripts/generate_helm_readme.sh
 
+#: Run Helm unit tests
+helm-test:
+	helm unittest ./chart
+
 #: Cleans Elasticsearch data. The command may take a very long time to complete
 clean-elasticsearch:
 	@echo "Cleaning up Elasticsearch indices..."

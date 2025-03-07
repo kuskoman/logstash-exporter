@@ -1,0 +1,52 @@
+suite: Service Tests
+templates:
+  - service.yaml
+release:
+  name: logstash-exporter-test
+  namespace: default
+
+tests:
+  - it: should create a service with default settings
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: ClusterIP
+      - equal:
+          path: spec.ports[0].port
+          value: 9198
+
+  - it: should set service type when specified
+    set:
+      service.type: NodePort
+    asserts:
+      - equal:
+          path: spec.type
+          value: NodePort
+
+  - it: should set port when specified
+    set:
+      service.port: 8080
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+
+  - it: should add annotations when specified
+    set:
+      service.annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9198"
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: should add labels when specified
+    set:
+      service.labels:
+        environment: production
+        tier: monitoring
+    asserts:
+      - isKind:
+          of: Service

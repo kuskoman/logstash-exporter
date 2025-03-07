@@ -1,0 +1,35 @@
+suite: RBAC Tests
+templates:
+  - cluster-role.yaml
+release:
+  name: logstash-exporter-test
+  namespace: default
+
+tests:
+  - it: should not create any RBAC resources by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create RBAC resources when enabled
+    set:
+      rbac.create: true
+      serviceAccount.create: true
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: should use custom rules when provided
+    set:
+      rbac.create: true
+      serviceAccount.create: true
+      rbac.rules:
+        - apiGroups: [""]
+          resources: ["pods", "services", "configmaps"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["extensions", "apps"]
+          resources: ["deployments"]
+          verbs: ["get"]
+    asserts:
+      - hasDocuments:
+          count: 2

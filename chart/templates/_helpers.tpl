@@ -39,3 +39,11 @@ It checks if .Values.image.tag is provided, and if not, it returns a tag with "v
 {{- printf "v%s" .Chart.AppVersion -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "logstash-exporter.labels" -}}
+app: {{ include "logstash-exporter.name" . }}
+release: {{ .Release.Name }}
+{{- end -}}

@@ -1,0 +1,19 @@
+suite: ConfigMap Tests
+templates:
+  - configmap.yaml
+release:
+  name: logstash-exporter-test
+  namespace: default
+
+tests:
+  - it: should create a configmap with default settings
+    asserts:
+      - isKind:
+          of: ConfigMap
+  
+  - it: should create a configmap when kubernetes controller is enabled
+    set:
+      logstash.kubernetes.enabled: true
+    asserts:
+      - isKind:
+          of: ConfigMap

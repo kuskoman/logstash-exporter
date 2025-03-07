@@ -1,0 +1,65 @@
+suite: Deployment Tests
+templates:
+  - deployment.yaml
+release:
+  name: logstash-exporter-test
+  namespace: default
+
+tests:
+  - it: should create a deployment with default settings
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: exporter
+  
+  - it: should create a controller deployment when kubernetes controller is enabled
+    set:
+      logstash.kubernetes.enabled: true
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: controller
+  
+  - it: should use custom controller repository when specified
+    set:
+      logstash.kubernetes.enabled: true
+      image.controllerRepository: custom/logstash-controller
+    asserts:
+      - isKind:
+          of: Deployment
+  
+  - it: should set resources when specified
+    set:
+      deployment.resources.limits.cpu: 100m
+      deployment.resources.limits.memory: 128Mi
+      deployment.resources.requests.cpu: 50m
+      deployment.resources.requests.memory: 64Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: 100m
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 128Mi
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.cpu
+          value: 50m
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.memory
+          value: 64Mi
+  
+  - it: should set pod annotations when specified
+    set:
+      deployment.podAnnotations.prometheus.io/scrape: "true"
+      deployment.podAnnotations.prometheus.io/port: "9198"
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations.prometheus\.io/scrape
+          value: "true"
+      - equal:
+          path: spec.template.metadata.annotations.prometheus\.io/port
+          value: "9198"

@@ -126,11 +126,29 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: 3.11.2
+          version: 3.13.3
 
       - name: Template Helm chart
         working-directory: ./chart
         run: helm template . > /dev/null
+
+  helm-unittest:
+    name: Run Helm unit tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 3.13.3
+
+      - name: Install Helm unittest plugin
+        run: helm plugin install https://github.com/quintush/helm-unittest
+
+      - name: Run Helm unit tests
+        run: make helm-test
 
   test-integration:
     name: Test integration with Prometheus
@@ -387,6 +405,7 @@ jobs:
       - verify-helm-readme
       - lint-helm-chart
       - template-helm-chart
+      - helm-unittest
       - build-linux-docker-image
     steps:
       - name: Checkout code
@@ -450,6 +469,7 @@ jobs:
       - lint-scripts
       - verify-makefile-readme
       - test-helm-integration
+      - helm-unittest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
