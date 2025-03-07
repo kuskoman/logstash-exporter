@@ -12,9 +12,7 @@ data:
   {{- else }}
     logstash:
       instances:
-        {{ range .Values.logstash.urls -}}
-        - url: {{ . | quote }}
-        {{ end }}
+        {{- toYaml .Values.logstash.instances | nindent 8 }}
     server:
       host: {{ .Values.logstash.server.host | quote }}
       port: {{ .Values.logstash.server.port }}
