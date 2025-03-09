@@ -243,7 +243,7 @@ func TestConfigureAdvancedServerTLS(t *testing.T) {
 				CurvePreferences: []string{"P256"},
 			},
 			expectError: false,
-		}
+		},
 	}
 
 	for _, tc := range tests {
