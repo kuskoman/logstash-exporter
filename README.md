@@ -194,9 +194,13 @@ The application is now configured using a YAML file instead of environment varia
 logstash:
   instances:
     - url: "http://logstash:9600" # URL to Logstash API
-      httpInsecure: false         # Skip TLS certificate verification for Logstash instance (default: false)
-    - url: "http://logstash2:9600"
-      name: "prod_logstash"       # Custom name for the Logstash instance (optional)
+      name: "local_logstash"      # Custom name for the Logstash instance (optional)
+    - url: "https://logstash2:9600"
+      name: "prod_logstash"       # Custom name for the Logstash instance
+      tls_config:                 # TLS configuration for HTTPS connections
+        ca_file: "/path/to/ca.pem"  # Path to custom CA certificate
+        server_name: "logstash.internal"  # Override hostname for verification
+        insecure_skip_verify: false  # Skip certificate verification (not recommended)
   timeout: 2s                     # HTTP timeout for Logstash API requests
 server:
   host: "0.0.0.0"                 # Host on which the application will be exposed (default: all interfaces)

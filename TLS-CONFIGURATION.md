@@ -129,7 +129,7 @@ In the future, once the exporter-toolkit is considered stable, we may consider a
 ### Common Issues
 
 1. **Certificate not found**: Ensure the paths to certificate files are correct and accessible
-2. **Certificate verification failed**: Check if the CA certificate is correct or consider using `insecure_skip_verify: true` for testing
+2. **Certificate verification failed**: Check if the CA certificate is correct or consider using `insecure_skip_verify: true` for testing. Make sure CA certificates are installed in the system trust store.
 3. **TLS handshake errors**: Ensure compatible TLS versions between client and server
 
 ### Debugging

@@ -66,7 +66,11 @@ server:
 logstash:
   instances:
     - url: "https://logstash:9600"
-      httpInsecure: false  # Verify certificates (default)
+      tls_config:
+        ca_file: "/path/to/ca.crt"    # Custom CA certificate (if needed)
+        server_name: "logstash.internal"  # Override hostname verification
+        insecure_skip_verify: false    # Verify certificates (default)
     - url: "https://other-logstash:9600"
-      httpInsecure: true   # Skip certificate verification (for self-signed or invalid certs)
+      tls_config:
+        insecure_skip_verify: true    # Skip certificate verification (for self-signed certs)
 ```
