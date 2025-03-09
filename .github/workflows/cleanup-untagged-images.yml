@@ -23,7 +23,7 @@ jobs:
     name: Cleanup untagged container images
     runs-on: ubuntu-latest
     env:
-      DRY_RUN: "true"
+      DRY_RUN: "false"
 
     steps:
       - name: Checkout code
