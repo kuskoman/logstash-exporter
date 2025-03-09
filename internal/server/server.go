@@ -3,10 +3,12 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/kuskoman/logstash-exporter/pkg/config"
+	customtls "github.com/kuskoman/logstash-exporter/pkg/tls"
 )
 
 // NewAppServer creates a new http server with the given host and port
@@ -17,7 +19,19 @@ func NewAppServer(cfg *config.Config) *http.Server {
 	logstashUrls := convertInstancesToUrls(cfg.Logstash.Instances)
 
 	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
+	handler := promhttp.Handler()
+
+	// Configure basic authentication if enabled
+	if cfg.Server.BasicAuth != nil {
+		users, err := cfg.Server.BasicAuth.GetUsers()
+		if err != nil {
+			panic(fmt.Errorf("failed to get authentication users: %w", err))
+		}
+
+		handler = customtls.MultiUserAuthMiddleware(handler, users)
+	}
+
+	mux.Handle("/metrics", handler)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/metrics", http.StatusMovedPermanently)
 	})
@@ -31,6 +45,14 @@ func NewAppServer(cfg *config.Config) *http.Server {
 	server := &http.Server{
 		Addr:    listenUrl,
 		Handler: mux,
+	}
+
+	// Configure read and write timeouts if specified
+	if cfg.Server.ReadTimeout > 0 {
+		server.ReadTimeout = time.Duration(cfg.Server.ReadTimeout) * time.Second
+	}
+	if cfg.Server.WriteTimeout > 0 {
+		server.WriteTimeout = time.Duration(cfg.Server.WriteTimeout) * time.Second
 	}
 
 	return server

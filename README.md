@@ -61,13 +61,13 @@ To use this mode:
    serviceAccount:
      create: true
      enabled: true
-   
+
    rbac:
      create: true
    ```
 
 3. Add annotations to your Kubernetes resources:
-   
+
    For pods:
    ```yaml
    metadata:
@@ -77,7 +77,7 @@ To use this mode:
        logstash-exporter.io/username: "user"
        logstash-exporter.io/password: "pass"
    ```
-   
+
    For services (useful for clustered Logstash with stable endpoints):
    ```yaml
    kind: Service
@@ -345,14 +345,14 @@ To run them you must setup development [docker-compose](./docker-compose.yml) fi
 Then you can run the tests:
 
     make verify-metrics
-    
+
 ### Testing Standards
 
 For consistency across the codebase, we follow a set of [Testing Standards](./TESTING-STANDARDS.md) that outlines:
 
 - Test structure and naming conventions
 - Error handling patterns
-- Best practices for mocks and fixtures 
+- Best practices for mocks and fixtures
 - Guidelines for specific test types
 
 Contributors should review these standards before submitting pull requests.

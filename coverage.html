@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>tls: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/kuskoman/logstash-exporter/pkg/tls/auth.go (100.0%)</option>
+				
+				<option value="file1">github.com/kuskoman/logstash-exporter/pkg/tls/client.go (100.0%)</option>
+				
+				<option value="file2">github.com/kuskoman/logstash-exporter/pkg/tls/common.go (100.0%)</option>
+				
+				<option value="file3">github.com/kuskoman/logstash-exporter/pkg/tls/server.go (95.0%)</option>
+				
+				<option value="file4">github.com/kuskoman/logstash-exporter/pkg/tls/test_utils.go (100.0%)</option>
+				
+				<option value="file5">github.com/kuskoman/logstash-exporter/pkg/tls/utils.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package tls
+
+import (
+        "net/http"
+)
+
+// MultiUserAuthMiddleware adds basic authentication with multiple users to an HTTP handler.
+func MultiUserAuthMiddleware(next http.Handler, users map[string]string) http.Handler <span class="cov8" title="1">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                user, pass, ok := r.BasicAuth()
+
+                // Check if credentials are provided
+                if !ok </span><span class="cov8" title="1">{
+                        w.Header().Set("WWW-Authenticate", `Basic realm="`+BasicAuthRealm+`"`)
+                        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+                        return
+                }</span>
+
+                // Check if user exists and password matches
+                <span class="cov8" title="1">storedPassword, exists := users[user]
+                if !exists || storedPassword != pass </span><span class="cov8" title="1">{
+                        w.Header().Set("WWW-Authenticate", `Basic realm="`+BasicAuthRealm+`"`)
+                        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">next.ServeHTTP(w, r)</span>
+        })
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package tls
+
+import (
+        "crypto/tls"
+        "net/http"
+        "time"
+
+        "github.com/kuskoman/logstash-exporter/pkg/config"
+)
+
+// ConfigureClientTLS creates a TLS configuration for a client connection.
+func ConfigureClientTLS(caFile, serverName string, insecureSkipVerify bool) (*tls.Config, error) <span class="cov8" title="1">{
+        tlsConfig := &amp;tls.Config{
+                InsecureSkipVerify: insecureSkipVerify,
+        }
+
+        // If server name is specified, set it in the TLS config
+        if serverName != "" </span><span class="cov8" title="1">{
+                tlsConfig.ServerName = serverName
+        }</span>
+
+        // If CA file is specified, load it
+        <span class="cov8" title="1">if caFile != "" </span><span class="cov8" title="1">{
+                certPool, err := LoadCertificateAuthority(caFile)
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">tlsConfig.RootCAs = certPool</span>
+        }
+
+        <span class="cov8" title="1">return tlsConfig, nil</span>
+}
+
+// ConfigureHTTPClientWithTLS creates an HTTP client with TLS configuration.
+func ConfigureHTTPClientWithTLS(timeout time.Duration, caFile, serverName string, insecureSkipVerify bool) (*http.Client, error) <span class="cov8" title="1">{
+        transport := http.DefaultTransport.(*http.Transport).Clone()
+
+        // Configure TLS
+        tlsConfig, err := ConfigureClientTLS(caFile, serverName, insecureSkipVerify)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        // Set the TLS config in the transport
+        <span class="cov8" title="1">transport.TLSClientConfig = tlsConfig
+
+        // Create and return the HTTP client
+        return &amp;http.Client{
+                Timeout:   timeout,
+                Transport: transport,
+        }, nil</span>
+}
+
+// ConfigureHTTPClientFromLogstashInstance creates an HTTP client from a Logstash instance configuration.
+func ConfigureHTTPClientFromLogstashInstance(instance *config.LogstashInstance, timeout time.Duration) (*http.Client, error) <span class="cov8" title="1">{
+        // Determine if we should use TLS configuration
+        if instance.TLSConfig != nil </span><span class="cov8" title="1">{
+                // Use advanced TLS configuration
+                return ConfigureHTTPClientWithTLS(
+                        timeout,
+                        instance.TLSConfig.CAFile,
+                        instance.TLSConfig.ServerName,
+                        instance.TLSConfig.InsecureSkipVerify || instance.HttpInsecure, // Support both new and legacy config
+                )
+        }</span>
+
+        // Fall back to legacy configuration
+        <span class="cov8" title="1">transport := http.DefaultTransport.(*http.Transport).Clone()
+        transport.TLSClientConfig = &amp;tls.Config{
+                InsecureSkipVerify: instance.HttpInsecure,
+        }
+
+        return &amp;http.Client{
+                Timeout:   timeout,
+                Transport: transport,
+        }, nil</span>
+}
+
+// ConfigureBasicAuth adds basic authentication to an HTTP client's transport.
+// This method is for single user authentication only.
+// NOTE: This will be updated in a future release to support multiple users.
+func ConfigureBasicAuth(client *http.Client, username, password string) *http.Client <span class="cov8" title="1">{
+        if client == nil </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        // Create a new transport that wraps the existing one and adds basic auth
+        <span class="cov8" title="1">client.Transport = &amp;basicAuthTransport{
+                username:  username,
+                password:  password,
+                transport: client.Transport,
+        }
+
+        return client</span>
+}
+
+// basicAuthTransport adds basic authentication to requests.
+type basicAuthTransport struct {
+        username  string
+        password  string
+        transport http.RoundTripper
+}
+
+// RoundTrip implements the http.RoundTripper interface.
+func (t *basicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) <span class="cov8" title="1">{
+        // Clone the request to avoid modifying the original
+        req2 := req.Clone(req.Context())
+
+        // Add basic auth header
+        req2.SetBasicAuth(t.username, t.password)
+
+        // Pass the request to the underlying transport
+        return t.transport.RoundTrip(req2)
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package tls
+
+import (
+        "crypto/tls"
+        "crypto/x509"
+        "fmt"
+        "os"
+)
+
+// LoadCertificateFromFile loads a certificate from the given file path.
+func LoadCertificateFromFile(certFile, keyFile string) (tls.Certificate, error) <span class="cov8" title="1">{
+        cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+        if err != nil </span><span class="cov8" title="1">{
+                return tls.Certificate{}, fmt.Errorf("error loading key pair: %w", err)
+        }</span>
+        <span class="cov8" title="1">return cert, nil</span>
+}
+
+// LoadCertificateAuthority loads a CA certificate from the given file path.
+func LoadCertificateAuthority(caFile string) (*x509.CertPool, error) <span class="cov8" title="1">{
+        caData, err := os.ReadFile(caFile)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to read CA file: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">certPool := x509.NewCertPool()
+        if !certPool.AppendCertsFromPEM(caData) </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to parse CA certificate")
+        }</span>
+
+        <span class="cov8" title="1">return certPool, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package tls
+
+import (
+        "crypto/tls"
+        "log/slog"
+
+        "github.com/kuskoman/logstash-exporter/pkg/config"
+)
+
+// ConfigureServerTLS configures TLS for the server.
+// It handles both the legacy and new TLS configuration formats.
+func ConfigureServerTLS(cfg *config.Config) (*tls.Config, error) <span class="cov8" title="1">{
+        if cfg.Server.TLSConfig != nil </span><span class="cov8" title="1">{
+                return ConfigureAdvancedServerTLS(cfg.Server.TLSConfig)
+        }</span>
+
+        <span class="cov8" title="1">if cfg.Server.EnableSSL </span><span class="cov8" title="1">{
+                return ConfigureLegacyServerTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+        }</span>
+
+        <span class="cov8" title="1">return nil, nil</span>
+}
+
+// ConfigureAdvancedServerTLS configures TLS with advanced options.
+func ConfigureAdvancedServerTLS(tlsConfig *config.TLSServerConfig) (*tls.Config, error) <span class="cov8" title="1">{
+        config := &amp;tls.Config{}
+
+        cert, err := LoadCertificateFromFile(tlsConfig.CertFile, tlsConfig.KeyFile)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">config.Certificates = []tls.Certificate{cert}
+
+        if tlsConfig.ClientCA != "" </span><span class="cov8" title="1">{
+                clientCAs, err := LoadCertificateAuthority(tlsConfig.ClientCA)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">config.ClientCAs = clientCAs</span>
+        }
+
+        <span class="cov8" title="1">if tlsConfig.ClientAuth != "" </span><span class="cov8" title="1">{
+                clientAuthType, err := ParseClientAuthType(tlsConfig.ClientAuth)
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">config.ClientAuth = clientAuthType</span>
+        }
+
+        <span class="cov8" title="1">if tlsConfig.MinVersion != "" </span><span class="cov8" title="1">{
+                minVersion, err := ParseTLSVersion(tlsConfig.MinVersion)
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">config.MinVersion = minVersion</span>
+        }
+
+        <span class="cov8" title="1">if tlsConfig.MaxVersion != "" </span><span class="cov8" title="1">{
+                maxVersion, err := ParseTLSVersion(tlsConfig.MaxVersion)
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">config.MaxVersion = maxVersion</span>
+        }
+
+        <span class="cov8" title="1">if len(tlsConfig.CipherSuites) &gt; 0 </span><span class="cov8" title="1">{
+                slog.Warn("cipher suites configuration is not implemented")
+        }</span>
+
+        <span class="cov8" title="1">if len(tlsConfig.CurvePreferences) &gt; 0 </span><span class="cov8" title="1">{
+                slog.Warn("curve preferences configuration is not implemented")
+        }</span>
+
+        <span class="cov8" title="1">config.PreferServerCipherSuites = tlsConfig.PreferServerCipherSuites
+
+        return config, nil</span>
+}
+
+// ConfigureLegacyServerTLS configures TLS with the legacy format.
+func ConfigureLegacyServerTLS(certFile, keyFile string) (*tls.Config, error) <span class="cov8" title="1">{
+        cert, err := LoadCertificateFromFile(certFile, keyFile)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;tls.Config{
+                Certificates: []tls.Certificate{cert},
+                MinVersion:   DefaultMinTLSVersion,
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package tls
+
+import (
+        "os"
+        "path/filepath"
+        "runtime"
+)
+
+// TestCertificates contains certificate data for testing.
+// These are self-signed certificates for testing purposes only.
+// DO NOT USE IN PRODUCTION.
+type TestCertificates struct {
+        // Certificate in PEM format
+        CertPEM string
+        // Private key in PEM format
+        KeyPEM string
+        // CA certificate in PEM format
+        CAPEM string
+}
+
+// GetTestCertificates returns test certificate data for use in tests.
+// It loads the certificates from the fixtures/https directory.
+func GetTestCertificates() TestCertificates <span class="cov8" title="1">{
+        // Get the path to the fixtures directory
+        _, thisFile, _, _ := runtime.Caller(0)
+        fixturesDir := filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(thisFile))), "fixtures", "https")
+
+        // Load the certificates
+        certPEM, _ := os.ReadFile(filepath.Join(fixturesDir, "server.crt"))
+        keyPEM, _ := os.ReadFile(filepath.Join(fixturesDir, "server.key"))
+        caPEM, _ := os.ReadFile(filepath.Join(fixturesDir, "ca.crt"))
+
+        return TestCertificates{
+                CertPEM: string(certPEM),
+                KeyPEM:  string(keyPEM),
+                CAPEM:   string(caPEM),
+        }
+}</span>
+
+// Constants for test configuration
+const (
+        TestBaseURL       = "https://example.com:9600"
+        TestUsername      = "testuser"
+        TestPassword      = "testpass"
+        TestTimeout       = 5 // seconds
+        TestServerName    = "custom.example.com"
+        TestNonexistentCA = "/nonexistent/ca.pem"
+)
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package tls
+
+import (
+        "crypto/tls"
+        "fmt"
+        "strings"
+)
+
+// ParseTLSVersion converts a string TLS version to a uint16 value.
+func ParseTLSVersion(version string) (uint16, error) <span class="cov8" title="1">{
+        switch strings.ToUpper(version) </span>{
+        case TLSVersion10:<span class="cov8" title="1">
+                return tls.VersionTLS10, nil</span>
+        case TLSVersion11:<span class="cov8" title="1">
+                return tls.VersionTLS11, nil</span>
+        case TLSVersion12:<span class="cov8" title="1">
+                return tls.VersionTLS12, nil</span>
+        case TLSVersion13:<span class="cov8" title="1">
+                return tls.VersionTLS13, nil</span>
+        default:<span class="cov8" title="1">
+                return 0, fmt.Errorf("unsupported TLS version: %s", version)</span>
+        }
+}
+
+// ParseClientAuthType converts a string client auth type to a tls.ClientAuthType.
+func ParseClientAuthType(authType string) (tls.ClientAuthType, error) <span class="cov8" title="1">{
+        switch strings.ToUpper(authType) </span>{
+        case ClientAuthNone:<span class="cov8" title="1">
+                return tls.NoClientCert, nil</span>
+        case ClientAuthRequestClient:<span class="cov8" title="1">
+                return tls.RequestClientCert, nil</span>
+        case ClientAuthRequireAny:<span class="cov8" title="1">
+                return tls.RequireAnyClientCert, nil</span>
+        case ClientAuthVerifyIfGiven:<span class="cov8" title="1">
+                return tls.VerifyClientCertIfGiven, nil</span>
+        case ClientAuthRequireAndVerify:<span class="cov8" title="1">
+                return tls.RequireAndVerifyClientCert, nil</span>
+        default:<span class="cov8" title="1">
+                return tls.NoClientCert, fmt.Errorf("unsupported client auth type: %s", authType)</span>
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

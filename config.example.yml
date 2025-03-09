@@ -1,41 +1,87 @@
 logstash:
   instances:
-    - url: "http://localhost:9600"
+    # Basic Logstash connection
+    - url: http://localhost:9600
+      name: local-logstash
+
+    # Logstash with TLS configuration (custom CA)
+    - url: https://logstash.example.com:9600
+      name: logstash-with-tls
+      # Legacy way to configure insecure connections (still supported)
       httpInsecure: false
-    - url: "https://logstash-secure:9600"
-      httpInsecure: true
-      name: "secure_instance"
-  timeout: 3s
+      # New TLS configuration
+      tls_config:
+        # Path to custom CA file
+        ca_file: /etc/logstash-exporter/ca.pem
+        # Override server name verification (optional)
+        server_name: logstash.internal
+        # New way to configure insecure connections (preferred over httpInsecure)
+        insecure_skip_verify: false
+
+    # Logstash with Basic Authentication
+    - url: https://logstash-secure.example.com:9600
+      name: logstash-with-auth
+      tls_config:
+        ca_file: /etc/logstash-exporter/ca.pem
+      # Basic authentication configuration
+      basic_auth:
+        username: logstash_user
+        # Either specify password directly
+        password: logstash_password
+        # Or use a password file (alternative to password)
+        # password_file: /etc/logstash-exporter/password.txt
+
+  # Timeout for HTTP requests to Logstash in seconds
+  httpTimeout: 5s
+
 server:
-  host: "127.0.0.1"
-  port: 9200
-  # TLS/HTTPS configuration (optional)
+  host: 0.0.0.0
+  port: 9198
+
+  # Legacy SSL/TLS configuration (still supported)
   # enableSSL: true
-  # certFile: "/path/to/cert.pem"
-  # keyFile: "/path/to/key.pem"
+  # certFile: /etc/logstash-exporter/server.crt
+  # keyFile: /etc/logstash-exporter/server.key
+
+  # Advanced TLS server configuration (Prometheus exporter-toolkit compatible)
+  tls_server_config:
+    # Required: paths to certificate and key files
+    cert_file: /etc/logstash-exporter/server.crt
+    key_file: /etc/logstash-exporter/server.key
+
+    # Optional: client authentication settings
+    # client_auth_type: NoClientCert
+    # client_ca_file: /etc/logstash-exporter/ca-clients.pem
+
+    # Optional: TLS version limits
+    min_version: TLS12
+    # max_version: TLS13
+
+    # Optional: cipher preferences
+    prefer_server_cipher_suites: true
+    # cipher_suites:
+    #  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+    #  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+    #  - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+
+  # Basic authentication for the metrics endpoint
+  basic_auth:
+    # Map of username to password
+    users:
+      prometheus: exporter_password
+      admin: admin_password
+    # Alternatively, use a users file
+    # users_file: /etc/logstash-exporter/auth-users.txt
+
+  # Connection timeouts in seconds
+  read_timeout_seconds: 30
+  write_timeout_seconds: 30
+  max_connections: 512
+
 logging:
-  level: "info"
-  format: "text"
-# Kubernetes controller configuration (optional)
+  level: info
+  format: json
+
 kubernetes:
   enabled: false
-  # Watch only specific namespaces (empty watches all)
-  # namespaces:
-  #   - default
-  #   - monitoring
-  # Define which resource types to monitor
-  resources:
-    # Pod monitoring configuration
-    pods:
-      enabled: true
-      annotationPrefix: "logstash-exporter.io"
-    # Service monitoring configuration
-    services:
-      enabled: false
-      annotationPrefix: "logstash-exporter.io"
-  resyncPeriod: 10m
-  scrapeInterval: 15s
-  logstashURLAnnotation: "logstash-exporter.io/url"
-  logstashUsernameAnnotation: "logstash-exporter.io/username"
-  logstashPasswordAnnotation: "logstash-exporter.io/password"
-  # kubeConfig: /path/to/kubeconfig # Optional: path to kubeconfig file for running outside cluster
+  # Add Kubernetes configuration if needed

@@ -13,6 +13,7 @@ import (
 	"github.com/kuskoman/logstash-exporter/internal/collectors/nodestats"
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/logstash_client"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
+	"github.com/kuskoman/logstash-exporter/pkg/tls"
 )
 
 // Collector is an interface that defines methods for collecting metrics
@@ -30,18 +31,48 @@ type CollectorManager struct {
 	instancesMap    map[string]*config.LogstashInstance // Used for dynamic instance management
 }
 
-func getClientsForEndpoints(instances []*config.LogstashInstance) []logstash_client.Client {
+func getClientsForEndpoints(instances []*config.LogstashInstance, timeout time.Duration) []logstash_client.Client {
 	clients := make([]logstash_client.Client, len(instances))
 
 	for i, instance := range instances {
-		clients[i] = logstash_client.NewClient(instance.Host, instance.HttpInsecure, instance.Name)
+		var client logstash_client.Client
+		var err error
+
+		// Create an HTTP client based on the instance configuration
+		httpClient, err := tls.ConfigureHTTPClientFromLogstashInstance(instance, timeout)
+		if err != nil {
+			slog.Error("Failed to configure TLS client", "error", err)
+			// Fall back to standard client
+			client = logstash_client.NewClient(instance.Host, instance.HttpInsecure, instance.Name)
+			clients[i] = client
+			continue
+		}
+
+		// If there's basic auth configuration, add it
+		if instance.BasicAuth != nil {
+			password, err := instance.BasicAuth.GetPassword()
+			if err != nil {
+				slog.Error("Failed to get authentication password", "error", err)
+				// Continue with a standard client as fallback
+				client = logstash_client.NewClient(instance.Host, instance.HttpInsecure, instance.Name)
+				clients[i] = client
+				continue
+			}
+
+			// Add basic auth to the HTTP client
+			httpClient = tls.ConfigureBasicAuth(httpClient, instance.BasicAuth.Username, password)
+		}
+
+		// Create a client with the configured HTTP client
+		client = logstash_client.NewClientWithHTTPClient(instance.Host, httpClient, instance.Name)
+		clients[i] = client
 	}
 
 	return clients
 }
 
 // NewCollectorManager creates a new CollectorManager with the provided logstash instances and http timeout
-func NewCollectorManager(instances []*config.LogstashInstance, httpTimeout time.Duration) *CollectorManager {
+func NewCollectorManager(instances []*config.LogstashInstance, timeout time.Duration) *CollectorManager {
 	// Build the instance map
 	instancesMap := make(map[string]*config.LogstashInstance)
 	for _, instance := range instances {
@@ -52,7 +83,7 @@ func NewCollectorManager(instances []*config.LogstashInstance, httpTimeout time.
 		instancesMap[instanceID] = instance
 	}
 
-	clients := getClientsForEndpoints(instances)
+	clients := getClientsForEndpoints(instances, timeout)
 
 	collectors := getCollectors(clients)
 
@@ -61,9 +92,9 @@ func NewCollectorManager(instances []*config.LogstashInstance, httpTimeout time.
 	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
 
 	return &CollectorManager{
-		collectors:      collectors, 
-		scrapeDurations: scrapeDurations, 
-		httpTimeout:     httpTimeout,
+		collectors:      collectors,
+		scrapeDurations: scrapeDurations,
+		httpTimeout:     timeout,
 		instancesMap:    instancesMap,
 	}
 }
@@ -157,7 +188,7 @@ func (manager *CollectorManager) AddInstance(id string, instance *config.Logstas
 		instances = append(instances, inst)
 	}
 
-	clients := getClientsForEndpoints(instances)
+	clients := getClientsForEndpoints(instances, manager.httpTimeout)
 	manager.collectors = getCollectors(clients)
 }
 
@@ -181,6 +212,6 @@ func (manager *CollectorManager) RemoveInstance(id string) {
 		instances = append(instances, inst)
 	}
 
-	clients := getClientsForEndpoints(instances)
+	clients := getClientsForEndpoints(instances, manager.httpTimeout)
 	manager.collectors = getCollectors(clients)
 }

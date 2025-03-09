@@ -4,11 +4,16 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
+	customtls "github.com/kuskoman/logstash-exporter/pkg/tls"
 )
 
 // Client is an interface for the Logstash client able to fetch data from the Logstash API
@@ -54,14 +59,17 @@ func NewClient(endpoint string, httpInsecure bool, name string) Client {
 		endpoint = defaultLogstashEndpoint
 	}
 
-	return &DefaultClient{
-		httpClient: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: httpInsecure},
-			},
+	// Create a basic HTTP client with TLS configuration
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: httpInsecure},
 		},
-		endpoint: endpoint,
-		name:     name,
+	}
+
+	return &DefaultClient{
+		httpClient: httpClient,
+		endpoint:   endpoint,
+		name:       name,
 	}
 }
 
@@ -90,4 +98,66 @@ func deserializeHttpResponse[T any](response *http.Response) (*T, error) {
 	}
 
 	return &result, nil
+}
+
+// NewClientWithTLS creates a new client with advanced TLS configuration
+func NewClientWithTLS(baseUrl string, timeout time.Duration, caFile, serverName string, insecureSkipVerify bool) (*DefaultClient, error) {
+	// Use the TLS package to configure the HTTP client
+	httpClient, err := customtls.ConfigureHTTPClientWithTLS(timeout, caFile, serverName, insecureSkipVerify)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DefaultClient{
+		httpClient: httpClient,
+		endpoint:   baseUrl,
+	}, nil
+}
+
+// NewClientWithBasicAuth creates a new client with basic authentication
+func NewClientWithBasicAuth(baseUrl string, timeout time.Duration, username, password string,
+	caFile, serverName string, insecureSkipVerify bool) (*DefaultClient, error) {
+
+	// Create a client with TLS configuration
+	client, err := NewClientWithTLS(baseUrl, timeout, caFile, serverName, insecureSkipVerify)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add basic auth using the TLS package
+	client.httpClient = customtls.ConfigureBasicAuth(client.httpClient, username, password)
+
+	return client, nil
+}
+
+// Get performs an HTTP GET request to the given path and returns the response body
+func (c *DefaultClient) Get(path string) ([]byte, error) {
+	url := c.endpoint + path
+	slog.Debug("fetching data from logstash", "url", url)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+// NewClientWithHTTPClient returns a new instance of the DefaultClient configured with a provided HTTP client
+func NewClientWithHTTPClient(endpoint string, httpClient *http.Client, name string) Client {
+	return &DefaultClient{
+		httpClient: httpClient,
+		endpoint:   endpoint,
+		name:       name,
+	}
 }
