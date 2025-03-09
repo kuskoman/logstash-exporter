@@ -1,13 +1,22 @@
 name: Cleanup Untagged Images
 
 on:
+  # Commented out for testing purposes - will be uncommented later
+  # schedule:
   #   # Run every Monday at 1:00 AM
   #   - cron: '0 1 * * 1'
 
-  # on branch "cleanup-untagged-images"
+  # For testing on this specific branch
   push:
     branches:
       - cleanup-untagged-images
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
 
 jobs:
   cleanup:
@@ -18,14 +27,64 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Delete untagged images
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: "logstash-exporter"
-          package-type: "container"
-          min-versions-to-keep: 1
-          delete-only-untagged-versions: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          older-than: "28 days"
-          # dry-run: false
-          dry-run: true
+      - name: List and filter untagged images
+        id: filter_images
+        run: |
+          echo "Fetching package versions..."
+          # Get all untagged versions of the package
+          VERSIONS=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /user/packages/container/logstash-exporter/versions \
+            --jq '.[] | select(.metadata.container.tags | length == 0) | {id: .id, created_at: .created_at}')
+
+          echo "Filtering versions older than 28 days..."
+          CURRENT_DATE=$(date -u +%s)
+          CUTOFF_DATE=$(date -u -d "28 days ago" +%s)
+
+          # Create a file with IDs of versions to delete
+          echo "[]" > versions_to_delete.json
+
+          # Filter by age and prepare for deletion
+          COUNTER=0
+          echo "$VERSIONS" | while read -r line; do
+            if [ -z "$line" ]; then continue; fi
+
+            VERSION_ID=$(echo "$line" | jq -r '.id')
+            CREATED_AT=$(echo "$line" | jq -r '.created_at')
+            CREATED_TIMESTAMP=$(date -u -d "$CREATED_AT" +%s)
+
+            if [ $CREATED_TIMESTAMP -lt $CUTOFF_DATE ]; then
+              echo "Version $VERSION_ID created at $CREATED_AT is older than 28 days"
+              # In dry-run mode, just print; otherwise add to deletion list
+              COUNTER=$((COUNTER + 1))
+
+              # Add the ID to our JSON file for potential deletion
+              TMP=$(jq --arg id "$VERSION_ID" '. += [$id]' versions_to_delete.json)
+              echo "$TMP" > versions_to_delete.json
+            fi
+          done
+
+          echo "Found $COUNTER untagged versions older than 28 days"
+          echo "versions_to_delete=$(cat versions_to_delete.json)" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dry run - Display versions that would be deleted
+        run: |
+          echo "DRY RUN: The following versions would be deleted:"
+          echo '${{ steps.filter_images.outputs.versions_to_delete }}' | jq .
+          echo "To actually delete these versions, change DRY_RUN to 'false' in the workflow"
+
+        # Uncomment this step to actually delete the versions when ready
+        # - name: Delete filtered package versions
+        #   if: env.DRY_RUN == 'false'
+        #   uses: actions/delete-package-versions@v4
+        #   with:
+        #     package-name: 'logstash-exporter'
+        #     package-type: 'container'
+        #     package-version-ids: ${{ steps.filter_images.outputs.versions_to_delete }}
+        #     token: ${{ secrets.GITHUB_TOKEN }}
+
+        env:
+          DRY_RUN: "true"
