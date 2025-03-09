@@ -1,0 +1,31 @@
+name: Cleanup Untagged Images
+
+on:
+  # Commented out for testing purposes - will be uncommented later
+  # schedule:
+  #   # Run every Monday at 1:00 AM
+  #   - cron: '0 1 * * 1'
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Cleanup untagged container images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Delete untagged images
+        uses: actions/delete-package-versions@v4
+        with:
+          package-name: "logstash-exporter"
+          package-type: "container"
+          min-versions-to-keep: 1
+          delete-only-untagged-versions: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          older-than: "28 days"
+          # dry-run: false
+          dry-run: true
