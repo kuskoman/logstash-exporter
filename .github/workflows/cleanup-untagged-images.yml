@@ -242,12 +242,11 @@ jobs:
           echo "To perform actual deletion, set DRY_RUN to 'false' and uncomment the deletion step."
           echo "======================================================"
 
-      # Uncomment this step to actually delete the versions when ready
-      # - name: Delete filtered package versions
-      #   if: env.DRY_RUN == 'false' && fromJSON(steps.analyze_images.outputs.versions_to_delete) != []
-      #   uses: actions/delete-package-versions@v4
-      #   with:
-      #     package-name: 'logstash-exporter'
-      #     package-type: 'container'
-      #     package-version-ids: ${{ steps.analyze_images.outputs.versions_to_delete }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete filtered package versions
+        if: env.DRY_RUN == 'false' && fromJSON(steps.analyze_images.outputs.versions_to_delete)[0] != null
+        uses: actions/delete-package-versions@v4
+        with:
+          package-name: "logstash-exporter"
+          package-type: "container"
+          package-version-ids: ${{ steps.analyze_images.outputs.versions_to_delete }}
+          token: ${{ secrets.GITHUB_TOKEN }}
