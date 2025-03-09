@@ -88,8 +88,6 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 	go func() {
 		slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
 
-		var err error
-
 		// First validate the server TLS configuration
 		if err := cfg.Server.ValidateServerTLS(); err != nil {
 			sm.serverErrorChan <- fmt.Errorf("invalid TLS configuration: %w", err)
@@ -111,12 +109,10 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 
 			// Start TLS listener without specifying cert and key files since they're
 			// already provided in the TLS configuration
-			err = appServer.ListenAndServeTLS("", "")
+			sm.serverErrorChan <- appServer.ListenAndServeTLS("", "")
 		} else {
-			err = appServer.ListenAndServe()
+			sm.serverErrorChan <- appServer.ListenAndServe()
 		}
-
-		sm.serverErrorChan <- err
 	}()
 }
 

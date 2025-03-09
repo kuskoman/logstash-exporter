@@ -255,9 +255,8 @@ func TestConfigureAdvancedServerTLS(t *testing.T) {
 			},
 			expectError: false,
 			validateFunc: func(t *testing.T, c *tls.Config) {
-				if !c.PreferServerCipherSuites {
-					t.Error("Expected PreferServerCipherSuites to be true")
-				}
+				// PreferServerCipherSuites is deprecated since Go 1.18 and is ignored
+				// No validation needed
 			},
 		},
 	}
