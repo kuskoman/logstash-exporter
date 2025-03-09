@@ -43,15 +43,38 @@ jobs:
           REPO_OWNER="${GITHUB_REPOSITORY_OWNER}"
           echo "Repository owner: $REPO_OWNER"
 
+          # Determine if this is a user or organization repository
+          # First try with user endpoint
+          echo "Trying to fetch using user endpoint..."
+          USER_ENDPOINT="/users/$REPO_OWNER/packages/container/logstash-exporter/versions?per_page=$PER_PAGE&page=1"
+          ORG_ENDPOINT="/orgs/$REPO_OWNER/packages/container/logstash-exporter/versions?per_page=$PER_PAGE&page=1"
+
+          # Test user endpoint
+          USER_TEST=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$USER_ENDPOINT" 2>/dev/null || echo "")
+
+          if [ -n "$USER_TEST" ]; then
+            echo "Using user endpoint for package versions"
+            API_ENDPOINT_TEMPLATE="/users/$REPO_OWNER/packages/container/logstash-exporter/versions?per_page=$PER_PAGE&page=PLACEHOLDER"
+          else
+            echo "Using organization endpoint for package versions"
+            API_ENDPOINT_TEMPLATE="/orgs/$REPO_OWNER/packages/container/logstash-exporter/versions?per_page=$PER_PAGE&page=PLACEHOLDER"
+          fi
+
           # Get all versions with pagination (both tagged and untagged)
           while true; do
             echo "Fetching page $PAGE..."
+
+            # Replace placeholder with actual page number
+            API_ENDPOINT="${API_ENDPOINT_TEMPLATE/PLACEHOLDER/$PAGE}"
 
             # Get a page of package versions (all versions)
             PAGE_RESULT=$(gh api \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "/orgs/$REPO_OWNER/packages/container/logstash-exporter/versions?per_page=$PER_PAGE&page=$PAGE")
+              "$API_ENDPOINT" || echo "[]")
 
             # If empty result or no elements in array, we've reached the end of pagination
             if [ -z "$PAGE_RESULT" ] || [ "$(echo "$PAGE_RESULT" | jq '. | length')" = "0" ]; then
@@ -67,7 +90,18 @@ jobs:
           done
 
           # Count total fetched versions
-          echo "Fetched $(echo ${ALL_VERSIONS[@]} | jq -s 'add | length') total package versions"
+          VERSIONS_COUNT=$(echo "${ALL_VERSIONS[@]}" | jq -s 'add | length')
+          echo "Fetched $VERSIONS_COUNT total package versions"
+
+          # If no versions found, exit early
+          if [ "$VERSIONS_COUNT" = "null" ] || [ "$VERSIONS_COUNT" = "0" ]; then
+            echo "No package versions found. Check package name and permissions."
+            echo "versions_to_delete=[]" >> $GITHUB_OUTPUT
+            echo "versions_to_keep=[]" >> $GITHUB_OUTPUT
+            echo "versions_to_delete_details=[]" >> $GITHUB_OUTPUT
+            echo "all_version_details=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
           echo "Analyzing versions..."
 
