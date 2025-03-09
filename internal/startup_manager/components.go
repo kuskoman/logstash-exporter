@@ -11,6 +11,7 @@ import (
 	"github.com/kuskoman/logstash-exporter/internal/server"
 	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
+	"github.com/kuskoman/logstash-exporter/pkg/tls"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -54,14 +55,14 @@ func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 	if sm.prometheusCollector != nil {
 		prometheus.Unregister(sm.prometheusCollector)
 	}
-	
+
 	collectorManager := collector_manager.NewCollectorManager(
 		cfg.Logstash.Instances,
 		cfg.Logstash.HttpTimeout,
 	)
 
 	sm.prometheusCollector = collectorManager
-	
+
 	// Try to register, but handle errors gracefully
 	if err := prometheus.Register(sm.prometheusCollector); err != nil {
 		// In production, we want to panic, but in tests, we should handle this more gracefully
@@ -70,7 +71,7 @@ func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 			sm.prometheusCollector = reg.ExistingCollector
 			alreadyRegistered = true
 		}
-		
+
 		if !alreadyRegistered {
 			// If it's another type of error, panic
 			panic(err)
@@ -86,23 +87,32 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 
 	go func() {
 		slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
-		
-		var err error
-		if cfg.Server.EnableSSL {
-			// Validate TLS configuration
-			if cfg.Server.CertFile == "" || cfg.Server.KeyFile == "" {
-				err = fmt.Errorf("TLS is enabled but certFile or keyFile is missing")
-				sm.serverErrorChan <- err
+
+		// First validate the server TLS configuration
+		if err := cfg.Server.ValidateServerTLS(); err != nil {
+			sm.serverErrorChan <- fmt.Errorf("invalid TLS configuration: %w", err)
+			return
+		}
+
+		// Configure TLS if TLS configuration is present
+		if cfg.Server.TLSConfig != nil {
+			tlsConfig, err := tls.ConfigureServerTLS(cfg)
+			if err != nil {
+				sm.serverErrorChan <- fmt.Errorf("failed to configure TLS: %w", err)
 				return
 			}
-			
-			slog.Info("starting HTTPS server", "certFile", cfg.Server.CertFile, "keyFile", cfg.Server.KeyFile)
-			err = appServer.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+
+			// Apply the TLS configuration to the server
+			appServer.TLSConfig = tlsConfig
+
+			slog.Info("starting HTTPS server")
+
+			// Start TLS listener without specifying cert and key files since they're
+			// already provided in the TLS configuration
+			sm.serverErrorChan <- appServer.ListenAndServeTLS("", "")
 		} else {
-			err = appServer.ListenAndServe()
+			sm.serverErrorChan <- appServer.ListenAndServe()
 		}
-		
-		sm.serverErrorChan <- err
 	}()
 }
 
@@ -114,7 +124,7 @@ func (sm *StartupManager) startKubernetesController(cfg *config.Config) {
 	}
 
 	slog.Info("starting kubernetes controller")
-	
+
 	// Get collector manager from Prometheus collector
 	var collectorMgr *collector_manager.CollectorManager
 	if sm.prometheusCollector != nil {
@@ -125,7 +135,7 @@ func (sm *StartupManager) startKubernetesController(cfg *config.Config) {
 			return
 		}
 	}
-	
+
 	if collectorMgr == nil {
 		slog.Error("collector manager is nil, cannot start kubernetes controller")
 		return

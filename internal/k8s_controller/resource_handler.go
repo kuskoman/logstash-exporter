@@ -61,7 +61,6 @@ func (h *BaseResourceHandler) Stop() {
 
 // extractLogstashInfo extracts Logstash connection info from object annotations
 func (h *BaseResourceHandler) extractLogstashInfo(annotations map[string]string, resourceName string) (string, *config.LogstashInstance) {
-	// Check if the resource has the required annotation
 	logstashURL, ok := annotations[h.config.LogstashURLAnnotation]
 	if !ok {
 		return "", nil
@@ -73,9 +72,11 @@ func (h *BaseResourceHandler) extractLogstashInfo(annotations map[string]string,
 		Name: resourceName,
 	}
 
-	// Set HttpInsecure to true if the URL is HTTPS
+	// Configure TLS if the URL is HTTPS
 	if strings.HasPrefix(logstashURL, "https://") {
-		instance.HttpInsecure = true
+		instance.TLSConfig = &config.TLSClientConfig{
+			InsecureSkipVerify: true, // Default to insecure for discovered instances
+		}
 	}
 
 	return resourceName, instance

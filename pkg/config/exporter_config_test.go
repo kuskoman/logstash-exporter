@@ -252,7 +252,7 @@ func TestMergeWithDefault(t *testing.T) {
 			},
 			Logstash: LogstashConfig{
 				Instances: []*LogstashInstance{
-					{Host: "http://localhost:9601", HttpInsecure: true},
+					{Host: "http://localhost:9601"},
 					{Host: "http://localhost:9602"},
 				},
 				HttpTimeout: 3 * time.Second,

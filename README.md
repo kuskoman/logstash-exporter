@@ -61,13 +61,13 @@ To use this mode:
    serviceAccount:
      create: true
      enabled: true
-   
+
    rbac:
      create: true
    ```
 
 3. Add annotations to your Kubernetes resources:
-   
+
    For pods:
    ```yaml
    metadata:
@@ -77,7 +77,7 @@ To use this mode:
        logstash-exporter.io/username: "user"
        logstash-exporter.io/password: "pass"
    ```
-   
+
    For services (useful for clustered Logstash with stable endpoints):
    ```yaml
    kind: Service
@@ -194,16 +194,20 @@ The application is now configured using a YAML file instead of environment varia
 logstash:
   instances:
     - url: "http://logstash:9600" # URL to Logstash API
-      httpInsecure: false         # Skip TLS certificate verification for Logstash instance (default: false)
-    - url: "http://logstash2:9600"
-      name: "prod_logstash"       # Custom name for the Logstash instance (optional)
+      name: "local_logstash"      # Custom name for the Logstash instance (optional)
+    - url: "https://logstash2:9600"
+      name: "prod_logstash"       # Custom name for the Logstash instance
+      tls_config:                 # TLS configuration for HTTPS connections
+        ca_file: "/path/to/ca.pem"  # Path to custom CA certificate
+        server_name: "logstash.internal"  # Override hostname for verification
+        insecure_skip_verify: false  # Skip certificate verification (not recommended)
   timeout: 2s                     # HTTP timeout for Logstash API requests
 server:
   host: "0.0.0.0"                 # Host on which the application will be exposed (default: all interfaces)
   port: 9198                      # Port on which the application will be exposed
-  enableSSL: false                # Enable HTTPS (default: false)
-  certFile: "/path/to/cert.pem"   # Path to TLS certificate (required if enableSSL is true)
-  keyFile: "/path/to/key.pem"     # Path to TLS key (required if enableSSL is true)
+  tls_server_config:              # TLS configuration for the exporter server
+    cert_file: "/path/to/cert.pem"  # Path to TLS certificate
+    key_file: "/path/to/key.pem"    # Path to TLS key
 logging:
   level: "debug"                  # Log level (debug, info, warn, error)
   format: "text"                  # Log format (text, json)
@@ -345,14 +349,14 @@ To run them you must setup development [docker-compose](./docker-compose.yml) fi
 Then you can run the tests:
 
     make verify-metrics
-    
+
 ### Testing Standards
 
 For consistency across the codebase, we follow a set of [Testing Standards](./TESTING-STANDARDS.md) that outlines:
 
 - Test structure and naming conventions
 - Error handling patterns
-- Best practices for mocks and fixtures 
+- Best practices for mocks and fixtures
 - Guidelines for specific test types
 
 Contributors should review these standards before submitting pull requests.
