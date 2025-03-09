@@ -76,13 +76,15 @@ jobs:
 
           echo "Found $COUNTER untagged versions older than 28 days"
 
-          # Create a proper JSON array from the bash array
-          JSON_ARRAY=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -R . | jq -s .)
+          # Create a proper JSON array from the bash array and convert to a compact single line
+          JSON_ARRAY=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -R . | jq -c -s .)
           echo "versions_to_delete=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
-          # Debug: show the final JSON
-          echo "Final JSON array of versions to delete:"
+          # Debug: show the final JSON for readability
+          echo "Final JSON array of versions to delete (pretty):"
           echo "$JSON_ARRAY" | jq .
+          echo "Final JSON array of versions to delete (compact):"
+          echo "$JSON_ARRAY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -91,7 +93,6 @@ jobs:
           echo "DRY RUN: The following versions would be deleted:"
           echo '${{ steps.filter_images.outputs.versions_to_delete }}' | jq .
           echo "To actually delete these versions, change DRY_RUN to 'false' in the workflow"
-          # Count array length from the output
           VERSION_COUNT=$(echo '${{ steps.filter_images.outputs.versions_to_delete }}' | jq 'length')
           echo "Found $VERSION_COUNT versions to delete"
 
