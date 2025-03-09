@@ -89,8 +89,11 @@ jobs:
             PAGE=$((PAGE + 1))
           done
 
+          # Create a combined JSON array from all pages
+          COMBINED_RESULTS=$(echo "${ALL_VERSIONS[@]}" | jq -s 'add')
+
           # Count total fetched versions
-          VERSIONS_COUNT=$(echo "${ALL_VERSIONS[@]}" | jq -s 'add | length')
+          VERSIONS_COUNT=$(echo "$COMBINED_RESULTS" | jq 'length')
           echo "Fetched $VERSIONS_COUNT total package versions"
 
           # If no versions found, exit early
@@ -105,20 +108,11 @@ jobs:
 
           echo "Analyzing versions..."
 
-          # Process versions - create three arrays:
-          # 1. All versions details (for reporting)
-          # 2. Versions to keep
-          # 3. Versions to delete (untagged and older than 28 days)
-
-          # Temporary files to store arrays
-          ALL_DETAILS_FILE="all_version_details.json"
-          VERSIONS_TO_KEEP_FILE="versions_to_keep.json"
-          VERSIONS_TO_DELETE_FILE="versions_to_delete.json"
-
-          # Initialize empty arrays
-          echo "[]" > "$ALL_DETAILS_FILE"
-          echo "[]" > "$VERSIONS_TO_KEEP_FILE"
-          echo "[]" > "$VERSIONS_TO_DELETE_FILE"
+          # Process versions into arrays for keeping and deleting
+          # Using temporary files to avoid shell variable limitations
+          VERSIONS_TO_KEEP=()
+          VERSIONS_TO_DELETE=()
+          ALL_DETAILS=()
 
           # Get the current date in ISO format
           CURRENT_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -128,55 +122,49 @@ jobs:
           CUTOFF_DATE=$(date -u -d "28 days ago" +"%Y-%m-%dT%H:%M:%SZ")
           echo "Cutoff date: $CUTOFF_DATE"
 
-          # Process all fetched versions
+          # Process all versions
           KEEP_COUNTER=0
           DELETE_COUNTER=0
 
-          for page_result in "${ALL_VERSIONS[@]}"; do
-            if [ -z "$page_result" ]; then continue; fi
+          # Use a simple loop without subshells to avoid variable scope issues
+          COUNT=$(echo "$COMBINED_RESULTS" | jq 'length')
+          for ((i=0; i<$COUNT; i++)); do
+            VERSION=$(echo "$COMBINED_RESULTS" | jq -c ".[$i]")
 
-            # Process each version in this page
-            echo "$page_result" | jq -c '.[]' | while read -r version; do
-              VERSION_ID=$(echo "$version" | jq -r '.id')
-              CREATED_AT=$(echo "$version" | jq -r '.created_at')
-              NAME=$(echo "$version" | jq -r '.name')
-              TAGS=$(echo "$version" | jq -r '.metadata.container.tags | join(", ")')
-              HAS_TAGS=$(echo "$version" | jq -r '.metadata.container.tags | length > 0')
+            VERSION_ID=$(echo "$VERSION" | jq -r '.id')
+            CREATED_AT=$(echo "$VERSION" | jq -r '.created_at')
+            NAME=$(echo "$VERSION" | jq -r '.name')
+            TAGS=$(echo "$VERSION" | jq -r '.metadata.container.tags | join(", ")')
+            HAS_TAGS=$(echo "$VERSION" | jq -r '.metadata.container.tags | length > 0')
 
-              # Create a detailed record for reporting
-              DETAIL=$(echo "{}" | jq \
-                --arg id "$VERSION_ID" \
-                --arg name "$NAME" \
-                --arg created "$CREATED_AT" \
-                --arg tags "$TAGS" \
-                --argjson has_tags "$HAS_TAGS" \
-                '. + {id: $id, name: $name, created_at: $created, tags: $tags, has_tags: $has_tags}')
+            # Create a detailed record for reporting
+            DETAIL=$(jq -n \
+              --arg id "$VERSION_ID" \
+              --arg name "$NAME" \
+              --arg created "$CREATED_AT" \
+              --arg tags "$TAGS" \
+              --argjson has_tags "$HAS_TAGS" \
+              '{id: $id, name: $name, created_at: $created, tags: $tags, has_tags: $has_tags}')
 
-              # Add to all details
-              ALL_DETAILS=$(jq --argjson detail "$DETAIL" '. + [$detail]' "$ALL_DETAILS_FILE")
-              echo "$ALL_DETAILS" > "$ALL_DETAILS_FILE"
+            ALL_DETAILS+=("$DETAIL")
 
-              # Decide whether to keep or delete based on tags and age
-              if [ "$HAS_TAGS" = "true" ]; then
-                # Always keep tagged versions
-                echo "Keeping tagged version $VERSION_ID ($NAME) with tags: $TAGS"
-                KEEP=$(jq --argjson detail "$DETAIL" '. + [$detail]' "$VERSIONS_TO_KEEP_FILE")
-                echo "$KEEP" > "$VERSIONS_TO_KEEP_FILE"
-                KEEP_COUNTER=$((KEEP_COUNTER + 1))
-              elif [[ "$CREATED_AT" < "$CUTOFF_DATE" ]]; then
-                # Delete untagged versions older than 28 days
-                echo "Marking for deletion: Version $VERSION_ID ($NAME) created at $CREATED_AT (older than 28 days)"
-                DELETE=$(jq --argjson detail "$DETAIL" '. + [$detail]' "$VERSIONS_TO_DELETE_FILE")
-                echo "$DELETE" > "$VERSIONS_TO_DELETE_FILE"
-                DELETE_COUNTER=$((DELETE_COUNTER + 1))
-              else
-                # Keep untagged versions newer than 28 days
-                echo "Keeping recent untagged version $VERSION_ID ($NAME) created at $CREATED_AT"
-                KEEP=$(jq --argjson detail "$DETAIL" '. + [$detail]' "$VERSIONS_TO_KEEP_FILE")
-                echo "$KEEP" > "$VERSIONS_TO_KEEP_FILE"
-                KEEP_COUNTER=$((KEEP_COUNTER + 1))
-              fi
-            done
+            # Decide whether to keep or delete based on tags and age
+            if [ "$HAS_TAGS" = "true" ]; then
+              # Always keep tagged versions
+              echo "Keeping tagged version $VERSION_ID ($NAME) with tags: $TAGS"
+              VERSIONS_TO_KEEP+=("$DETAIL")
+              KEEP_COUNTER=$((KEEP_COUNTER + 1))
+            elif [[ "$CREATED_AT" < "$CUTOFF_DATE" ]]; then
+              # Delete untagged versions older than 28 days
+              echo "Marking for deletion: Version $VERSION_ID ($NAME) created at $CREATED_AT (older than 28 days)"
+              VERSIONS_TO_DELETE+=("$DETAIL")
+              DELETE_COUNTER=$((DELETE_COUNTER + 1))
+            else
+              # Keep untagged versions newer than 28 days
+              echo "Keeping recent untagged version $VERSION_ID ($NAME) created at $CREATED_AT"
+              VERSIONS_TO_KEEP+=("$DETAIL")
+              KEEP_COUNTER=$((KEEP_COUNTER + 1))
+            fi
           done
 
           echo "Analysis complete:"
@@ -184,14 +172,35 @@ jobs:
           echo "- Versions to keep: $KEEP_COUNTER"
           echo "- Versions to delete: $DELETE_COUNTER"
 
-          # Extract just the IDs for the delete action
-          DELETE_IDS=$(jq -c '[.[] | .id]' "$VERSIONS_TO_DELETE_FILE")
-          echo "versions_to_delete=$DELETE_IDS" >> $GITHUB_OUTPUT
+          # Convert arrays to JSON for output
+          if [ ${#VERSIONS_TO_DELETE[@]} -eq 0 ]; then
+            echo "No versions to delete found."
+            DELETE_DETAILS_JSON="[]"
+            DELETE_IDS_JSON="[]"
+          else
+            DELETE_DETAILS_JSON=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -s '.')
+            DELETE_IDS_JSON=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -s '[.[] | .id]')
+          fi
 
-          # Save full details for the dry run step
-          echo "versions_to_keep=$(cat $VERSIONS_TO_KEEP_FILE)" >> $GITHUB_OUTPUT
-          echo "versions_to_delete_details=$(cat $VERSIONS_TO_DELETE_FILE)" >> $GITHUB_OUTPUT
-          echo "all_version_details=$(cat $ALL_DETAILS_FILE)" >> $GITHUB_OUTPUT
+          if [ ${#VERSIONS_TO_KEEP[@]} -eq 0 ]; then
+            echo "No versions to keep found."
+            KEEP_JSON="[]"
+          else
+            KEEP_JSON=$(printf '%s\n' "${VERSIONS_TO_KEEP[@]}" | jq -s '.')
+          fi
+
+          if [ ${#ALL_DETAILS[@]} -eq 0 ]; then
+            echo "No version details found."
+            ALL_DETAILS_JSON="[]"
+          else
+            ALL_DETAILS_JSON=$(printf '%s\n' "${ALL_DETAILS[@]}" | jq -s '.')
+          fi
+
+          # Save outputs in compact format (single line JSON)
+          echo "versions_to_delete=$(echo $DELETE_IDS_JSON | jq -c '.')" >> $GITHUB_OUTPUT
+          echo "versions_to_keep=$(echo $KEEP_JSON | jq -c '.')" >> $GITHUB_OUTPUT
+          echo "versions_to_delete_details=$(echo $DELETE_DETAILS_JSON | jq -c '.')" >> $GITHUB_OUTPUT
+          echo "all_version_details=$(echo $ALL_DETAILS_JSON | jq -c '.')" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -208,15 +217,25 @@ jobs:
           echo "Versions to keep: $KEEP_COUNT"
           echo "Versions to delete: $DELETE_COUNT"
 
-          echo ""
-          echo "-------------- VERSIONS TO BE DELETED ----------------"
-          echo '${{ steps.analyze_images.outputs.versions_to_delete_details }}' | \
-            jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | \(.name)"' | sort
+          if [ "$DELETE_COUNT" -gt "0" ]; then
+            echo ""
+            echo "-------------- VERSIONS TO BE DELETED ----------------"
+            echo '${{ steps.analyze_images.outputs.versions_to_delete_details }}' | \
+              jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | \(.name)"' | sort
+          else
+            echo ""
+            echo "No versions to delete."
+          fi
 
-          echo ""
-          echo "-------------- VERSIONS TO BE KEPT ------------------"
-          echo '${{ steps.analyze_images.outputs.versions_to_keep }}' | \
-            jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | Tags: \(.tags) | \(.name)"' | sort
+          if [ "$KEEP_COUNT" -gt "0" ]; then
+            echo ""
+            echo "-------------- VERSIONS TO BE KEPT ------------------"
+            echo '${{ steps.analyze_images.outputs.versions_to_keep }}' | \
+              jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | Tags: \(.tags) | \(.name)"' | sort
+          else
+            echo ""
+            echo "No versions to keep."
+          fi
 
           echo ""
           echo "This is a DRY RUN. No images will be deleted."
