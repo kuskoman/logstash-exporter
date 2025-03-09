@@ -1,13 +1,13 @@
 name: Cleanup Untagged Images
 
 on:
-  # Commented out for testing purposes - will be uncommented later
-  # schedule:
   #   # Run every Monday at 1:00 AM
   #   - cron: '0 1 * * 1'
 
-  # Allow manual triggering
-  workflow_dispatch:
+  # on branch "cleanup-untagged-images"
+  push:
+    branches:
+      - cleanup-untagged-images
 
 jobs:
   cleanup:
