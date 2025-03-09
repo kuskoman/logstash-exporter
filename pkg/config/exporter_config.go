@@ -27,9 +27,8 @@ var (
 
 // LogstashInstance represents individual Logstash server configuration
 type LogstashInstance struct {
-	Host         string `yaml:"url"`
-	HttpInsecure bool   `yaml:"httpInsecure"`
-	Name         string `yaml:"name"`
+	Host string `yaml:"url"`
+	Name string `yaml:"name"`
 
 	// TLS configuration for the HTTP client
 	TLSConfig *TLSClientConfig `yaml:"tls_config,omitempty"`
@@ -47,7 +46,6 @@ type TLSClientConfig struct {
 	ServerName string `yaml:"server_name,omitempty"`
 
 	// InsecureSkipVerify disables verification of the certificate.
-	// This replaces the older HttpInsecure field.
 	InsecureSkipVerify bool `yaml:"insecure_skip_verify,omitempty"`
 }
 
@@ -368,13 +366,6 @@ func (instance *LogstashInstance) ValidateClientTLS() error {
 			if _, err := os.Stat(instance.TLSConfig.CAFile); os.IsNotExist(err) {
 				return fmt.Errorf("CA file %s does not exist", instance.TLSConfig.CAFile)
 			}
-		}
-
-		// If both new and old InsecureSkipVerify/HttpInsecure are specified, log a warning
-		if instance.HttpInsecure && !instance.TLSConfig.InsecureSkipVerify {
-			slog.Warn("Both HttpInsecure (legacy) and TLSConfig.InsecureSkipVerify are specified but with different values, using TLSConfig.InsecureSkipVerify")
-		} else if instance.HttpInsecure {
-			slog.Warn("HttpInsecure (legacy) is deprecated, use TLSConfig.InsecureSkipVerify instead")
 		}
 	}
 

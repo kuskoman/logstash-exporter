@@ -43,7 +43,7 @@ func getClientsForEndpoints(instances []*config.LogstashInstance, timeout time.D
 		if err != nil {
 			slog.Error("Failed to configure TLS client", "error", err)
 			// Fall back to standard client
-			client = logstash_client.NewClient(instance.Host, instance.HttpInsecure, instance.Name)
+			client = logstash_client.NewClient(instance.Host, instance.Name)
 			clients[i] = client
 			continue
 		}
@@ -54,7 +54,7 @@ func getClientsForEndpoints(instances []*config.LogstashInstance, timeout time.D
 			if err != nil {
 				slog.Error("Failed to get authentication password", "error", err)
 				// Continue with a standard client as fallback
-				client = logstash_client.NewClient(instance.Host, instance.HttpInsecure, instance.Name)
+				client = logstash_client.NewClient(instance.Host, instance.Name)
 				clients[i] = client
 				continue
 			}

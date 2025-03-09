@@ -135,9 +135,8 @@ func TestConfigureHTTPClientFromLogstashInstance(t *testing.T) {
 		{
 			name: "legacy config",
 			instance: &config.LogstashInstance{
-				Host:         TestBaseURL,
-				HttpInsecure: true,
-				Name:         "legacy",
+				Host: TestBaseURL,
+				Name: "legacy",
 			},
 		},
 		{

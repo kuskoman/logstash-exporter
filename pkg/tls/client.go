@@ -53,26 +53,20 @@ func ConfigureHTTPClientWithTLS(timeout time.Duration, caFile, serverName string
 
 // ConfigureHTTPClientFromLogstashInstance creates an HTTP client from a Logstash instance configuration.
 func ConfigureHTTPClientFromLogstashInstance(instance *config.LogstashInstance, timeout time.Duration) (*http.Client, error) {
-	// Determine if we should use TLS configuration
+	// If there's a TLS configuration, use it
 	if instance.TLSConfig != nil {
-		// Use advanced TLS configuration
 		return ConfigureHTTPClientWithTLS(
 			timeout,
 			instance.TLSConfig.CAFile,
 			instance.TLSConfig.ServerName,
-			instance.TLSConfig.InsecureSkipVerify || instance.HttpInsecure, // Support both new and legacy config
+			instance.TLSConfig.InsecureSkipVerify,
 		)
 	}
 
-	// Fall back to legacy configuration
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: instance.HttpInsecure,
-	}
-
+	// No TLS configuration - use default transport with default settings
 	return &http.Client{
 		Timeout:   timeout,
-		Transport: transport,
+		Transport: http.DefaultTransport,
 	}, nil
 }
 

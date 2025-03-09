@@ -20,7 +20,7 @@ func TestNewClient(t *testing.T) {
 	t.Run("should return a new client for the default endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("", false, "default")
+		client := NewClient("", "default")
 
 		if client.(*DefaultClient).endpoint != defaultLogstashEndpoint {
 			t.Errorf("expected endpoint to be %s, got %s", defaultLogstashEndpoint, client.(*DefaultClient).endpoint)
@@ -31,7 +31,7 @@ func TestNewClient(t *testing.T) {
 		t.Parallel()
 
 		expectedEndpoint := "http://localhost:9601"
-		client := NewClient(expectedEndpoint, false, "custom")
+		client := NewClient(expectedEndpoint, "custom")
 
 		receivedEndpoint := client.GetEndpoint()
 		if receivedEndpoint != expectedEndpoint {
@@ -39,23 +39,12 @@ func TestNewClient(t *testing.T) {
 		}
 	})
 
-	t.Run("should return a new client with http insecure configuration", func(t *testing.T) {
-		t.Parallel()
-
-		client := NewClient("", true, "insecure")
-
-		checkHttpInsecure := client.(*DefaultClient).httpClient.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify
-		if !checkHttpInsecure {
-			t.Errorf("expected http insecure to be %t, got %t", true, checkHttpInsecure)
-		}
-	})
-
 	t.Run("should set the client name correctly", func(t *testing.T) {
 		t.Parallel()
 
-		client := NewClient("", false, "testName")
+		client := NewClient("", "testName")
 		if client.Name() != "testName" {
-			t.Errorf("expected client name to be 'testName', got %s", client.Name())
+			t.Errorf("expected client name to be %q, got %q", "testName", client.Name())
 		}
 	})
 }

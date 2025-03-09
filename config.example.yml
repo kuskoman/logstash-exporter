@@ -7,15 +7,13 @@ logstash:
     # Logstash with TLS configuration (custom CA)
     - url: https://logstash.example.com:9600
       name: logstash-with-tls
-      # Legacy way to configure insecure connections (still supported)
-      httpInsecure: false
-      # New TLS configuration
+      # TLS configuration
       tls_config:
         # Path to custom CA file
         ca_file: /etc/logstash-exporter/ca.pem
         # Override server name verification (optional)
         server_name: logstash.internal
-        # New way to configure insecure connections (preferred over httpInsecure)
+        # Skip certificate verification (not recommended for production)
         insecure_skip_verify: false
 
     # Logstash with Basic Authentication

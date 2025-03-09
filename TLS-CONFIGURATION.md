@@ -45,10 +45,11 @@ You can secure the metrics endpoint with basic authentication:
 ```yaml
 server:
   basic_auth:
-    username: prometheus
-    password: secure_password
-    # Or use a password file
-    # password_file: /path/to/password_file
+    users:
+      prometheus: secure_password
+      admin: admin_password
+    # Or use a users file
+    users_file: /path/to/users_file
 ```
 
 ### Connection Limits and Timeouts
@@ -62,16 +63,7 @@ server:
 
 ## Client TLS Configuration (for Logstash connections)
 
-### Legacy Format (still supported)
-
-```yaml
-logstash:
-  instances:
-    - url: https://logstash:9600
-      httpInsecure: false  # false = verify certificate
-```
-
-### Advanced Format (recommended)
+To configure TLS for connections to Logstash instances:
 
 ```yaml
 logstash:
@@ -82,7 +74,7 @@ logstash:
         ca_file: /path/to/ca.pem
         # Override hostname verification
         server_name: logstash.internal
-        # Disable certificate verification (similar to httpInsecure)
+        # Disable certificate verification (not recommended for production)
         insecure_skip_verify: false
 ```
 
@@ -96,7 +88,7 @@ logstash:
         username: logstash_user
         password: secure_password
         # Or use a password file
-        # password_file: /path/to/password_file
+        password_file: /path/to/password_file
 ```
 
 ## SSL/TLS Version Support
