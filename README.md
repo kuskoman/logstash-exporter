@@ -31,6 +31,72 @@ For detailed deployment instructions, see:
 - [Standalone Deployment Guide](./STANDALONE.md) - For deploying as a systemd service
 - [Helm Deployment Guide](./HELM-DEPLOY.md) - For deploying to Kubernetes using Helm
 - [Helm chart auto-generated README](./chart/README.md) - For Helm chart configuration
+- [Helm chart tests](./chart/tests/README.md) - For Helm chart unit tests
+
+### Kubernetes Controller Mode
+
+Logstash Exporter provides a Kubernetes Controller mode that can automatically discover and monitor Logstash instances running in Kubernetes. This mode works by:
+
+1. Watching Kubernetes resources (pods, services) with specific annotations
+2. Dynamically configuring the exporter to scrape metrics from these instances
+3. Automatically updating the monitored targets when resources are created, updated, or deleted
+
+To use this mode:
+
+1. Deploy logstash-exporter with the Kubernetes controller enabled:
+   ```yaml
+   logstash:
+     kubernetes:
+       enabled: true
+       namespaces: ["default", "monitoring"] # Optional: specific namespaces to watch
+       resources:
+         pods:
+           enabled: true         # Enable monitoring pods (default)
+         services:
+           enabled: true         # Enable monitoring services
+   ```
+
+2. Set the appropriate RBAC permissions:
+   ```yaml
+   serviceAccount:
+     create: true
+     enabled: true
+   
+   rbac:
+     create: true
+   ```
+
+3. Add annotations to your Kubernetes resources:
+   
+   For pods:
+   ```yaml
+   metadata:
+     annotations:
+       logstash-exporter.io/url: "http://localhost:9600"
+       # Optional auth credentials
+       logstash-exporter.io/username: "user"
+       logstash-exporter.io/password: "pass"
+   ```
+   
+   For services (useful for clustered Logstash with stable endpoints):
+   ```yaml
+   kind: Service
+   metadata:
+     annotations:
+       logstash-exporter.io/url: "http://logstash-headless:9600"
+   spec:
+     selector:
+       app: logstash
+   ```
+
+4. The controller uses a separate Docker image (`kuskoman/logstash-exporter-controller`). If you need to specify a custom controller image:
+   ```yaml
+   image:
+     repository: "kuskoman/logstash-exporter"
+     controllerRepository: "custom/logstash-exporter-controller"
+   ```
+
+For more details, see the Helm chart configuration.
 
 ### Flags
 
@@ -181,13 +247,17 @@ See more in the [Migration](#migration) section.
 
 - `make all`: Builds binary executables for all OS (Win, Darwin, Linux).
 - `make run`: Runs the Go Exporter application.
+- `make run-controller`: Runs the Go Controller application.
 - `make run-and-watch-config`: Runs the Go Exporter application with watching the configuration file.
-- `make build-linux`: Builds a binary executable for Linux.
-- `make build-darwin`: Builds a binary executable for Darwin.
-- `make build-windows`: Builds a binary executable for Windows.
-- `make build-linux-arm`: Builds a binary executable for Linux ARM.
+- `make build-linux`: Builds exporter and controller binaries for Linux.
+- `make build-darwin`: Builds exporter and controller binaries for Darwin.
+- `make build-windows`: Builds exporter and controller binaries for Windows.
+- `make build-linux-arm`: Builds exporter and controller binaries for Linux ARM.
 - `make build-docker`: Builds a Docker image for the Go Exporter application.
-- `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`).
+- `make build-docker-controller`: Builds a Docker image for the Kubernetes Controller.
+- `make build-docker-all`: Builds both exporter and controller Docker images.
+- `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the exporter.
+- `make build-docker-controller-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the controller.
 - `make clean`: Deletes all binary executables in the out directory.
 - `make test`: Runs all tests.
 - `make test-coverage`: Displays test coverage report.
@@ -200,6 +270,7 @@ See more in the [Migration](#migration) section.
 - `make minify`: Minifies the binary executables.
 - `make install-helm-readme`: Installs readme-generator-for-helm tool.
 - `make helm-readme`: Generates Helm chart README.md file.
+- `make helm-test`: Run Helm unit tests.
 - `make clean-elasticsearch`: Cleans Elasticsearch data. The command may take a very long time to complete.
 - `make clean-prometheus`: Cleans Prometheus data.
 - `make upgrade-dependencies`: Upgrades all dependencies.

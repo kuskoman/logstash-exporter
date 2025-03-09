@@ -19,15 +19,15 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
     -X ${GITHUB_REPO}/pkg/config.Version=${VERSION} \
     -X ${GITHUB_REPO}/pkg/config.GitCommit=${GIT_COMMIT} \
     -X ${GITHUB_REPO}/pkg/config.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    -o exporter cmd/exporter/main.go
+    -o controller cmd/controller/main.go
 
 FROM scratch AS release
 
 COPY --from=build /app/user /etc/passwd
-COPY --from=build /app/exporter /app/exporter
+COPY --from=build /app/controller /app/controller
 
 EXPOSE 9198
 USER 65534
-ENTRYPOINT ["/app/exporter"]
+ENTRYPOINT ["/app/controller"]
 
 ENV EXPORTER_CONFIG_LOCATION=/app/config.yml

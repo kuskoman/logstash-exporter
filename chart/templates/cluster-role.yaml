@@ -1,0 +1,27 @@
+{{- if and .Values.rbac.create .Values.serviceAccount.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "logstash-exporter.fullname" . }}
+  labels:
+    {{- include "logstash-exporter.labels" . | nindent 4 }}
+rules:
+{{- with .Values.rbac.rules }}
+{{ toYaml . | indent 2 }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "logstash-exporter.fullname" . }}
+  labels:
+    {{- include "logstash-exporter.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "logstash-exporter.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "logstash-exporter.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

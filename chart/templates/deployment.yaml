@@ -88,7 +88,7 @@ spec:
       {{- end }}
 
       containers:
-      - name: exporter
+      - name: {{ .Values.logstash.kubernetes.enabled | ternary "controller" "exporter" }}
         env:
         - name: EXPORTER_CONFIG_LOCATION
           value: /app/config.yml
@@ -101,7 +101,11 @@ spec:
           valueFrom:
             {{- toYaml $value | nindent 14 }}
         {{- end }}
+        {{- if .Values.logstash.kubernetes.enabled }}
+        image: "{{ .Values.image.controllerRepository | default (printf "%s-controller" .Values.image.repository) }}:{{ include "logstash-exporter.imageTag" $ }}"
+        {{- else }}
         image: "{{ .Values.image.repository }}:{{ include "logstash-exporter.imageTag" $ }}"
+        {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
 
         {{- if .Values.deployment.resources }}

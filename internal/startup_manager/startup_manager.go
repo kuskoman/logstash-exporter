@@ -10,6 +10,7 @@ import (
 
 	"github.com/kuskoman/logstash-exporter/internal/file_watcher"
 	"github.com/kuskoman/logstash-exporter/internal/flags"
+	"github.com/kuskoman/logstash-exporter/internal/k8s_controller"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -31,14 +32,16 @@ type AppServer interface {
 // StartupManager is responsible for managing the application lifecycle,
 // including initialization, configuration loading, and hot reloading.
 type StartupManager struct {
-	mutex               sync.Mutex
-	watchEnabled        bool
-	isInitialized       bool
-	server              AppServer
-	configManager       *ConfigManager
-	watcher             *file_watcher.FileWatcher
-	prometheusCollector prometheus.Collector
-	serverErrorChan     chan error
+	mutex                sync.Mutex
+	watchEnabled         bool
+	isInitialized        bool
+	server               AppServer
+	configManager        *ConfigManager
+	watcher              *file_watcher.FileWatcher
+	prometheusCollector  prometheus.Collector
+	kubernetesController *k8s_controller.Controller
+	serverErrorChan      chan error
+	withController       bool
 }
 
 // NewStartupManager creates a new StartupManager with the given configuration.
@@ -49,6 +52,28 @@ func NewStartupManager(configPath string, flagsCfg *flags.FlagsConfig) (*Startup
 		mutex:           sync.Mutex{},
 		watchEnabled:    flagsCfg.HotReload,
 		serverErrorChan: make(chan error),
+		withController:  false,
+	}
+
+	watcher, err := file_watcher.NewFileWatcher(configPath, sm.handleConfigChange)
+	if err != nil {
+		return nil, err
+	}
+
+	sm.watcher = watcher
+
+	return sm, nil
+}
+
+// NewStartupManagerWithController creates a new StartupManager with the Kubernetes controller enabled
+func NewStartupManagerWithController(configPath string, flagsCfg *flags.FlagsConfig) (*StartupManager, error) {
+	sm := &StartupManager{
+		configManager:   NewConfigManager(configPath),
+		isInitialized:   false,
+		mutex:           sync.Mutex{},
+		watchEnabled:    flagsCfg.HotReload,
+		serverErrorChan: make(chan error),
+		withController:  true,
 	}
 
 	watcher, err := file_watcher.NewFileWatcher(configPath, sm.handleConfigChange)
@@ -102,6 +127,11 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 
 	slog.Debug("starting application components")
 	sm.startPrometheus(cfg)
+	
+	if sm.withController {
+		sm.startKubernetesController(cfg)
+	}
+	
 	sm.startServer(cfg)
 
 	slog.Info("application initialized")
@@ -128,6 +158,10 @@ func (sm *StartupManager) Shutdown(ctx context.Context) error {
 	err := sm.shutdownServer(ctx)
 	if err != nil {
 		return err
+	}
+
+	if sm.withController {
+		sm.shutdownKubernetesController(ctx)
 	}
 
 	sm.shutdownPrometheus()
