@@ -28,29 +28,29 @@ type ResourceHandler interface {
 
 // BaseResourceHandler contains common functionality for all resource handlers
 type BaseResourceHandler struct {
-	client        kubernetes.Interface
-	collectorMgr  *collector_manager.CollectorManager
-	config        config.KubernetesConfig
+	client         kubernetes.Interface
+	collectorMgr   *collector_manager.CollectorManager
+	config         config.KubernetesConfig
 	resourceConfig config.ResourceConfig
-	mu            sync.RWMutex
-	informers     []cache.SharedIndexInformer
-	stores        []cache.Store
-	stopCh        chan struct{}
+	mu             sync.RWMutex
+	informers      []cache.SharedIndexInformer
+	stores         []cache.Store
+	stopCh         chan struct{}
 }
 
 // newBaseResourceHandler creates a new base resource handler
 func newBaseResourceHandler(
-	client kubernetes.Interface, 
+	client kubernetes.Interface,
 	collectorMgr *collector_manager.CollectorManager,
 	kubeConfig config.KubernetesConfig,
 	resourceConfig config.ResourceConfig,
 ) *BaseResourceHandler {
 	return &BaseResourceHandler{
-		client:        client,
-		collectorMgr:  collectorMgr,
-		config:        kubeConfig,
+		client:         client,
+		collectorMgr:   collectorMgr,
+		config:         kubeConfig,
 		resourceConfig: resourceConfig,
-		stopCh:        make(chan struct{}),
+		stopCh:         make(chan struct{}),
 	}
 }
 
@@ -88,14 +88,14 @@ type PodResourceHandler struct {
 
 // NewPodResourceHandler creates a new Pod resource handler
 func NewPodResourceHandler(
-	client kubernetes.Interface, 
+	client kubernetes.Interface,
 	collectorMgr *collector_manager.CollectorManager,
 	kubeConfig config.KubernetesConfig,
 ) ResourceHandler {
 	return &PodResourceHandler{
 		BaseResourceHandler: newBaseResourceHandler(
-			client, 
-			collectorMgr, 
+			client,
+			collectorMgr,
 			kubeConfig,
 			kubeConfig.Resources.Pods,
 		),
@@ -114,7 +114,7 @@ func (h *PodResourceHandler) Start(ctx context.Context, namespaces []string) err
 		return nil
 	}
 
-	slog.Info("starting pod monitoring", 
+	slog.Info("starting pod monitoring",
 		"annotationPrefix", h.resourceConfig.AnnotationPrefix,
 		"namespaces", namespaces)
 
@@ -124,7 +124,7 @@ func (h *PodResourceHandler) Start(ctx context.Context, namespaces []string) err
 	// Create an informer for each namespace
 	for _, namespace := range namespaces {
 		fieldSelector := fields.Everything()
-		
+
 		podListWatcher := cache.NewListWatchFromClient(
 			h.client.CoreV1().RESTClient(),
 			"pods",
@@ -139,11 +139,14 @@ func (h *PodResourceHandler) Start(ctx context.Context, namespaces []string) err
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 		)
 
-		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc:    h.onPodAdd,
 			UpdateFunc: h.onPodUpdate,
 			DeleteFunc: h.onPodDelete,
 		})
+		if err != nil {
+			return fmt.Errorf("failed to add event handler to pod informer: %w", err)
+		}
 
 		h.informers = append(h.informers, informer)
 		h.stores = append(h.stores, informer.GetStore())
@@ -219,13 +222,13 @@ func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
 
 	instanceName := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	resourceName, instance := h.extractLogstashInfo(pod.Annotations, instanceName)
-	
+
 	if instance == nil {
 		return
 	}
 
-	slog.Info("discovered logstash instance from pod annotation", 
-		"instance", instanceName, 
+	slog.Info("discovered logstash instance from pod annotation",
+		"instance", instanceName,
 		"url", instance.Host)
 
 	// Add the instance to the collector manager
@@ -248,14 +251,14 @@ type ServiceResourceHandler struct {
 
 // NewServiceResourceHandler creates a new Service resource handler
 func NewServiceResourceHandler(
-	client kubernetes.Interface, 
+	client kubernetes.Interface,
 	collectorMgr *collector_manager.CollectorManager,
 	kubeConfig config.KubernetesConfig,
 ) ResourceHandler {
 	return &ServiceResourceHandler{
 		BaseResourceHandler: newBaseResourceHandler(
-			client, 
-			collectorMgr, 
+			client,
+			collectorMgr,
 			kubeConfig,
 			kubeConfig.Resources.Services,
 		),
@@ -274,7 +277,7 @@ func (h *ServiceResourceHandler) Start(ctx context.Context, namespaces []string)
 		return nil
 	}
 
-	slog.Info("starting service monitoring", 
+	slog.Info("starting service monitoring",
 		"annotationPrefix", h.resourceConfig.AnnotationPrefix,
 		"namespaces", namespaces)
 
@@ -284,7 +287,7 @@ func (h *ServiceResourceHandler) Start(ctx context.Context, namespaces []string)
 	// Create an informer for each namespace
 	for _, namespace := range namespaces {
 		fieldSelector := fields.Everything()
-		
+
 		serviceListWatcher := cache.NewListWatchFromClient(
 			h.client.CoreV1().RESTClient(),
 			"services",
@@ -299,11 +302,14 @@ func (h *ServiceResourceHandler) Start(ctx context.Context, namespaces []string)
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 		)
 
-		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc:    h.onServiceAdd,
 			UpdateFunc: h.onServiceUpdate,
 			DeleteFunc: h.onServiceDelete,
 		})
+		if err != nil {
+			return fmt.Errorf("failed to add event handler to service informer: %w", err)
+		}
 
 		h.informers = append(h.informers, informer)
 		h.stores = append(h.stores, informer.GetStore())
@@ -375,13 +381,13 @@ func (h *ServiceResourceHandler) onServiceDelete(obj interface{}) {
 func (h *ServiceResourceHandler) processService(service *corev1.Service) {
 	instanceName := fmt.Sprintf("%s/%s", service.Namespace, service.Name)
 	resourceName, instance := h.extractLogstashInfo(service.Annotations, instanceName)
-	
+
 	if instance == nil {
 		return
 	}
 
-	slog.Info("discovered logstash instance from service annotation", 
-		"instance", instanceName, 
+	slog.Info("discovered logstash instance from service annotation",
+		"instance", instanceName,
 		"url", instance.Host)
 
 	// Add the instance to the collector manager
