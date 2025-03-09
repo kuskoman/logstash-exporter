@@ -113,6 +113,7 @@ jobs:
           VERSIONS_TO_KEEP=()
           VERSIONS_TO_DELETE=()
           ALL_DETAILS=()
+          VERSION_IDS_TO_DELETE=()
 
           # Get the current date in ISO format
           CURRENT_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -137,9 +138,9 @@ jobs:
             TAGS=$(echo "$VERSION" | jq -r '.metadata.container.tags | join(", ")')
             HAS_TAGS=$(echo "$VERSION" | jq -r '.metadata.container.tags | length > 0')
 
-            # Create a detailed record for reporting
+            # Create a detailed record for reporting - ensure ID is stored as number (argjson) not string (arg)
             DETAIL=$(jq -n \
-              --arg id "$VERSION_ID" \
+              --argjson id "$VERSION_ID" \
               --arg name "$NAME" \
               --arg created "$CREATED_AT" \
               --arg tags "$TAGS" \
@@ -158,6 +159,8 @@ jobs:
               # Delete untagged versions older than 28 days
               echo "Marking for deletion: Version $VERSION_ID ($NAME) created at $CREATED_AT (older than 28 days)"
               VERSIONS_TO_DELETE+=("$DETAIL")
+              # Store numeric ID separately for deletion
+              VERSION_IDS_TO_DELETE+=($VERSION_ID)
               DELETE_COUNTER=$((DELETE_COUNTER + 1))
             else
               # Keep untagged versions newer than 28 days
@@ -179,7 +182,9 @@ jobs:
             DELETE_IDS_JSON="[]"
           else
             DELETE_DETAILS_JSON=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -s '.')
-            DELETE_IDS_JSON=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -s '[.[] | .id]')
+            # Build array of raw numeric IDs directly - no string conversion
+            DELETE_IDS_JSON=$(echo "${VERSION_IDS_TO_DELETE[@]}" | jq -c -n '[inputs]')
+            echo "IDs to delete (raw format): $DELETE_IDS_JSON"
           fi
 
           if [ ${#VERSIONS_TO_KEEP[@]} -eq 0 ]; then
@@ -197,7 +202,7 @@ jobs:
           fi
 
           # Save outputs in compact format (single line JSON)
-          echo "versions_to_delete=$(echo $DELETE_IDS_JSON | jq -c '.')" >> $GITHUB_OUTPUT
+          echo "versions_to_delete=$DELETE_IDS_JSON" >> $GITHUB_OUTPUT
           echo "versions_to_keep=$(echo $KEEP_JSON | jq -c '.')" >> $GITHUB_OUTPUT
           echo "versions_to_delete_details=$(echo $DELETE_DETAILS_JSON | jq -c '.')" >> $GITHUB_OUTPUT
           echo "all_version_details=$(echo $ALL_DETAILS_JSON | jq -c '.')" >> $GITHUB_OUTPUT
@@ -238,8 +243,11 @@ jobs:
           fi
 
           echo ""
-          echo "This is a DRY RUN. No images will be deleted."
-          echo "To perform actual deletion, set DRY_RUN to 'false' and uncomment the deletion step."
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "This is a DRY RUN. No images will be deleted."
+          else
+            echo "LIVE RUN! Images WILL be deleted."
+          fi
           echo "======================================================"
 
       - name: Delete filtered package versions
