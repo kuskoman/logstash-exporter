@@ -8,15 +8,16 @@ import (
 )
 
 func TestTLSConfig(t *testing.T) {
-	t.Run("should use TLS when enabled", func(t *testing.T) {
+	t.Run("should use TLS when configured", func(t *testing.T) {
 		certFile := "/path/to/cert.pem"
 		keyFile := "/path/to/key.pem"
 
 		cfg := &config.Config{
 			Server: config.ServerConfig{
-				EnableSSL: true,
-				CertFile:  certFile,
-				KeyFile:   keyFile,
+				TLSConfig: &config.TLSServerConfig{
+					CertFile: certFile,
+					KeyFile:  keyFile,
+				},
 			},
 		}
 
@@ -28,8 +29,8 @@ func TestTLSConfig(t *testing.T) {
 		}
 		var err error
 		mockServerFunc := func(cfg *config.Config) {
-			if cfg.Server.EnableSSL {
-				err = mockSrv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+			if cfg.Server.TLSConfig != nil {
+				err = mockSrv.ListenAndServeTLS(cfg.Server.TLSConfig.CertFile, cfg.Server.TLSConfig.KeyFile)
 			} else {
 				err = mockSrv.ListenAndServe()
 			}
@@ -65,12 +66,10 @@ func TestTLSConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("should not use TLS when disabled", func(t *testing.T) {
+	t.Run("should not use TLS when not configured", func(t *testing.T) {
 		cfg := &config.Config{
 			Server: config.ServerConfig{
-				EnableSSL: false,
-				CertFile:  "/path/to/cert.pem", // Should be ignored when EnableSSL is false
-				KeyFile:   "/path/to/key.pem",  // Should be ignored when EnableSSL is false
+				// No TLS config
 			},
 		}
 
@@ -82,8 +81,8 @@ func TestTLSConfig(t *testing.T) {
 
 		var err error
 		mockServerFunc := func(cfg *config.Config) {
-			if cfg.Server.EnableSSL {
-				err = mockSrv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+			if cfg.Server.TLSConfig != nil {
+				err = mockSrv.ListenAndServeTLS(cfg.Server.TLSConfig.CertFile, cfg.Server.TLSConfig.KeyFile)
 			} else {
 				err = mockSrv.ListenAndServe()
 			}
@@ -116,8 +115,9 @@ func TestTLSConfig(t *testing.T) {
 	t.Run("should validate TLS configuration", func(t *testing.T) {
 		cfg := &config.Config{
 			Server: config.ServerConfig{
-				EnableSSL: true,
-				// CertFile and KeyFile are intentionally missing
+				TLSConfig: &config.TLSServerConfig{
+					// CertFile and KeyFile are intentionally missing
+				},
 			},
 		}
 
@@ -127,7 +127,7 @@ func TestTLSConfig(t *testing.T) {
 			t.Error("expected validation error, got nil")
 		}
 
-		expectedErr := "TLS is enabled but certFile or keyFile is missing"
+		expectedErr := "TLS is enabled but cert_file or key_file is missing"
 		if err != nil && err.Error() != expectedErr {
 			t.Errorf("expected error message %q, got %q", expectedErr, err.Error())
 		}
@@ -136,8 +136,8 @@ func TestTLSConfig(t *testing.T) {
 
 // Helper function that extracts the validation logic for testing
 func validateTLSConfig(cfg *config.Config) error {
-	if cfg.Server.EnableSSL && (cfg.Server.CertFile == "" || cfg.Server.KeyFile == "") {
-		return fmt.Errorf("TLS is enabled but certFile or keyFile is missing")
+	if cfg.Server.TLSConfig != nil && (cfg.Server.TLSConfig.CertFile == "" || cfg.Server.TLSConfig.KeyFile == "") {
+		return fmt.Errorf("TLS is enabled but cert_file or key_file is missing")
 	}
 	return nil
 }

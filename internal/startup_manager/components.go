@@ -96,8 +96,8 @@ func (sm *StartupManager) startServer(cfg *config.Config) {
 			return
 		}
 
-		// Configure TLS if either the advanced or legacy TLS configuration is present
-		if cfg.Server.TLSConfig != nil || cfg.Server.EnableSSL {
+		// Configure TLS if TLS configuration is present
+		if cfg.Server.TLSConfig != nil {
 			tlsConfig, err := tls.ConfigureServerTLS(cfg)
 			if err != nil {
 				sm.serverErrorChan <- fmt.Errorf("failed to configure TLS: %w", err)

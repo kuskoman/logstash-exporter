@@ -48,9 +48,7 @@ func TestConfigureTLS(t *testing.T) {
 		{
 			name: "no TLS config",
 			config: &config.Config{
-				Server: config.ServerConfig{
-					EnableSSL: false,
-				},
+				Server: config.ServerConfig{},
 			},
 			expectError: false,
 			validateFunc: func(t *testing.T, tlsConfig *tls.Config) {
@@ -63,38 +61,16 @@ func TestConfigureTLS(t *testing.T) {
 			name: "invalid certificate path",
 			config: &config.Config{
 				Server: config.ServerConfig{
-					EnableSSL: true,
-					CertFile:  "/nonexistent/cert.pem",
-					KeyFile:   "/nonexistent/key.pem",
+					TLSConfig: &config.TLSServerConfig{
+						CertFile: "/nonexistent/cert.pem",
+						KeyFile:  "/nonexistent/key.pem",
+					},
 				},
 			},
 			expectError: true,
 		},
 		{
-			name: "legacy TLS config",
-			config: &config.Config{
-				Server: config.ServerConfig{
-					EnableSSL: true,
-					CertFile:  certPath,
-					KeyFile:   keyPath,
-				},
-			},
-			expectError: false,
-			validateFunc: func(t *testing.T, tlsConfig *tls.Config) {
-				if tlsConfig == nil {
-					t.Errorf("Expected non-nil TLS config, got nil")
-					return
-				}
-				if tlsConfig.MinVersion != customtls.DefaultMinTLSVersion {
-					t.Errorf("Expected MinVersion to be default (%d), got %v", customtls.DefaultMinTLSVersion, tlsConfig.MinVersion)
-				}
-				if len(tlsConfig.Certificates) != 1 {
-					t.Errorf("Expected 1 certificate, got %d", len(tlsConfig.Certificates))
-				}
-			},
-		},
-		{
-			name: "advanced TLS config",
+			name: "valid TLS config",
 			config: &config.Config{
 				Server: config.ServerConfig{
 					TLSConfig: &config.TLSServerConfig{

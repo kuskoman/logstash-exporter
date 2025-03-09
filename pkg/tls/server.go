@@ -8,14 +8,9 @@ import (
 )
 
 // ConfigureServerTLS configures TLS for the server.
-// It handles both the legacy and new TLS configuration formats.
 func ConfigureServerTLS(cfg *config.Config) (*tls.Config, error) {
 	if cfg.Server.TLSConfig != nil {
 		return ConfigureAdvancedServerTLS(cfg.Server.TLSConfig)
-	}
-
-	if cfg.Server.EnableSSL {
-		return ConfigureLegacyServerTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
 	}
 
 	return nil, nil
@@ -75,17 +70,4 @@ func ConfigureAdvancedServerTLS(tlsConfig *config.TLSServerConfig) (*tls.Config,
 	config.PreferServerCipherSuites = tlsConfig.PreferServerCipherSuites
 
 	return config, nil
-}
-
-// ConfigureLegacyServerTLS configures TLS with the legacy format.
-func ConfigureLegacyServerTLS(certFile, keyFile string) (*tls.Config, error) {
-	cert, err := LoadCertificateFromFile(certFile, keyFile)
-	if err != nil {
-		return nil, err
-	}
-
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		MinVersion:   DefaultMinTLSVersion,
-	}, nil
 }

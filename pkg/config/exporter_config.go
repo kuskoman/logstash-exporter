@@ -70,14 +70,7 @@ type ServerConfig struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
 
-	// TLS Configuration (replaces the older EnableSSL, CertFile, KeyFile)
-	// When EnableSSL is true, the older fields are used to set up basic TLS
-	// The new fields provide more advanced TLS configuration
-	EnableSSL bool   `yaml:"enableSSL"`
-	CertFile  string `yaml:"certFile"`
-	KeyFile   string `yaml:"keyFile"`
-
-	// Advanced TLS Configuration (compatible with Prometheus exporter-toolkit style)
+	// TLS Configuration
 	TLSConfig *TLSServerConfig `yaml:"tls_server_config,omitempty"`
 
 	// Basic authentication configuration
@@ -328,25 +321,13 @@ func (c *BasicAuthConfig) ValidateBasicAuth() error {
 
 // ValidateServerTLS validates the server TLS configuration.
 func (c *ServerConfig) ValidateServerTLS() error {
-	// First check the advanced TLS configuration
+	// Check TLS configuration
 	if c.TLSConfig != nil {
 		if c.TLSConfig.CertFile == "" {
 			return fmt.Errorf("cert_file must be specified when TLS is enabled")
 		}
 		if c.TLSConfig.KeyFile == "" {
 			return fmt.Errorf("key_file must be specified when TLS is enabled")
-		}
-		// If both advanced and legacy configs are specified, log a warning
-		if c.EnableSSL {
-			slog.Warn("Both EnableSSL and TLSConfig are specified, using TLSConfig")
-		}
-	} else if c.EnableSSL {
-		// Check legacy TLS configuration
-		if c.CertFile == "" {
-			return fmt.Errorf("certFile must be specified when EnableSSL is true")
-		}
-		if c.KeyFile == "" {
-			return fmt.Errorf("keyFile must be specified when EnableSSL is true")
 		}
 	}
 

@@ -44,25 +44,12 @@ func TestConfigureServerTLS(t *testing.T) {
 		{
 			name: "no TLS config",
 			config: &config.Config{
-				Server: config.ServerConfig{
-					EnableSSL: false,
-				},
+				Server: config.ServerConfig{},
 			},
 			expectError: false,
 		},
 		{
-			name: "legacy TLS config",
-			config: &config.Config{
-				Server: config.ServerConfig{
-					EnableSSL: true,
-					CertFile:  certPath,
-					KeyFile:   keyPath,
-				},
-			},
-			expectError: false,
-		},
-		{
-			name: "advanced TLS config",
+			name: "valid TLS config",
 			config: &config.Config{
 				Server: config.ServerConfig{
 					TLSConfig: &config.TLSServerConfig{
@@ -79,9 +66,10 @@ func TestConfigureServerTLS(t *testing.T) {
 			name: "invalid certificate path",
 			config: &config.Config{
 				Server: config.ServerConfig{
-					EnableSSL: true,
-					CertFile:  "/nonexistent/cert.pem",
-					KeyFile:   "/nonexistent/key.pem",
+					TLSConfig: &config.TLSServerConfig{
+						CertFile: "/nonexistent/cert.pem",
+						KeyFile:  "/nonexistent/key.pem",
+					},
 				},
 			},
 			expectError: true,

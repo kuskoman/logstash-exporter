@@ -56,9 +56,9 @@ openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out s
 ### Using TLS in the exporter server:
 ```yaml
 server:
-  enableSSL: true
-  certFile: "/path/to/server.crt"
-  keyFile: "/path/to/server.key"
+  tls_server_config:
+    cert_file: "/path/to/server.crt"
+    key_file: "/path/to/server.key"
 ```
 
 ### Using TLS when connecting to Logstash:

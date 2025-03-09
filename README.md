@@ -205,9 +205,9 @@ logstash:
 server:
   host: "0.0.0.0"                 # Host on which the application will be exposed (default: all interfaces)
   port: 9198                      # Port on which the application will be exposed
-  enableSSL: false                # Enable HTTPS (default: false)
-  certFile: "/path/to/cert.pem"   # Path to TLS certificate (required if enableSSL is true)
-  keyFile: "/path/to/key.pem"     # Path to TLS key (required if enableSSL is true)
+  tls_server_config:              # TLS configuration for the exporter server
+    cert_file: "/path/to/cert.pem"  # Path to TLS certificate
+    key_file: "/path/to/key.pem"    # Path to TLS key
 logging:
   level: "debug"                  # Log level (debug, info, warn, error)
   format: "text"                  # Log format (text, json)

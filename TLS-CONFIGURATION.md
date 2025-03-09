@@ -13,19 +13,6 @@ The configuration format is inspired by the Prometheus exporter-toolkit, but imp
 
 ## Server TLS Configuration
 
-### Legacy Format (still supported)
-
-The basic TLS configuration is available using these fields:
-
-```yaml
-server:
-  enableSSL: true
-  certFile: /path/to/cert.pem
-  keyFile: /path/to/key.pem
-```
-
-### Advanced Format (recommended)
-
 ```yaml
 server:
   tls_server_config:

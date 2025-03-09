@@ -36,12 +36,7 @@ server:
   host: 0.0.0.0
   port: 9198
 
-  # Legacy SSL/TLS configuration (still supported)
-  # enableSSL: true
-  # certFile: /etc/logstash-exporter/server.crt
-  # keyFile: /etc/logstash-exporter/server.key
-
-  # Advanced TLS server configuration (Prometheus exporter-toolkit compatible)
+  # TLS server configuration
   tls_server_config:
     # Required: paths to certificate and key files
     cert_file: /etc/logstash-exporter/server.crt
