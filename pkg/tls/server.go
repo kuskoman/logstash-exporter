@@ -67,9 +67,7 @@ func ConfigureAdvancedServerTLS(tlsConfig *config.TLSServerConfig) (*tls.Config,
 		slog.Warn("curve preferences configuration is not implemented")
 	}
 
-	if tlsConfig.PreferServerCipherSuites {
-		slog.Warn("PreferServerCipherSuites is deprecated since Go 1.18 and is ignored")
-	}
+	config.PreferServerCipherSuites = tlsConfig.PreferServerCipherSuites
 
 	return config, nil
 }

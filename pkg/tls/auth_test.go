@@ -7,21 +7,17 @@ import (
 )
 
 func TestMultiUserAuthMiddleware(t *testing.T) {
-	// Define users for testing
 	users := map[string]string{
 		"testuser":  "testpass",
 		"otheruser": "otherpass",
 	}
 
-	// Create a test handler that just returns 200 OK
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// Wrap the handler with the MultiUserAuthMiddleware
 	handler := MultiUserAuthMiddleware(nextHandler, users)
 
-	// Test case: no auth header
 	t.Run("no auth header", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 		w := httptest.NewRecorder()
@@ -37,7 +33,6 @@ func TestMultiUserAuthMiddleware(t *testing.T) {
 		}
 	})
 
-	// Test case: invalid username
 	t.Run("invalid username", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 		req.SetBasicAuth("wronguser", "testpass")
@@ -50,7 +45,6 @@ func TestMultiUserAuthMiddleware(t *testing.T) {
 		}
 	})
 
-	// Test case: invalid password
 	t.Run("invalid password", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 		req.SetBasicAuth("testuser", "wrongpass")
@@ -63,7 +57,6 @@ func TestMultiUserAuthMiddleware(t *testing.T) {
 		}
 	})
 
-	// Test case: valid auth for first user
 	t.Run("valid auth for first user", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 		req.SetBasicAuth("testuser", "testpass")
@@ -76,7 +69,6 @@ func TestMultiUserAuthMiddleware(t *testing.T) {
 		}
 	})
 
-	// Test case: valid auth for second user
 	t.Run("valid auth for second user", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 		req.SetBasicAuth("otheruser", "otherpass")

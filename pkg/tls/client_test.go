@@ -12,7 +12,6 @@ import (
 )
 
 func TestConfigureClientTLS(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "client-tls-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
@@ -20,7 +19,7 @@ func TestConfigureClientTLS(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Get test certificate data
-	testCerts := GetTestCertificates()
+	testCerts := GetTestCertificates(t)
 
 	// Create a valid CA certificate file
 	caPath := filepath.Join(tempDir, "ca.pem")
@@ -89,7 +88,6 @@ func TestConfigureClientTLS(t *testing.T) {
 				return
 			}
 
-			// Verify TLS config properties
 			if tlsConfig.InsecureSkipVerify != tc.insecureSkipVerify {
 				t.Errorf("Expected InsecureSkipVerify to be %v, got %v",
 					tc.insecureSkipVerify,
@@ -109,22 +107,24 @@ func TestConfigureClientTLS(t *testing.T) {
 	}
 }
 
+func createValidCaCertificateFile(t *testing.T, tempDir string) string {
+	testCerts := GetTestCertificates(t)
+	caPath := filepath.Join(tempDir, "ca.pem")
+	if err := os.WriteFile(caPath, []byte(testCerts.CAPEM), 0600); err != nil {
+		t.Fatalf("Failed to write CA file: %v", err)
+	}
+
+	return caPath
+}
+
 func TestConfigureHTTPClientFromLogstashInstance(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "client-tls-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Get test certificate data
-	testCerts := GetTestCertificates()
-
-	// Create a valid CA certificate file
-	caPath := filepath.Join(tempDir, "ca.pem")
-	if err := os.WriteFile(caPath, []byte(testCerts.CAPEM), 0600); err != nil {
-		t.Fatalf("Failed to write CA file: %v", err)
-	}
+	caPath := createValidCaCertificateFile(t, tempDir)
 
 	timeout := time.Duration(TestTimeout) * time.Second
 
@@ -232,12 +232,10 @@ func TestConfigureBasicAuth(t *testing.T) {
 			t.Errorf("Expected client to be returned, got different instance")
 		}
 
-		// Check that the transport was set
 		if result.Transport == nil {
 			t.Error("Expected Transport to be set, got nil")
 		}
 
-		// Check that it's our basicAuthTransport
 		_, ok := result.Transport.(*basicAuthTransport)
 		if !ok {
 			t.Errorf("Expected Transport to be basicAuthTransport, got %T", result.Transport)
@@ -245,7 +243,6 @@ func TestConfigureBasicAuth(t *testing.T) {
 	})
 
 	t.Run("with existing transport", func(t *testing.T) {
-		// Create a client with a custom transport
 		existingTransport := http.DefaultTransport
 		client := &http.Client{
 			Transport: existingTransport,
@@ -253,13 +250,11 @@ func TestConfigureBasicAuth(t *testing.T) {
 
 		result := ConfigureBasicAuth(client, "user", "pass")
 
-		// Check that the transport was wrapped
 		transport, ok := result.Transport.(*basicAuthTransport)
 		if !ok {
 			t.Errorf("Expected Transport to be basicAuthTransport, got %T", result.Transport)
 		}
 
-		// Check that the original transport was preserved
 		if transport.transport != existingTransport {
 			t.Errorf("Expected original transport to be preserved")
 		}
@@ -267,22 +262,19 @@ func TestConfigureBasicAuth(t *testing.T) {
 }
 
 func TestConfigureHTTPClientWithTLS(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "tls-client-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Get test certificates and save them to files
-	testCerts := GetTestCertificates()
+	testCerts := GetTestCertificates(t)
 	caPath := filepath.Join(tempDir, "ca.pem")
 
 	if err := os.WriteFile(caPath, []byte(testCerts.CAPEM), 0600); err != nil {
 		t.Fatalf("Failed to write CA file: %v", err)
 	}
 
-	// Non-existent CA file path
 	badPath := filepath.Join(tempDir, "nonexistent.pem")
 
 	tests := []struct {

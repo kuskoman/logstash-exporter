@@ -8,7 +8,6 @@ import (
 )
 
 func TestNewClientWithTLS(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "client-tls-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)

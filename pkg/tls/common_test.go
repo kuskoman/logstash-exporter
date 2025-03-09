@@ -7,7 +7,6 @@ import (
 )
 
 func TestLoadCertificateFromFile(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "cert-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
@@ -15,7 +14,7 @@ func TestLoadCertificateFromFile(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Get test certificates and save them to files
-	testCerts := GetTestCertificates()
+	testCerts := GetTestCertificates(t)
 	certPath := filepath.Join(tempDir, "cert.pem")
 	keyPath := filepath.Join(tempDir, "key.pem")
 
@@ -49,7 +48,6 @@ func TestLoadCertificateFromFile(t *testing.T) {
 }
 
 func TestLoadCertificateAuthority(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "ca-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
@@ -57,7 +55,7 @@ func TestLoadCertificateAuthority(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Get test certificates and save them to files
-	testCerts := GetTestCertificates()
+	testCerts := GetTestCertificates(t)
 	caPath := filepath.Join(tempDir, "ca.pem")
 	invalidCAPath := filepath.Join(tempDir, "invalid-ca.pem")
 

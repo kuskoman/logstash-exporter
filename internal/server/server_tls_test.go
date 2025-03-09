@@ -13,7 +13,6 @@ import (
 
 // TestConfigureTLS tests the TLS configuration functionality
 func TestConfigureTLS(t *testing.T) {
-	// Create temporary directory for test certificates
 	tempDir, err := os.MkdirTemp("", "tls-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
@@ -21,7 +20,7 @@ func TestConfigureTLS(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Get test certificate data
-	testCerts := customtls.GetTestCertificates()
+	testCerts := customtls.GetTestCertificates(t)
 
 	// Write certificates to files
 	certPath := filepath.Join(tempDir, "cert.pem")

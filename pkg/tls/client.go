@@ -14,12 +14,10 @@ func ConfigureClientTLS(caFile, serverName string, insecureSkipVerify bool) (*tl
 		InsecureSkipVerify: insecureSkipVerify,
 	}
 
-	// If server name is specified, set it in the TLS config
 	if serverName != "" {
 		tlsConfig.ServerName = serverName
 	}
 
-	// If CA file is specified, load it
 	if caFile != "" {
 		certPool, err := LoadCertificateAuthority(caFile)
 		if err != nil {
@@ -35,20 +33,19 @@ func ConfigureClientTLS(caFile, serverName string, insecureSkipVerify bool) (*tl
 func ConfigureHTTPClientWithTLS(timeout time.Duration, caFile, serverName string, insecureSkipVerify bool) (*http.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 
-	// Configure TLS
 	tlsConfig, err := ConfigureClientTLS(caFile, serverName, insecureSkipVerify)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the TLS config in the transport
 	transport.TLSClientConfig = tlsConfig
 
-	// Create and return the HTTP client
-	return &http.Client{
+	httpClient := &http.Client{
 		Timeout:   timeout,
 		Transport: transport,
-	}, nil
+	}
+
+	return httpClient, nil
 }
 
 // ConfigureHTTPClientFromLogstashInstance creates an HTTP client from a Logstash instance configuration.
@@ -72,7 +69,6 @@ func ConfigureHTTPClientFromLogstashInstance(instance *config.LogstashInstance, 
 
 // ConfigureBasicAuth adds basic authentication to an HTTP client's transport.
 // This method is for single user authentication only.
-// NOTE: This will be updated in a future release to support multiple users.
 func ConfigureBasicAuth(client *http.Client, username, password string) *http.Client {
 	if client == nil {
 		return nil
@@ -100,7 +96,6 @@ func (t *basicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error
 	// Clone the request to avoid modifying the original
 	req2 := req.Clone(req.Context())
 
-	// Add basic auth header
 	req2.SetBasicAuth(t.username, t.password)
 
 	// Pass the request to the underlying transport

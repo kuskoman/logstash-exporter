@@ -77,4 +77,23 @@ logging:
 
 kubernetes:
   enabled: false
-  # Add Kubernetes configuration if needed
+  # Watch only specific namespaces (empty watches all)
+  # namespaces:
+  #   - default
+  #   - monitoring
+  # Define which resource types to monitor
+  resources:
+    # Pod monitoring configuration
+    pods:
+      enabled: true
+      annotationPrefix: "logstash-exporter.io"
+    # Service monitoring configuration
+    services:
+      enabled: false
+      annotationPrefix: "logstash-exporter.io"
+  resyncPeriod: 10m
+  scrapeInterval: 15s
+  logstashURLAnnotation: "logstash-exporter.io/url"
+  logstashUsernameAnnotation: "logstash-exporter.io/username"
+  logstashPasswordAnnotation: "logstash-exporter.io/password"
+  # kubeConfig: /path/to/kubeconfig # Optional: path to kubeconfig file for running outside cluster
