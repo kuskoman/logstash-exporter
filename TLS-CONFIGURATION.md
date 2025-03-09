@@ -22,7 +22,6 @@ server:
     min_version: TLS12
     client_auth_type: NoClientCert
     client_ca_file: /path/to/ca.pem
-    prefer_server_cipher_suites: true
 ```
 
 ### Basic Authentication

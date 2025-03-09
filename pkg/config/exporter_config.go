@@ -115,9 +115,6 @@ type TLSServerConfig struct {
 	// CipherSuites is the list of supported cipher suites.
 	CipherSuites []string `yaml:"cipher_suites,omitempty"`
 
-	// PreferServerCipherSuites sets the server's preference as priority for cipher suites.
-	PreferServerCipherSuites bool `yaml:"prefer_server_cipher_suites,omitempty"`
-
 	// CurvePreferences is the list of supported curve preferences.
 	CurvePreferences []string `yaml:"curve_preferences,omitempty"`
 }

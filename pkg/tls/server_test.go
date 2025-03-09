@@ -243,20 +243,7 @@ func TestConfigureAdvancedServerTLS(t *testing.T) {
 				CurvePreferences: []string{"P256"},
 			},
 			expectError: false,
-		},
-		{
-			name: "with prefer server cipher suites",
-			config: &config.TLSServerConfig{
-				CertFile:                 certPath,
-				KeyFile:                  keyPath,
-				PreferServerCipherSuites: true,
-			},
-			expectError: false,
-			validateFunc: func(t *testing.T, c *tls.Config) {
-				// PreferServerCipherSuites is deprecated since Go 1.18 and is ignored
-				// No validation needed
-			},
-		},
+		}
 	}
 
 	for _, tc := range tests {

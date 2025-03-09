@@ -67,7 +67,5 @@ func ConfigureAdvancedServerTLS(tlsConfig *config.TLSServerConfig) (*tls.Config,
 		slog.Warn("curve preferences configuration is not implemented")
 	}
 
-	config.PreferServerCipherSuites = tlsConfig.PreferServerCipherSuites
-
 	return config, nil
 }
