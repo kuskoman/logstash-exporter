@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DRY_RUN: "false"
+      BATCH_SIZE: 20 # Process 20 IDs at a time
 
     steps:
       - name: Checkout code
@@ -138,7 +139,7 @@ jobs:
             TAGS=$(echo "$VERSION" | jq -r '.metadata.container.tags | join(", ")')
             HAS_TAGS=$(echo "$VERSION" | jq -r '.metadata.container.tags | length > 0')
 
-            # Create a detailed record for reporting - ensure ID is stored as number (argjson) not string (arg)
+            # Create a detailed record for reporting - ensure ID is stored as number
             DETAIL=$(jq -n \
               --argjson id "$VERSION_ID" \
               --arg name "$NAME" \
@@ -159,7 +160,7 @@ jobs:
               # Delete untagged versions older than 28 days
               echo "Marking for deletion: Version $VERSION_ID ($NAME) created at $CREATED_AT (older than 28 days)"
               VERSIONS_TO_DELETE+=("$DETAIL")
-              # Store numeric ID separately for deletion
+              # Store numeric ID for deletion
               VERSION_IDS_TO_DELETE+=($VERSION_ID)
               DELETE_COUNTER=$((DELETE_COUNTER + 1))
             else
@@ -182,9 +183,35 @@ jobs:
             DELETE_IDS_JSON="[]"
           else
             DELETE_DETAILS_JSON=$(printf '%s\n' "${VERSIONS_TO_DELETE[@]}" | jq -s '.')
-            # Build array of raw numeric IDs directly - no string conversion
+            # Store all IDs to delete
             DELETE_IDS_JSON=$(echo "${VERSION_IDS_TO_DELETE[@]}" | jq -c -n '[inputs]')
             echo "IDs to delete (raw format): $DELETE_IDS_JSON"
+
+            # Create batches of IDs for deletion
+            BATCH_SIZE=${BATCH_SIZE:-20}
+            TOTAL_IDS=${#VERSION_IDS_TO_DELETE[@]}
+            NUM_BATCHES=$(( (TOTAL_IDS + BATCH_SIZE - 1) / BATCH_SIZE ))
+
+            echo "Splitting $TOTAL_IDS IDs into $NUM_BATCHES batches of up to $BATCH_SIZE IDs each"
+
+            # Create JSON for each batch
+            for ((i=0; i<$NUM_BATCHES; i++)); do
+              START=$((i * BATCH_SIZE))
+              END=$((START + BATCH_SIZE))
+              if [ $END -gt $TOTAL_IDS ]; then
+                END=$TOTAL_IDS
+              fi
+
+              BATCH=()
+              for ((j=START; j<END; j++)); do
+                BATCH+=(${VERSION_IDS_TO_DELETE[$j]})
+              done
+
+              BATCH_JSON=$(echo "${BATCH[@]}" | jq -c -n '[inputs]')
+              echo "batch_${i}=$BATCH_JSON" >> $GITHUB_OUTPUT
+            done
+
+            echo "num_batches=$NUM_BATCHES" >> $GITHUB_OUTPUT
           fi
 
           if [ ${#VERSIONS_TO_KEEP[@]} -eq 0 ]; then
@@ -209,9 +236,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Dry run - Display detailed analysis
+      - name: Display analysis
         run: |
-          echo "=================== DRY RUN ANALYSIS ==================="
+          echo "=================== ANALYSIS SUMMARY ==================="
 
           # Count different types of versions
           TOTAL_COUNT=$(echo '${{ steps.analyze_images.outputs.all_version_details }}' | jq 'length')
@@ -224,37 +251,78 @@ jobs:
 
           if [ "$DELETE_COUNT" -gt "0" ]; then
             echo ""
-            echo "-------------- VERSIONS TO BE DELETED ----------------"
-            echo '${{ steps.analyze_images.outputs.versions_to_delete_details }}' | \
-              jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | \(.name)"' | sort
+            echo "Found $DELETE_COUNT versions to delete in ${{ steps.analyze_images.outputs.num_batches }} batches"
+
+            # Don't print all deletion details if there are too many
+            if [ "$DELETE_COUNT" -lt "50" ]; then
+              echo ""
+              echo "-------------- VERSIONS TO BE DELETED ----------------"
+              echo '${{ steps.analyze_images.outputs.versions_to_delete_details }}' | \
+                jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | \(.name)"' | sort
+            else
+              echo ""
+              echo "Too many versions to display ($DELETE_COUNT). Showing first 10:"
+              echo '${{ steps.analyze_images.outputs.versions_to_delete_details }}' | \
+                jq -r '.[:10] | .[] | "ID: \(.id) | Created: \(.created_at) | \(.name)"' | sort
+            fi
           else
             echo ""
             echo "No versions to delete."
           fi
 
-          if [ "$KEEP_COUNT" -gt "0" ]; then
-            echo ""
-            echo "-------------- VERSIONS TO BE KEPT ------------------"
-            echo '${{ steps.analyze_images.outputs.versions_to_keep }}' | \
-              jq -r '.[] | "ID: \(.id) | Created: \(.created_at) | Tags: \(.tags) | \(.name)"' | sort
-          else
-            echo ""
-            echo "No versions to keep."
-          fi
-
           echo ""
-          if [ "$DRY_RUN" = "true" ]; then
+          if [ "${{ env.DRY_RUN }}" = "true" ]; then
             echo "This is a DRY RUN. No images will be deleted."
           else
             echo "LIVE RUN! Images WILL be deleted."
           fi
           echo "======================================================"
 
-      - name: Delete filtered package versions
-        if: env.DRY_RUN == 'false' && fromJSON(steps.analyze_images.outputs.versions_to_delete)[0] != null
-        uses: actions/delete-package-versions@v4
-        with:
-          package-name: "logstash-exporter"
-          package-type: "container"
-          package-version-ids: ${{ steps.analyze_images.outputs.versions_to_delete }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # Process batches of IDs to delete
+      - name: Delete package versions (batch processing)
+        if: env.DRY_RUN == 'false' && steps.analyze_images.outputs.num_batches > 0
+        run: |
+          NUM_BATCHES=${{ steps.analyze_images.outputs.num_batches }}
+          echo "Processing $NUM_BATCHES batches of package versions for deletion"
+
+          for ((i=0; i<$NUM_BATCHES; i++)); do
+            BATCH_VAR="batch_${i}"
+            BATCH_IDS=$(echo '${{ toJSON(steps.analyze_images.outputs) }}' | jq -r --arg batch "$BATCH_VAR" '.[$batch]')
+
+            if [ -z "$BATCH_IDS" ] || [ "$BATCH_IDS" = "null" ]; then
+              echo "Skipping empty batch $i"
+              continue
+            fi
+
+            echo "Processing batch $i with IDs: $BATCH_IDS"
+
+            # Use GitHub CLI to delete the batch of versions
+            # This is more reliable than the action for handling batches
+            for VERSION_ID in $(echo "$BATCH_IDS" | jq -r '.[]'); do
+              echo "Deleting version ID: $VERSION_ID"
+
+              # Using GitHub CLI to delete the package version
+              ENDPOINT_PATH=$([ "$API_ENDPOINT_TEMPLATE" == *"/users/"* ] && echo "/users/" || echo "/orgs/")
+              ENDPOINT="${ENDPOINT_PATH}${GITHUB_REPOSITORY_OWNER}/packages/container/logstash-exporter/versions/${VERSION_ID}"
+
+              DELETE_RESULT=$(gh api --method DELETE \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "$ENDPOINT" 2>&1 || echo "ERROR: Failed to delete version $VERSION_ID")
+
+              if [[ "$DELETE_RESULT" == *"ERROR"* ]]; then
+                echo "WARNING: $DELETE_RESULT"
+              else
+                echo "Successfully deleted version $VERSION_ID"
+              fi
+
+              # Add a small delay to avoid rate limiting
+              sleep 0.5
+            done
+
+            echo "Completed batch $i"
+          done
+
+          echo "Package version cleanup completed"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
