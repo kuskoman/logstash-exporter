@@ -26,7 +26,7 @@ func TestNodeStatsResponseStructure(t *testing.T) {
 }
 
 func TestNodeStatsInfinityResponse(t *testing.T) {
-	type Data  struct {
+	type Data struct {
 		F responses.InfinityFloat
 	}
 	var d Data
