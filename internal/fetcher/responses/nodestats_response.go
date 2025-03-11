@@ -146,7 +146,13 @@ type SinglePipelineResponse struct {
 					Lifetime InfinityFloat `json:"lifetime"`
 				} `json:"worker_utilization"`
 				WorkerMillisPerEvent struct {
-					Lifetime float64 `json:"lifetime"`
+					Current         InfinityFloat `json:"current"`
+					Lifetime        InfinityFloat `json:"lifetime"`
+					Last_1_minute   InfinityFloat `json:"last_1_minute"`
+					Last_5_minutes  InfinityFloat `json:"last_5_minutes"`
+					Last_15_minutes InfinityFloat `json:"last_15_minutes"`
+					Last_1_hour     InfinityFloat `json:"last_1_hour"`
+					Last_24_hours   InfinityFloat `json:"last_24_hours"`
 				} `json:"worker_millis_per_event"`
 			} `json:"flow"`
 		} `json:"filters"`
@@ -171,6 +177,15 @@ type SinglePipelineResponse struct {
 					Current  InfinityFloat `json:"current"`
 					Lifetime InfinityFloat `json:"lifetime"`
 				} `json:"worker_utilization"`
+				WorkerMillisPerEvent struct {
+					Current         InfinityFloat `json:"current"`
+					Lifetime        InfinityFloat `json:"lifetime"`
+					Last_1_minute   InfinityFloat `json:"last_1_minute"`
+					Last_5_minutes  InfinityFloat `json:"last_5_minutes"`
+					Last_15_minutes InfinityFloat `json:"last_15_minutes"`
+					Last_1_hour     InfinityFloat `json:"last_1_hour"`
+					Last_24_hours   InfinityFloat `json:"last_24_hours"`
+				} `json:"worker_millis_per_event"`
 			} `json:"flow"`
 		} `json:"outputs"`
 	} `json:"plugins"`
