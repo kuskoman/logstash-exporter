@@ -272,7 +272,7 @@ See more in the [Migration](#migration) section.
 - `make pull`: Pulls the Docker image from the registry.
 - `make logs`: Shows logs from the Docker-compose configuration.
 - `make minify`: Minifies the binary executables.
-- `make install-helm-readme`: Installs readme-generator-for-helm tool.
+- `make install-helm-readme`: Installs helm-docs tool.
 - `make helm-readme`: Generates Helm chart README.md file.
 - `make helm-test`: Run Helm unit tests.
 - `make clean-elasticsearch`: Cleans Elasticsearch data. The command may take a very long time to complete.
