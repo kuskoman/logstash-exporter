@@ -73,19 +73,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Node 18
-        uses: actions/setup-node@v4
+      - name: Setup Golang with cache
+        uses: magnetikonline/action-golang-cache@v5
         with:
-          node-version: 18
+          go-version: "^1.24"
 
-      - name: Install README generator
+      - name: Install helm-docs
         run: make install-helm-readme
 
       - name: Generate README
         run: make helm-readme
 
       - name: Verify that there are no changes
-        run: git diff --exit-code || (echo "README.md is not up to date. Please use helm-readme and commit the changes." && exit 1)
+        run: git diff --exit-code || (echo "README.md is not up to date. Please run 'make helm-readme' and commit the changes." && exit 1)
 
   verify-makefile-readme:
     name: Verify that Makefile section of README is up to date

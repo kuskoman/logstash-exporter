@@ -117,13 +117,13 @@ logs:
 minify:
 	upx -9 $(GOOS_EXES)
 
-#: Installs readme-generator-for-helm tool
+#: Installs helm-docs tool
 install-helm-readme:
-	./scripts/install_helm_readme_generator.sh
+	go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
 
 #: Generates Helm chart README.md file
 helm-readme:
-	./scripts/generate_helm_readme.sh
+	helm-docs -c ./chart
 
 #: Run Helm unit tests
 helm-test:
