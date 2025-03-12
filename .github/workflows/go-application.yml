@@ -26,7 +26,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.23"
+          go-version: "^1.24"
 
       - name: Lint code using golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -48,7 +48,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.23"
+          go-version: "^1.24"
 
       - name: Test code
         run: go test ./... -covermode=atomic -coverprofile=coverage.out
@@ -171,7 +171,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.23"
+          go-version: "^1.24"
 
       - name: Build Linux binary
         run: make build-linux
@@ -196,7 +196,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.23"
+          go-version: "^1.24"
 
       - name: Build Linux ARM binary
         run: make build-linux-arm
@@ -221,7 +221,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.23"
+          go-version: "^1.24"
 
       - name: Build Mac binary
         run: make build-darwin
@@ -246,7 +246,7 @@ jobs:
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.23"
+          go-version: "^1.24"
 
       - name: Build Windows binary
         run: make build-windows
