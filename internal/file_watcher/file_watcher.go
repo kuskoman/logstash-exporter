@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"path/filepath"
-	"strings"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -51,14 +50,14 @@ func NewFileWatcher(configLocation string, listeners ...func() error) (*FileWatc
 // Watch sets up file watching and returns a channel that is closed when watching is ready
 func (fw *FileWatcher) Watch(ctx context.Context) (<-chan struct{}, error) {
 	slog.Info("watching file", "file", fw.filePath)
-	
+
 	// Return a value to notify when we're ready to watch
 	readyCh := make(chan struct{})
 
 	go func() {
 		// Signal that we're ready to watch
 		close(readyCh)
-		
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -110,7 +109,8 @@ func (fw *FileWatcher) executeListeners() error {
 
 // isRelevantFileEvent checks if the event corresponds to a modification of the watched file
 func (fw *FileWatcher) isRelevantFileEvent(event fsnotify.Event) bool {
-	if !strings.Contains(event.Name, fw.fileName) {
+	eventFileName := filepath.Base(event.Name)
+	if eventFileName != fw.fileName {
 		return false
 	}
 
