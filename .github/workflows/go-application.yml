@@ -18,7 +18,7 @@ env:
 jobs:
   lint:
     name: Lint code
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
 
   lint-scripts:
     name: Lint scripts
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
 
   test:
     name: Unit test code
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
 
   verify-helm-readme:
     name: Verify that Helm README is up to date
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,7 +89,7 @@ jobs:
 
   verify-makefile-readme:
     name: Verify that Makefile section of README is up to date
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -102,7 +102,7 @@ jobs:
 
   lint-helm-chart:
     name: Lint Helm chart
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -118,7 +118,7 @@ jobs:
 
   template-helm-chart:
     name: Verify templating chart with default values
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
 
   helm-unittest:
     name: Run Helm unit tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -152,7 +152,7 @@ jobs:
 
   test-integration:
     name: Test integration with Prometheus
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -191,7 +191,7 @@ jobs:
 
   build-linux:
     name: Build Linux binary
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [lint, test]
     steps:
       - name: Checkout code
@@ -215,7 +215,7 @@ jobs:
 
   build-linux-arm:
     name: Build Linux ARM binary
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [lint, test]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -240,7 +240,7 @@ jobs:
 
   build-darwin:
     name: Build Mac binary
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [lint, test]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -265,7 +265,7 @@ jobs:
 
   build-windows:
     name: Build Windows binary
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [lint, test]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -290,7 +290,7 @@ jobs:
 
   build-linux-docker-image:
     name: Build and push Docker image (${{ matrix.component }})
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [build-linux]
     strategy:
       matrix:
@@ -357,7 +357,7 @@ jobs:
 
   build-docker-linux-arm-image:
     name: Build and push multi-arch Docker image (${{ matrix.component }})
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [build-linux-arm]
     if: startsWith(github.ref, 'refs/tags/')
     strategy:
@@ -401,7 +401,7 @@ jobs:
 
   test-helm-integration:
     name: Test integration with Helm chart
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs:
       - verify-helm-readme
       - lint-helm-chart
@@ -452,7 +452,7 @@ jobs:
 
   create-release:
     name: Create GitHub release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       packages: write
@@ -508,7 +508,7 @@ jobs:
     strategy:
       matrix:
         binary: [linux, darwin, windows, linux-arm]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs:
       - create-release
       - build-linux
