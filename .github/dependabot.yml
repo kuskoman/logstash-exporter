@@ -4,6 +4,21 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      kubernetes-dependencies:
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+      prometheus-dependencies:
+        patterns:
+          - "github.com/prometheus/*"
+      other-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+          - "github.com/prometheus/*"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
