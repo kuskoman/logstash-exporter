@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -15,6 +17,9 @@ type FileWatcher struct {
 	filePath            string
 	previousContentHash string
 	listeners           []func() error
+	mu                  sync.Mutex
+	debounceTime        time.Duration
+	lastEventTime       time.Time
 }
 
 // NewFileWatcher initializes a file watcher, watching the config file for changes
@@ -42,6 +47,7 @@ func NewFileWatcher(configLocation string, listeners ...func() error) (*FileWatc
 		filePath:            configLocation,
 		listeners:           listeners,
 		previousContentHash: contentHash,
+		debounceTime:        50 * time.Millisecond,
 	}
 
 	return fileWatcher, nil
@@ -51,11 +57,9 @@ func NewFileWatcher(configLocation string, listeners ...func() error) (*FileWatc
 func (fw *FileWatcher) Watch(ctx context.Context) (<-chan struct{}, error) {
 	slog.Info("watching file", "file", fw.filePath)
 
-	// Return a value to notify when we're ready to watch
 	readyCh := make(chan struct{})
 
 	go func() {
-		// Signal that we're ready to watch
 		close(readyCh)
 
 		for {
@@ -72,28 +76,48 @@ func (fw *FileWatcher) Watch(ctx context.Context) (<-chan struct{}, error) {
 					continue
 				}
 
-				contentHash, err := CalculateFileHash(fw.filePath)
-				if err != nil {
-					slog.Error("failed to calculate file hash", "err", err)
+				fw.mu.Lock()
+				now := time.Now()
+				if now.Sub(fw.lastEventTime) < fw.debounceTime {
+					slog.Debug("debouncing file event", "file", fw.filePath)
+					fw.mu.Unlock()
 					continue
 				}
+				fw.lastEventTime = now
+				fw.mu.Unlock()
 
-				if contentHash != fw.previousContentHash {
-					slog.Info("file modified", "file", fw.filePath)
-					err := fw.executeListeners()
-					if err != nil {
-						slog.Error("failed to execute listeners", "err", err)
-					}
-
-					fw.previousContentHash = contentHash
-				} else {
-					slog.Debug("file modified, but content hash is unchanged", "file", fw.filePath)
-				}
+				go fw.processFileEvent()
 			}
 		}
 	}()
 
 	return readyCh, nil
+}
+
+func (fw *FileWatcher) processFileEvent() {
+	contentHash, err := CalculateFileHash(fw.filePath)
+	if err != nil {
+		slog.Error("failed to calculate file hash", "err", err)
+		return
+	}
+
+	fw.mu.Lock()
+	defer fw.mu.Unlock()
+
+	if contentHash == fw.previousContentHash {
+		slog.Debug("file modified, but content hash is unchanged", "file", fw.filePath)
+		return
+	}
+
+	slog.Info("file modified", "file", fw.filePath)
+	slog.Info("content hash changed, executing listeners", "file", fw.filePath)
+
+	fw.previousContentHash = contentHash
+
+	err = fw.executeListeners()
+	if err != nil {
+		slog.Error("failed to execute listeners", "err", err)
+	}
 }
 
 func (fw *FileWatcher) executeListeners() error {
@@ -114,7 +138,6 @@ func (fw *FileWatcher) isRelevantFileEvent(event fsnotify.Event) bool {
 		return false
 	}
 
-	// Only act on Write or Rename events, which typically indicate file content changes
 	if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Rename == fsnotify.Rename {
 		slog.Debug("relevant file event detected", "event", event, "file", fw.fileName)
 		return true
