@@ -9,7 +9,9 @@ func TestGetEnvWithDefault(t *testing.T) {
 	t.Run("should return value for set environment variable", func(t *testing.T) {
 		key := "TEST3"
 		expected := "value"
-		os.Setenv(key, expected)
+		if err := os.Setenv(key, expected); err != nil {
+			t.Fatalf("failed to set environment variable: %v", err)
+		}
 		actual := getEnvWithDefault(key, "default")
 		if actual != expected {
 			t.Errorf("expected %s but got %s", expected, actual)

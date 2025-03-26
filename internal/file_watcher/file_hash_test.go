@@ -2,6 +2,7 @@ package file_watcher
 
 import (
 	"errors"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -63,7 +64,11 @@ func TestComputeHash(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to open file: %v", err)
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				slog.Error("failed to close file", "error", err)
+			}
+		}()
 
 		hash, err := computeHash(file)
 		if err != nil {

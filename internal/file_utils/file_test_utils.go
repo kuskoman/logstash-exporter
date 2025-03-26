@@ -1,6 +1,7 @@
 package file_utils
 
 import (
+	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -29,19 +30,22 @@ func CreateTempFileInDir(t *testing.T, content, dir string) string {
 func AppendToFilex3(t *testing.T, file, content string) {
 	t.Helper()
 	// ************ Add a content three times to make sure its written ***********
-	f, err := os.OpenFile(file, os.O_APPEND | os.O_WRONLY, 0644)
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		t.Fatalf("failed to open a file: %v", err)
 	}
 
-	defer f.Close()
-	
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("failed to close file", "error", err)
+		}
+	}()
+
 	if err := f.Sync(); err != nil {
 		t.Fatalf("failed to sync file: %v", err)
 	}
 
 	if _, err := f.Write([]byte(content)); err != nil {
-		f.Close() // ignore error; Write error takes precedence
 		t.Fatalf("failed to write to file: %v", err)
 	}
 	if err := f.Sync(); err != nil {
@@ -50,7 +54,6 @@ func AppendToFilex3(t *testing.T, file, content string) {
 
 	time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
 	if _, err := f.Write([]byte(content)); err != nil {
-		f.Close() // ignore error; Write error takes precedence
 		t.Fatalf("failed to write to file: %v", err)
 	}
 
@@ -59,7 +62,6 @@ func AppendToFilex3(t *testing.T, file, content string) {
 	}
 	time.Sleep(50 * time.Millisecond) // give system time to sync write change before delete
 	if _, err := f.Write([]byte(content)); err != nil {
-		f.Close() // ignore error; Write error takes precedence
 		t.Fatalf("failed to write to file: %v", err)
 	}
 	if err := f.Sync(); err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 )
 
@@ -37,7 +38,11 @@ func CalculateFileHash(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			slog.Error("failed to close file", "error", err)
+		}
+	}()
 
 	hashSum, err := computeHash(file)
 	if err != nil {
