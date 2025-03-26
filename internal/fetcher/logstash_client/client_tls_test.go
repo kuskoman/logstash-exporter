@@ -5,22 +5,22 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/kuskoman/logstash-exporter/internal/file_utils"
 )
 
 func TestNewClientWithTLS(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "client-tls-test")
 	if err != nil {
-		t.Fatalf("Failed to create temp directory: %v", err)
+		t.Fatalf("failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer file_utils.HandleTempDirRemoval(t, tempDir)
 
-	// Get test certificate data
 	testCerts := GetTestCertificates()
 
-	// Create a valid CA certificate file
 	caPath := filepath.Join(tempDir, "ca.pem")
 	if err := os.WriteFile(caPath, []byte(testCerts.CAPEM), 0600); err != nil {
-		t.Fatalf("Failed to write CA file: %v", err)
+		t.Fatalf("failed to write CA file: %v", err)
 	}
 
 	timeout := time.Duration(TestTimeout) * time.Second
@@ -73,22 +73,21 @@ func TestNewClientWithTLS(t *testing.T) {
 			)
 
 			if tc.expectError && err == nil {
-				t.Errorf("Expected error, got nil")
+				t.Errorf("expected error, got nil")
 				return
 			}
 
 			if !tc.expectError && err != nil {
-				t.Errorf("Expected no error, got: %v", err)
+				t.Errorf("expected no error, got: %v", err)
 				return
 			}
 
-			// Skip further checks if we expected an error
 			if tc.expectError {
 				return
 			}
 
 			if client == nil {
-				t.Errorf("Expected non-nil client, got nil")
+				t.Errorf("expected non-nil client, got nil")
 				return
 			}
 		})
@@ -109,14 +108,14 @@ func TestNewClientWithBasicAuth(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Fatalf("Expected no error, got: %v", err)
+		t.Fatalf("expected no error, got: %v", err)
 	}
 
 	if client == nil {
-		t.Fatalf("Expected non-nil client, got nil")
+		t.Fatalf("expected non-nil client, got nil")
 	}
 
 	if client.httpClient.Transport == nil {
-		t.Errorf("Expected transport to be configured, got nil")
+		t.Errorf("expected transport to be configured, got nil")
 	}
 }

@@ -7,6 +7,16 @@ import (
 	"time"
 )
 
+func HandleTempDirRemoval(t *testing.T, tempDir string) {
+	t.Helper()
+
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Errorf("failed to remove temp directory: %v", err)
+		}
+	}()
+}
+
 func CreateTempFileInDir(t *testing.T, content, dir string) string {
 	t.Helper()
 

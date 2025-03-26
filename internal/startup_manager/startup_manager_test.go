@@ -258,14 +258,12 @@ func TestNewStartupManager(t *testing.T) {
 	// Do not run in parallel at the top level to avoid concurrent Prometheus registration issues
 
 	t.Run("should_create_startup_manager", func(t *testing.T) {
-		// Do not run subtests in parallel
-
-		// Setup
-		dname, err := os.MkdirTemp("", "sm-test")
+		tempDir, err := os.MkdirTemp("", "sm-test")
 		if err != nil {
 			t.Fatalf("failed to create temp dir: %v", err)
 		}
-		defer os.RemoveAll(dname)
+
+		defer file_utils.HandleTempDirRemoval(t, tempDir)
 
 		configContent := `
 logstash:
@@ -275,7 +273,7 @@ server:
   host: 0.0.0.0
   port: 8080
 `
-		configPath := file_utils.CreateTempFileInDir(t, configContent, dname)
+		configPath := file_utils.CreateTempFileInDir(t, configContent, tempDir)
 		flagsCfg := &flags.FlagsConfig{
 			HotReload: true,
 		}
@@ -602,10 +600,8 @@ func TestStartupManager_Shutdown(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		// Execute
 		err := sm.Shutdown(ctx)
 
-		// Verify
 		if err != nil {
 			t.Errorf("expected no error with nil server, got %v", err)
 		}
