@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/kuskoman/logstash-exporter/internal/file_utils"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
 
@@ -14,7 +15,7 @@ func TestConfigureServerTLS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer file_utils.HandleTempDirRemoval(t, tempDir)
 
 	// Get test certificate data
 	testCerts := GetTestCertificates(t)
@@ -106,7 +107,7 @@ func TestConfigureAdvancedServerTLS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer file_utils.HandleTempDirRemoval(t, tempDir)
 
 	// Get test certificates and save them to files
 	testCerts := GetTestCertificates(t)

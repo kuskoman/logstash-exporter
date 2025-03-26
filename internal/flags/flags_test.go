@@ -2,6 +2,7 @@ package flags
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"testing"
 
@@ -106,7 +107,9 @@ func captureOutput(f func()) (string, error) {
 
 	f()
 
-	w.Close()
+	if err := w.Close(); err != nil {
+		return "", fmt.Errorf("failed to close writer: %v", err)
+	}
 	os.Stdout = stdout
 	_, err := buf.ReadFrom(r)
 	if err != nil {

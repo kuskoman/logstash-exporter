@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/kuskoman/logstash-exporter/internal/file_utils"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	customtls "github.com/kuskoman/logstash-exporter/pkg/tls"
 )
@@ -15,29 +16,27 @@ import (
 func TestConfigureTLS(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "tls-test")
 	if err != nil {
-		t.Fatalf("Failed to create temp directory: %v", err)
+		t.Fatalf("failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
 
-	// Get test certificate data
+	defer file_utils.HandleTempDirRemoval(t, tempDir)
+
 	testCerts := customtls.GetTestCertificates(t)
 
-	// Write certificates to files
 	certPath := filepath.Join(tempDir, "cert.pem")
 	keyPath := filepath.Join(tempDir, "key.pem")
 	caPath := filepath.Join(tempDir, "ca.pem")
 
 	if err := os.WriteFile(certPath, []byte(testCerts.CertPEM), 0600); err != nil {
-		t.Fatalf("Failed to write cert file: %v", err)
+		t.Fatalf("failed to write cert file: %v", err)
 	}
 	if err := os.WriteFile(keyPath, []byte(testCerts.KeyPEM), 0600); err != nil {
-		t.Fatalf("Failed to write key file: %v", err)
+		t.Fatalf("failed to write key file: %v", err)
 	}
 	if err := os.WriteFile(caPath, []byte(testCerts.CAPEM), 0600); err != nil {
-		t.Fatalf("Failed to write CA file: %v", err)
+		t.Fatalf("failed to write CA file: %v", err)
 	}
 
-	// Test cases
 	testCases := []struct {
 		name         string
 		config       *config.Config

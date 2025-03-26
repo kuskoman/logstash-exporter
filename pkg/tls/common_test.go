@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/kuskoman/logstash-exporter/internal/file_utils"
 )
 
 func TestLoadCertificateFromFile(t *testing.T) {
@@ -11,7 +13,7 @@ func TestLoadCertificateFromFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer file_utils.HandleTempDirRemoval(t, tempDir)
 
 	// Get test certificates and save them to files
 	testCerts := GetTestCertificates(t)
@@ -52,7 +54,11 @@ func TestLoadCertificateAuthority(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Errorf("failed to remove temp directory: %v", err)
+		}
+	}()
 
 	// Get test certificates and save them to files
 	testCerts := GetTestCertificates(t)

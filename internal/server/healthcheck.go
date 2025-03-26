@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -44,7 +45,11 @@ func getHealthCheck(logstashUrls []string, httpTimeout time.Duration) func(http.
 					errorsChan <- fmt.Errorf("error making request to %s: %v", url, err)
 					return
 				}
-				defer resp.Body.Close()
+				defer func() {
+					if err := resp.Body.Close(); err != nil {
+						slog.Error("failed to close response body", "error", err)
+					}
+				}()
 
 				if resp.StatusCode != http.StatusOK {
 					errorsChan <- fmt.Errorf("%s returned status %d", url, resp.StatusCode)
