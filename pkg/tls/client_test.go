@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,7 +17,11 @@ func TestConfigureClientTLS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			slog.Error("failed to remove temp directory", "error", err)
+		}
+	}()
 
 	// Get test certificate data
 	testCerts := GetTestCertificates(t)
@@ -122,7 +127,11 @@ func TestConfigureHTTPClientFromLogstashInstance(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			slog.Error("failed to remove temp directory", "error", err)
+		}
+	}()
 
 	caPath := createValidCaCertificateFile(t, tempDir)
 
@@ -202,7 +211,11 @@ func TestRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RoundTrip failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
 
 	// Check that the auth header was added correctly
 	echoedAuth := resp.Header.Get("Echo-Auth")
@@ -266,7 +279,11 @@ func TestConfigureHTTPClientWithTLS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			slog.Error("failed to remove temp directory", "error", err)
+		}
+	}()
 
 	testCerts := GetTestCertificates(t)
 	caPath := filepath.Join(tempDir, "ca.pem")

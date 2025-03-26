@@ -16,7 +16,9 @@ func CreateTempFileInDir(t *testing.T, content, dir string) string {
 	}
 
 	if _, err := tempFile.WriteString(content); err != nil {
-		tempFile.Close()
+		if err := tempFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
 		t.Fatalf("failed to write to temp file: %v", err)
 	}
 
