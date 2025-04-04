@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.0
 
 require (
-	github.com/fsnotify/fsnotify v1.8.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/prometheus/client_golang v1.21.1
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.32.3
