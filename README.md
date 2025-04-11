@@ -182,7 +182,9 @@ The chart's parameters are documented in its [README](./chart/README.md).
 ### Endpoints
 
 - `/metrics`: Exposes metrics in Prometheus format.
-- `/health`: Returns 200 if app runs properly.
+- `/healthcheck`: Returns 200 if app runs properly and the connection with all logstash instanses is established.
+- `/version`: Gives the information about the logstash-exporter build in json format.
+- `/*`: Returns a 302 redirect to `/metrics`.
 
 ### Configuration
 
