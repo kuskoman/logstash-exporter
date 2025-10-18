@@ -46,7 +46,11 @@ func TestHealthCheckEndpoint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to get healthcheck: %v", err)
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+		}()
 
 		if resp.StatusCode != 200 {
 			t.Errorf("expected status 200, got %d", resp.StatusCode)
@@ -61,7 +65,11 @@ func TestHealthCheckEndpoint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to get healthcheck: %v", err)
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+		}()
 
 		// Health check should respond within reasonable time
 		if duration > 5*time.Second {
@@ -110,7 +118,11 @@ func TestVersionEndpoint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to get version: %v", err)
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+		}()
 
 		if resp.StatusCode != 200 {
 			t.Errorf("expected status 200, got %d", resp.StatusCode)
@@ -139,7 +151,12 @@ func TestVersionEndpoint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to get version: %v", err)
 		}
-		defer resp.Body.Close()
+
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+		}()
 
 		// Should get 200, not 401 Unauthorized
 		if resp.StatusCode == 401 {
@@ -188,7 +205,12 @@ func TestMetricsEndpoint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to get metrics: %v", err)
 		}
-		defer resp.Body.Close()
+
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+		}()
 
 		// Check content type
 		contentType := resp.Header.Get("Content-Type")

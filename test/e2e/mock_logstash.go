@@ -52,7 +52,9 @@ func NewMockLogstashServer() (*MockLogstashServer, error) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(mock.NodeStatsJSON)
+		if _, err := w.Write(mock.NodeStatsJSON); err != nil {
+			fmt.Printf("error writing node stats response: %v\n", err)
+		}
 	})
 
 	// Root endpoint serves node info
@@ -73,7 +75,9 @@ func NewMockLogstashServer() (*MockLogstashServer, error) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(mock.NodeInfoJSON)
+		if _, err := w.Write(mock.NodeInfoJSON); err != nil {
+			fmt.Printf("error writing node info response: %v\n", err)
+		}
 	})
 
 	mock.Server = httptest.NewServer(mux)

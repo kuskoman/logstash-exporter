@@ -50,7 +50,9 @@ func TestConfigReload(t *testing.T) {
 	// Ensure cleanup
 	defer func() {
 		cancel()
-		cmd.Wait()
+		if err := cmd.Wait(); err != nil {
+			t.Logf("error waiting for command: %v", err)
+		}
 	}()
 
 	// Wait for server to start

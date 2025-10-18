@@ -138,7 +138,11 @@ func GetFreePort() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer listener.Close()
+	defer func() {
+		if err := listener.Close(); err != nil {
+			fmt.Printf("error closing listener: %v\n", err)
+		}
+	}()
 
 	addr := listener.Addr().(*net.TCPAddr)
 	return addr.Port, nil
@@ -174,7 +178,9 @@ func StartExporter(t *testing.T, configPath string, port int) *ExporterInstance 
 	// Wait for server to be ready
 	serverURL := fmt.Sprintf("http://127.0.0.1:%d", port)
 	if !waitForServer(serverURL, 10*time.Second) {
-		instance.Stop()
+		if err := instance.Stop(); err != nil {
+			t.Logf("error stopping instance: %v", err)
+		}
 		t.Fatal("server did not start in time")
 	}
 
@@ -260,7 +266,12 @@ func FetchMetrics(t *testing.T, url string) string {
 	if err != nil {
 		t.Fatalf("failed to fetch metrics: %v", err)
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			t.Logf("error closing response body: %v", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("unexpected status code: %d", resp.StatusCode)
