@@ -104,8 +104,29 @@ func TestConfigReload(t *testing.T) {
 
 		// Retry a few times to allow for reload propagation
 		var instancesFound int
-		for i := 0; i < 5; i++ {
-			metricsText := FetchMetrics(t, metricsURL)
+		var metricsText string
+		var lastErr error
+
+		for i := 0; i < 10; i++ {
+			// Try to fetch metrics, but don't fail immediately
+			resp, err := httpGet(metricsURL)
+			if err != nil {
+				lastErr = err
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			body, err := readResponseBody(resp)
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+			if err != nil {
+				lastErr = err
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			metricsText = body
 			instancesFound = CountInstancesInMetrics(metricsText)
 
 			if instancesFound >= 2 {
@@ -116,7 +137,11 @@ func TestConfigReload(t *testing.T) {
 		}
 
 		if instancesFound < 2 {
-			t.Errorf("expected 2 instances after reload, found %d", instancesFound)
+			if lastErr != nil {
+				t.Errorf("expected 2 instances after reload, found %d (last error: %v)", instancesFound, lastErr)
+			} else {
+				t.Errorf("expected 2 instances after reload, found %d", instancesFound)
+			}
 		}
 	})
 
