@@ -95,19 +95,35 @@ func TestConfigReload(t *testing.T) {
 		t.Fatalf("failed to write updated config: %v", err)
 	}
 
-	// Wait for file watcher to detect change and reload
-	// The file watcher typically checks every 1-2 seconds
-	time.Sleep(5 * time.Second)
-
 	t.Run("reload_adds_second_instance", func(t *testing.T) {
 		metricsURL := fmt.Sprintf("http://127.0.0.1:%d/metrics", port)
+		healthURL := fmt.Sprintf("http://127.0.0.1:%d/healthcheck", port)
 
-		// Retry a few times to allow for reload propagation
+		// Wait for file watcher to detect change and reload
+		// The file watcher typically checks every 1-2 seconds
+		// First, wait for the server to come back up after reload
+		time.Sleep(2 * time.Second)
+
+		// Wait for server to be healthy again after reload
+		for i := 0; i < 15; i++ {
+			resp, err := httpGet(healthURL)
+			if err == nil {
+				if err := resp.Body.Close(); err != nil {
+					t.Logf("error closing response body: %v", err)
+				}
+				if resp.StatusCode == 200 {
+					break
+				}
+			}
+			time.Sleep(1 * time.Second)
+		}
+
+		// Now retry fetching metrics to check for the second instance
 		var instancesFound int
 		var metricsText string
 		var lastErr error
 
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 15; i++ {
 			// Try to fetch metrics, but don't fail immediately
 			resp, err := httpGet(metricsURL)
 			if err != nil {
