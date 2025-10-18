@@ -255,7 +255,10 @@ func waitForServer(url string, timeout time.Duration) bool {
 	for time.Now().Before(deadline) {
 		resp, err := client.Get(url + "/version")
 		if err == nil {
-			resp.Body.Close()
+			err = resp.Body.Close()
+			if err != nil {
+				fmt.Printf("error closing response body: %v\n", err)
+			}
 			if resp.StatusCode == http.StatusOK {
 				return true
 			}
