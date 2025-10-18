@@ -267,6 +267,10 @@ See more in the [Migration](#migration) section.
 - `make clean`: Deletes all binary executables in the out directory.
 - `make test`: Runs all tests.
 - `make test-coverage`: Displays test coverage report.
+- `make e2e-prepare`: Builds binary for e2e tests.
+- `make e2e-run`: Runs e2e tests (requires e2e-prepare first).
+- `make e2e`: Prepares and runs e2e tests.
+- `make e2e-clean`: Cleans e2e test artifacts.
 - `make compose`: Starts a Docker-compose configuration.
 - `make wait-for-compose`: Starts a Docker-compose configuration until it's ready.
 - `make compose-down`: Stops a Docker-compose configuration.
