@@ -8,11 +8,6 @@ dependencies:
     version: "^8.5.1"
     repository: https://helm.elastic.co
     condition: logstash.enabled
-  # we are replacing elasticsearch with apache for testing purposes
-  - name: apache
-    version: "^11.3.4"
-    repository: https://charts.bitnami.com/bitnami
-    condition: apache.enabled
   - name: prometheus
     version: "^27.5.1"
     repository: https://prometheus-community.github.io/helm-charts
