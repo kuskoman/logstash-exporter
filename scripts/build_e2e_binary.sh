@@ -28,7 +28,7 @@ if go build -o "${BINARY_PATH}" ./cmd/exporter; then
     chmod +x "${BINARY_PATH}"
 
     # Show binary info
-    BINARY_SIZE=$(ls -lh "${BINARY_PATH}" | awk '{print $5}')
+    BINARY_SIZE=$(du -h "${BINARY_PATH}" | cut -f1)
     echo -e "${GREEN}  Size: ${BINARY_SIZE}${NC}"
 else
     echo -e "${RED}✗ Failed to build binary${NC}"
