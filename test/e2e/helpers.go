@@ -132,20 +132,28 @@ func GetBinaryPath(t *testing.T) string {
 	return binaryPath
 }
 
-// GetFreePort finds an available TCP port
+// GetFreePort finds an available TCP port in the range 1000-9999
+// This ensures the port is within commonly allowed ranges in CI environments
 func GetFreePort() (int, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
+	const minPort = 1000
+	const maxPort = 9999
+
+	for port := minPort; port <= maxPort; port++ {
+		address := fmt.Sprintf("127.0.0.1:%d", port)
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			// Port is in use or unavailable, try next one
+			continue
+		}
+
+		// Port is available, close and return it
 		if err := listener.Close(); err != nil {
 			fmt.Printf("error closing listener: %v\n", err)
 		}
-	}()
+		return port, nil
+	}
 
-	addr := listener.Addr().(*net.TCPAddr)
-	return addr.Port, nil
+	return 0, fmt.Errorf("no free port found in range %d-%d", minPort, maxPort)
 }
 
 // StartExporter starts an exporter binary with the given configuration
