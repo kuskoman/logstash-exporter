@@ -265,8 +265,8 @@ See more in the [Migration](#migration) section.
 - `make build-docker-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the exporter.
 - `make build-docker-controller-multi`: Builds a multi-arch Docker image (`amd64` and `arm64`) for the controller.
 - `make clean`: Deletes all binary executables in the out directory.
-- `make test`: Runs all tests.
-- `make test-coverage`: Displays test coverage report.
+- `make test`: Runs all unit tests (excludes e2e tests).
+- `make test-coverage`: Displays test coverage report (excludes e2e tests).
 - `make e2e-prepare`: Builds binary for e2e tests.
 - `make e2e-run`: Runs e2e tests (requires e2e-prepare first).
 - `make e2e`: Prepares and runs e2e tests.
@@ -286,7 +286,7 @@ See more in the [Migration](#migration) section.
 - `make upgrade-dependencies`: Upgrades all dependencies.
 - `make migrate-v1-to-v2`: Migrates configuration from v1 to v2.
 - `make update-readme-descriptions`: Update Makefile descriptions in main README.md.
-- `make update-snapshots`: Updates snapshot for test data and runs tests.
+- `make update-snapshots`: Updates snapshot for test data and runs unit tests (excludes e2e tests).
 - `make help`: Shows info about available commands.
 
 <!--- **************************************************** --->

@@ -61,7 +61,7 @@ jobs:
           go-version: "^1.24"
 
       - name: Test code
-        run: go test ./... -covermode=atomic -coverprofile=coverage.out
+        run: go test $(go list ./... | grep -v '/test/e2e') -covermode=atomic -coverprofile=coverage.out
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

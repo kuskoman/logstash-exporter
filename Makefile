@@ -80,13 +80,13 @@ build-docker-controller-multi:
 clean:
 	rm -f $(GOOS_EXES)
 
-#: Runs all tests
+#: Runs all unit tests (excludes e2e tests)
 test:
-	go test -race -v ./...
+	go test -race -v $$(go list ./... | grep -v '/test/e2e')
 
-#: Displays test coverage report
+#: Displays test coverage report (excludes e2e tests)
 test-coverage:
-	go test -race -coverprofile=coverage.out ./...
+	go test -race -coverprofile=coverage.out $$(go list ./... | grep -v '/test/e2e')
 	go tool cover -html=coverage.out
 
 #: Builds binary for e2e tests
@@ -182,9 +182,9 @@ migrate-v1-to-v2:
 update-readme-descriptions:
 	./scripts/add_descriptions_to_readme.sh
 
-#: Updates snapshot for test data and runs tests
+#: Updates snapshot for test data and runs unit tests (excludes e2e tests)
 update-snapshots:
-	UPDATE_SNAPS=true go test ./...
+	UPDATE_SNAPS=true go test $$(go list ./... | grep -v '/test/e2e')
 
 #: Shows info about available commands
 help:
