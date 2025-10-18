@@ -44,11 +44,6 @@ prometheus:
         static_configs:
           - targets: ["exporter:9198"]
 
-apache:
-  enabled: true
-  service:
-    type: ClusterIP
-
 logstash-exporter:
   enabled: true
   fullnameOverride: logstash-exporter
