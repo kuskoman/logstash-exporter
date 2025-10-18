@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -134,11 +135,21 @@ func GetBinaryPath(t *testing.T) string {
 
 // GetFreePort finds an available TCP port in the range 1000-9999
 // This ensures the port is within commonly allowed ranges in CI environments
+// It uses a random starting point to reduce port collisions in parallel tests
 func GetFreePort() (int, error) {
 	const minPort = 1000
 	const maxPort = 9999
+	const maxAttempts = 100
 
-	for port := minPort; port <= maxPort; port++ {
+	// Use a random starting point to reduce collisions in parallel tests
+	startPort := minPort + rand.Intn(maxPort-minPort-maxAttempts)
+
+	for i := 0; i < maxAttempts; i++ {
+		port := startPort + i
+		if port > maxPort {
+			port = minPort + (port - maxPort - 1)
+		}
+
 		address := fmt.Sprintf("127.0.0.1:%d", port)
 		listener, err := net.Listen("tcp", address)
 		if err != nil {
@@ -153,7 +164,7 @@ func GetFreePort() (int, error) {
 		return port, nil
 	}
 
-	return 0, fmt.Errorf("no free port found in range %d-%d", minPort, maxPort)
+	return 0, fmt.Errorf("no free port found after %d attempts in range %d-%d", maxAttempts, minPort, maxPort)
 }
 
 // StartExporter starts an exporter binary with the given configuration
@@ -270,30 +281,49 @@ func waitForServer(url string, timeout time.Duration) bool {
 }
 
 // FetchMetrics fetches and returns the metrics from the exporter
+// It retries a few times to handle startup delays
 func FetchMetrics(t *testing.T, url string) string {
 	t.Helper()
 
-	resp, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("failed to fetch metrics: %v", err)
-	}
+	var lastErr error
+	maxRetries := 10
 
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			t.Logf("error closing response body: %v", err)
+	for i := 0; i < maxRetries; i++ {
+		resp, err := http.Get(url)
+		if err != nil {
+			lastErr = err
+			if i < maxRetries-1 {
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+			t.Fatalf("failed to fetch metrics after %d retries: %v", maxRetries, err)
 		}
-	}()
 
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("unexpected status code: %d", resp.StatusCode)
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Logf("error closing response body: %v", err)
+			}
+		}()
+
+		if resp.StatusCode != http.StatusOK {
+			lastErr = fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+			if i < maxRetries-1 {
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+			t.Fatalf("unexpected status code after %d retries: %d", maxRetries, resp.StatusCode)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("failed to read response body: %v", err)
+		}
+
+		return string(body)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("failed to read response body: %v", err)
-	}
-
-	return string(body)
+	t.Fatalf("failed to fetch metrics: %v", lastErr)
+	return ""
 }
 
 // ParseMetrics parses Prometheus metrics from the response
