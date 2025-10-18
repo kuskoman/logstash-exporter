@@ -89,6 +89,21 @@ test-coverage:
 	go test -race -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
+#: Builds binary for e2e tests
+e2e-prepare:
+	./scripts/build_e2e_binary.sh
+
+#: Runs e2e tests (requires e2e-prepare first)
+e2e-run:
+	go test -v -timeout 10m -parallel 4 github.com/kuskoman/logstash-exporter/test/e2e
+
+#: Prepares and runs e2e tests
+e2e: e2e-prepare e2e-run
+
+#: Cleans e2e test artifacts
+e2e-clean:
+	rm -rf test/e2e/bin
+
 #: Starts a Docker-compose configuration
 compose:
 	docker-compose up -d --build

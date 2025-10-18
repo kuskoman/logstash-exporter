@@ -24,6 +24,9 @@ go.work
 # Binaries
 out/
 
+# E2E test binaries
+test/e2e/bin/
+
 # Temporary build files
 tmp/
 
