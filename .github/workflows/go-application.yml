@@ -92,7 +92,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Node 18
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 18
 
@@ -226,7 +226,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: logstash-exporter-linux
           path: out/main-linux
@@ -251,7 +251,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux ARM binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: logstash-exporter-linux-arm
           path: out/main-linux-arm
@@ -276,7 +276,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Mac binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: logstash-exporter-darwin
           path: out/main-darwin
@@ -301,7 +301,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Windows binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: logstash-exporter-windows
           path: out/main-windows
@@ -335,7 +335,7 @@ jobs:
         run: docker save ${{ matrix.image_name }}:latest | gzip > ${{ matrix.tar_name }}
 
       - name: Upload Docker image as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.tar_name }}
@@ -431,7 +431,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Download Exporter Docker image
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: logstash-exporter-docker-image
           path: .helm/files
@@ -536,7 +536,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: logstash-exporter-${{ matrix.binary }}
       - name: Generate sha256 checksum
