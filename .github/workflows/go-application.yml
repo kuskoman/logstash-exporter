@@ -431,7 +431,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Download Exporter Docker image
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: logstash-exporter-docker-image
           path: .helm/files
@@ -536,7 +536,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: logstash-exporter-${{ matrix.binary }}
       - name: Generate sha256 checksum
