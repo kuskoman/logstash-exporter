@@ -1,0 +1,26 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "logstash-exporter.fullname" . }}
+  labels:
+    app: {{ include "logstash-exporter.name" . }}
+    release: {{ .Release.Name }}
+  labels: 
+    app.name: {{ .Values.app }}  
+    {{- with .Values.serviceMonitor.labels }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "logstash-exporter.name" . }}
+      release: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+{{- end }}

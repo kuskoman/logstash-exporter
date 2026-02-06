@@ -9,6 +9,9 @@ data:
   config.yml: |-
   {{- if .Values.customConfig.enabled }}
     {{- .Values.customConfig.config | nindent 4 }}
+  {{- else if .Values.logstash.kubernetes.enabled }}
+    kubernetes:
+      {{- .Values.logstash.kubernetes | toYaml | nindent 6 }}
   {{- else }}
     logstash:
       instances:
