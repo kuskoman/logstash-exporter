@@ -226,7 +226,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: logstash-exporter-linux
           path: out/main-linux
@@ -251,7 +251,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux ARM binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: logstash-exporter-linux-arm
           path: out/main-linux-arm
@@ -276,7 +276,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Mac binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: logstash-exporter-darwin
           path: out/main-darwin
@@ -301,7 +301,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Windows binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: logstash-exporter-windows
           path: out/main-windows
@@ -335,7 +335,7 @@ jobs:
         run: docker save ${{ matrix.image_name }}:latest | gzip > ${{ matrix.tar_name }}
 
       - name: Upload Docker image as an artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.tar_name }}
