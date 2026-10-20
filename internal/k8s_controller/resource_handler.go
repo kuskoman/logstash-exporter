@@ -9,13 +9,21 @@ import (
 	"sync"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/fields"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
+
+// InstanceManager adds and removes the Logstash instances that are scraped.
+// It is implemented by collector_manager.CollectorManager.
+type InstanceManager interface {
+	AddInstance(id string, instance *config.LogstashInstance)
+	RemoveInstance(id string)
+}
 
 // ResourceHandler defines the interface for handling different Kubernetes resource types
 type ResourceHandler interface {
@@ -30,7 +38,7 @@ type ResourceHandler interface {
 // BaseResourceHandler contains common functionality for all resource handlers
 type BaseResourceHandler struct {
 	client         kubernetes.Interface
-	collectorMgr   *collector_manager.CollectorManager
+	collectorMgr   InstanceManager
 	config         config.KubernetesConfig
 	resourceConfig config.ResourceConfig
 	mu             sync.RWMutex
@@ -42,7 +50,7 @@ type BaseResourceHandler struct {
 // newBaseResourceHandler creates a new base resource handler
 func newBaseResourceHandler(
 	client kubernetes.Interface,
-	collectorMgr *collector_manager.CollectorManager,
+	collectorMgr InstanceManager,
 	kubeConfig config.KubernetesConfig,
 	resourceConfig config.ResourceConfig,
 ) *BaseResourceHandler {
@@ -99,7 +107,7 @@ type PodResourceHandler struct {
 // NewPodResourceHandler creates a new Pod resource handler
 func NewPodResourceHandler(
 	client kubernetes.Interface,
-	collectorMgr *collector_manager.CollectorManager,
+	collectorMgr InstanceManager,
 	kubeConfig config.KubernetesConfig,
 ) ResourceHandler {
 	return &PodResourceHandler{
@@ -133,14 +141,14 @@ func (h *PodResourceHandler) Start(ctx context.Context, namespaces []string) err
 
 	// Create an informer for each namespace
 	for _, namespace := range namespaces {
-		fieldSelector := fields.Everything()
-
-		podListWatcher := cache.NewListWatchFromClient(
-			h.client.CoreV1().RESTClient(),
-			"pods",
-			namespace,
-			fieldSelector,
-		)
+		podListWatcher := &cache.ListWatch{
+			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				return h.client.CoreV1().Pods(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				return h.client.CoreV1().Pods(namespace).Watch(ctx, options)
+			},
+		}
 
 		informer := cache.NewSharedIndexInformer(
 			podListWatcher,
@@ -279,7 +287,7 @@ type ServiceResourceHandler struct {
 // NewServiceResourceHandler creates a new Service resource handler
 func NewServiceResourceHandler(
 	client kubernetes.Interface,
-	collectorMgr *collector_manager.CollectorManager,
+	collectorMgr InstanceManager,
 	kubeConfig config.KubernetesConfig,
 ) ResourceHandler {
 	return &ServiceResourceHandler{
@@ -313,14 +321,14 @@ func (h *ServiceResourceHandler) Start(ctx context.Context, namespaces []string)
 
 	// Create an informer for each namespace
 	for _, namespace := range namespaces {
-		fieldSelector := fields.Everything()
-
-		serviceListWatcher := cache.NewListWatchFromClient(
-			h.client.CoreV1().RESTClient(),
-			"services",
-			namespace,
-			fieldSelector,
-		)
+		serviceListWatcher := &cache.ListWatch{
+			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				return h.client.CoreV1().Services(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				return h.client.CoreV1().Services(namespace).Watch(ctx, options)
+			},
+		}
 
 		informer := cache.NewSharedIndexInformer(
 			serviceListWatcher,
