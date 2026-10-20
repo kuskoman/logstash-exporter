@@ -28,7 +28,7 @@ The aim is to have 100% code coverage. If you are unable to achieve this, please
 
 ### Test Standards
 
-We maintain a set of [Testing Standards](./TESTING-STANDARDS.md) to ensure consistency across the codebase. Please follow these standards when writing or modifying tests:
+We maintain a set of [Testing Standards](./docs/TESTING-STANDARDS.md) to ensure consistency across the codebase. Please follow these standards when writing or modifying tests:
 
 - Use table-driven tests when testing multiple cases
 - Follow the naming conventions defined in the standards

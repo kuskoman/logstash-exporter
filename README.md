@@ -28,8 +28,8 @@ The application can be run in several ways:
 
 For detailed deployment instructions, see:
 
-- [Standalone Deployment Guide](./STANDALONE.md) - For deploying as a systemd service
-- [Helm Deployment Guide](./HELM-DEPLOY.md) - For deploying to Kubernetes using Helm
+- [Standalone Deployment Guide](./docs/STANDALONE.md) - For deploying as a systemd service
+- [Helm Deployment Guide](./docs/HELM-DEPLOY.md) - For deploying to Kubernetes using Helm
 - [Helm chart auto-generated README](./chart/README.md) - For Helm chart configuration
 - [Helm chart tests](./chart/tests/README.md) - For Helm chart unit tests
 
@@ -172,7 +172,7 @@ The Docker image can be run using the following command:
 
 #### Helm Chart
 
-The Helm chart provides a Kubernetes deployment for Logstash Exporter. For detailed instructions, see the [Helm Deployment Guide](./HELM-DEPLOY.md) which includes:
+The Helm chart provides a Kubernetes deployment for Logstash Exporter. For detailed instructions, see the [Helm Deployment Guide](./docs/HELM-DEPLOY.md) which includes:
 
 - Installation instructions
 - Prometheus integration
@@ -219,10 +219,12 @@ logging:
   format: "text"                  # Log format (text, json)
 ```
 
-All configuration variables can be checked in the [config directory](./config/).
+For HTTPS, client certificates and basic authentication, see the [TLS configuration guide](./docs/TLS-CONFIGURATION.md).
+
+All configuration variables can be checked in the [config package](./pkg/config/).
 
 Previously the application was configured using environment variables. The old configuration is no longer supported,
-however a [migration script](./scripts/migrate_env_to_yaml.sh) is provided to migrate the old configuration to the new one.
+however a [migration script](./scripts/migrate_v1_to_v2.sh) is provided to migrate the old configuration to the new one.
 See more in the [Migration](#migration) section.
 
 ## Migration
@@ -371,7 +373,7 @@ Then you can run the tests:
 
 ### Testing Standards
 
-For consistency across the codebase, we follow a set of [Testing Standards](./TESTING-STANDARDS.md) that outlines:
+For consistency across the codebase, we follow a set of [Testing Standards](./docs/TESTING-STANDARDS.md) that outlines:
 
 - Test structure and naming conventions
 - Error handling patterns
