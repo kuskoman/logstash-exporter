@@ -146,12 +146,13 @@
 
 ### ServiceAccount settings
 
-| Name                         | Description                                                                                       | Value   |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- | ------- |
-| `serviceAccount.enabled`     | Enable service account creation                                                                   | `false` |
-| `serviceAccount.create`      | Create service account                                                                            | `false` |
-| `serviceAccount.name`        | Service account name. If not set, the fullname is used when `create` is true, otherwise `default` | `""`    |
-| `serviceAccount.annotations` | Additional service account annotations                                                            | `{}`    |
+| Name                                          | Description                                                                                                        | Value   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------- |
+| `serviceAccount.enabled`                      | Enable service account creation                                                                                    | `false` |
+| `serviceAccount.create`                       | Create service account                                                                                             | `false` |
+| `serviceAccount.name`                         | Service account name. If not set, the fullname is used when `create` is true, otherwise `default`                  | `""`    |
+| `serviceAccount.annotations`                  | Additional service account annotations                                                                             | `{}`    |
+| `serviceAccount.automountServiceAccountToken` | Mount the service account token into the pod. The Kubernetes controller mode needs it to access the Kubernetes API | `true`  |
 
 ### RBAC settings for Kubernetes controller
 

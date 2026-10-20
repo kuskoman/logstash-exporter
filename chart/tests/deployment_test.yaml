@@ -230,6 +230,22 @@ tests:
             - name: registry-credentials
             - name: other-credentials
 
+  - it: should mount the service account token by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: true
+
+  - it: should not mount the service account token when disabled
+    template: deployment.yaml
+    set:
+      serviceAccount.automountServiceAccountToken: false
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
   - it: should use the created service account when enabled
     template: deployment.yaml
     set:

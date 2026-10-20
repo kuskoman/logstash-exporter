@@ -267,6 +267,9 @@ serviceAccount:
   ## @param serviceAccount.annotations Additional service account annotations
   ##
   annotations: {}
+  ## @param serviceAccount.automountServiceAccountToken Mount the service account token into the pod. The Kubernetes controller mode needs it to access the Kubernetes API
+  ##
+  automountServiceAccountToken: true
 
 ## @section RBAC settings for Kubernetes controller
 ##
