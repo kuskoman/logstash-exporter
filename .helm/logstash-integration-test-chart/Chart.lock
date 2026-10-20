@@ -4,9 +4,9 @@ dependencies:
   version: 8.5.1
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
-  version: 27.41.1
+  version: 29.37.0
 - name: logstash-exporter
   repository: file://../../chart/
   version: 2.0.0
-digest: sha256:53204d549fb36d047ca3da15379c17e7b94bf9768d4341b6910cfc292c33e96f
-generated: "2025-10-18T11:59:15.942638+02:00"
+digest: sha256:6eae0cbdd37cfd24f849d168db8cf9c388042cfc6b4aa3a69a17c48a92ad6d53
+generated: "2026-10-20T14:44:38.683058867Z"

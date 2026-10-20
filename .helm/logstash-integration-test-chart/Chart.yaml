@@ -9,7 +9,7 @@ dependencies:
     repository: https://helm.elastic.co
     condition: logstash.enabled
   - name: prometheus
-    version: "^27.5.1"
+    version: "^29.37.0"
     repository: https://prometheus-community.github.io/helm-charts
     condition: prometheus.enabled
   - name: logstash-exporter
