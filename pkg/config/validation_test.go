@@ -224,6 +224,17 @@ func TestClientAuthConfig_GetPassword(t *testing.T) {
 		}
 	})
 
+	t.Run("ignores_the_trailing_newline_of_a_password_file", func(t *testing.T) {
+		t.Parallel()
+
+		for _, content := range []string{"secret\n", "secret\r\n"} {
+			password, err := (&ClientAuthConfig{PasswordFile: writeTestFile(t, content)}).GetPassword()
+			if err != nil || password != "secret" {
+				t.Errorf("expected secret for content %q, got %q (%v)", content, password, err)
+			}
+		}
+	})
+
 	t.Run("returns_an_error_for_a_missing_password_file", func(t *testing.T) {
 		t.Parallel()
 
