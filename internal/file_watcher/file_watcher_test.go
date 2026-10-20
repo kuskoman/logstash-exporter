@@ -3,6 +3,7 @@ package file_watcher
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -253,6 +254,112 @@ func TestFileWatcherDebounce(t *testing.T) {
 		case <-time.After(3 * fw.debounceTime):
 		}
 	})
+}
+
+func TestFileWatcherReplacedFile(t *testing.T) {
+	t.Run("should_execute_listener_when_file_is_replaced_by_rename", func(t *testing.T) {
+		dir := t.TempDir()
+		configPath := filepath.Join(dir, "config.yml")
+		writeTestFile(t, configPath, "initial content")
+
+		listenerCalled := make(chan struct{}, 10)
+		startWatcher(t, configPath, listenerCalled)
+
+		tempPath := filepath.Join(dir, ".config.yml.swp")
+		writeTestFile(t, tempPath, "new content")
+		if err := os.Rename(tempPath, configPath); err != nil {
+			t.Fatalf("failed to rename file: %v", err)
+		}
+
+		expectCall(t, listenerCalled)
+	})
+
+	t.Run("should_execute_listener_when_symlinked_directory_is_swapped", func(t *testing.T) {
+		// Layout of a Kubernetes ConfigMap volume:
+		// config.yml -> ..data/config.yml, ..data -> ..<timestamp>
+		dir := t.TempDir()
+		writeTestFile(t, filepath.Join(dir, "..v1", "config.yml"), "initial content")
+		mustSymlink(t, "..v1", filepath.Join(dir, "..data"))
+		mustSymlink(t, filepath.Join("..data", "config.yml"), filepath.Join(dir, "config.yml"))
+
+		listenerCalled := make(chan struct{}, 10)
+		startWatcher(t, filepath.Join(dir, "config.yml"), listenerCalled)
+
+		writeTestFile(t, filepath.Join(dir, "..v2", "config.yml"), "new content")
+		mustSymlink(t, "..v2", filepath.Join(dir, "..data_tmp"))
+		if err := os.Rename(filepath.Join(dir, "..data_tmp"), filepath.Join(dir, "..data")); err != nil {
+			t.Fatalf("failed to swap symlink: %v", err)
+		}
+
+		expectCall(t, listenerCalled)
+	})
+
+	t.Run("should_not_execute_listener_when_other_file_changes", func(t *testing.T) {
+		dir := t.TempDir()
+		configPath := filepath.Join(dir, "config.yml")
+		writeTestFile(t, configPath, "initial content")
+
+		listenerCalled := make(chan struct{}, 10)
+		startWatcher(t, configPath, listenerCalled)
+
+		writeTestFile(t, filepath.Join(dir, "other.yml"), "other content")
+
+		select {
+		case <-listenerCalled:
+			t.Error("expected listener not to be called when the watched content is unchanged")
+		case <-time.After(3 * 100 * time.Millisecond):
+		}
+	})
+}
+
+func startWatcher(t *testing.T, path string, listenerCalled chan struct{}) {
+	t.Helper()
+
+	fw, err := NewFileWatcher(path, func() error {
+		listenerCalled <- struct{}{}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("failed to create file watcher: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	readyCh, err := fw.Watch(ctx)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	<-readyCh
+}
+
+func expectCall(t *testing.T, called chan struct{}) {
+	t.Helper()
+
+	select {
+	case <-called:
+	case <-time.After(testTimeout):
+		t.Fatal("expected listener to be called, but it wasn't")
+	}
+}
+
+func writeTestFile(t *testing.T, path, content string) {
+	t.Helper()
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		t.Fatalf("failed to create directory: %v", err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to write file: %v", err)
+	}
+}
+
+func mustSymlink(t *testing.T, target, link string) {
+	t.Helper()
+
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatalf("failed to create symlink: %v", err)
+	}
 }
 
 func mockListenerWithChannel(called chan struct{}) func() error {

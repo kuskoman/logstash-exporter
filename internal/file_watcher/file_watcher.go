@@ -146,20 +146,20 @@ func (fw *FileWatcher) executeListeners() error {
 	return nil
 }
 
-// isRelevantFileEvent checks if the event corresponds to a modification of the watched file
+// isRelevantFileEvent checks if the event may have changed the content of the
+// watched file. Besides writes to the file itself, this includes files being
+// created or renamed in its directory: editors save by renaming a temporary
+// file over the original, and Kubernetes updates mounted ConfigMaps by
+// swapping a symlink to a new directory. Whether the content actually changed
+// is decided later by comparing the content hash.
 func (fw *FileWatcher) isRelevantFileEvent(event fsnotify.Event) bool {
-	eventFileName := filepath.Base(event.Name)
-	if eventFileName != fw.fileName {
+	if event.Op == fsnotify.Chmod {
+		slog.Debug("ignoring irrelevant file event", "event", event, "file", fw.fileName)
 		return false
 	}
 
-	if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Rename == fsnotify.Rename {
-		slog.Debug("relevant file event detected", "event", event, "file", fw.fileName)
-		return true
-	}
-
-	slog.Debug("ignoring irrelevant file event", "event", event, "file", fw.fileName)
-	return false
+	slog.Debug("relevant file event detected", "event", event, "file", fw.fileName)
+	return true
 }
 
 // Stop stops the file watcher
