@@ -219,6 +219,30 @@ func TestMergeWithDefault(t *testing.T) {
 		}
 	})
 
+	t.Run("does not add the default instance in kubernetes controller mode", func(t *testing.T) {
+		t.Parallel()
+
+		mergedConfig := mergeWithDefault(&Config{Kubernetes: KubernetesConfig{Enabled: true}})
+
+		if len(mergedConfig.Logstash.Instances) != 0 {
+			t.Errorf("expected no static instances, got %v", mergedConfig.Logstash.Instances)
+		}
+	})
+
+	t.Run("keeps configured instances in kubernetes controller mode", func(t *testing.T) {
+		t.Parallel()
+
+		instance := &LogstashInstance{Host: "http://logstash:9600"}
+		mergedConfig := mergeWithDefault(&Config{
+			Kubernetes: KubernetesConfig{Enabled: true},
+			Logstash:   LogstashConfig{Instances: []*LogstashInstance{instance}},
+		})
+
+		if len(mergedConfig.Logstash.Instances) != 1 || mergedConfig.Logstash.Instances[0] != instance {
+			t.Errorf("expected the configured instance to be kept, got %v", mergedConfig.Logstash.Instances)
+		}
+	})
+
 	t.Run("merge with nil config", func(t *testing.T) {
 		t.Parallel()
 

@@ -208,7 +208,9 @@ func mergeWithDefault(config *Config) *Config {
 		config.Logging.Format = defaultLogFormat
 	}
 
-	if len(config.Logstash.Instances) == 0 {
+	// In Kubernetes controller mode the instances are discovered from
+	// annotations, and localhost is the exporter's own pod
+	if len(config.Logstash.Instances) == 0 && !config.Kubernetes.Enabled {
 		slog.Debug("using default logstash server", "url", defaultLogstashURL)
 		config.Logstash.Instances = append(config.Logstash.Instances, &LogstashInstance{
 			Host: defaultLogstashURL,
