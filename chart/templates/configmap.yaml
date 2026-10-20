@@ -1,3 +1,6 @@
+{{- if hasKey .Values "kubernetes" }}
+{{- fail "kubernetes is not a top-level value, configure the Kubernetes controller under logstash.kubernetes" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

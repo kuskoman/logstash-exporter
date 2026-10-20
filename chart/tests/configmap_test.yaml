@@ -102,6 +102,14 @@ tests:
             logging:
               level: "debug"
 
+  - it: should fail when kubernetes is configured at the top level
+    set:
+      kubernetes:
+        enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: kubernetes is not a top-level value, configure the Kubernetes controller under logstash.kubernetes
+
   - it: should use custom config when enabled
     set:
       logstash.kubernetes.enabled: true
