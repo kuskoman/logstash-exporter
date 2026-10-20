@@ -6,83 +6,130 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync"
+	"testing"
+	"time"
 )
 
-// MockLogstashServer represents a mock Logstash HTTP server for testing
-type MockLogstashServer struct {
-	Server      *httptest.Server
-	NodeInfoJSON  []byte
-	NodeStatsJSON []byte
-	RequestCount  int
-	FailNextRequest bool
+const (
+	nodeInfoPath  = "/"
+	nodeStatsPath = "/_node/stats"
+)
+
+// RecordedRequest is a request received by the mock Logstash server
+type RecordedRequest struct {
+	Path     string
+	Username string
+	Password string
+	HasAuth  bool
 }
 
-// NewMockLogstashServer creates a new mock Logstash server that serves fixture data
-func NewMockLogstashServer() (*MockLogstashServer, error) {
-	mock := &MockLogstashServer{}
+// MockLogstashServer is a mock Logstash HTTP API serving fixture data.
+// It is safe for concurrent use.
+type MockLogstashServer struct {
+	Server *httptest.Server
 
-	// Load fixtures from the fixtures directory
-	fixturesDir := filepath.Join("..", "..", "fixtures")
+	mu         sync.Mutex
+	responses  map[string][]byte
+	statusCode int
+	delay      time.Duration
+	failNext   int
+	requests   []RecordedRequest
+}
 
-	nodeInfo, err := os.ReadFile(filepath.Join(fixturesDir, "node_info.json"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to read node_info.json: %w", err)
+// MockOption configures a MockLogstashServer
+type MockOption func(*mockSettings)
+
+type mockSettings struct {
+	tls bool
+}
+
+// WithMockTLS serves the mock Logstash API over HTTPS
+func WithMockTLS() MockOption {
+	return func(s *mockSettings) { s.tls = true }
+}
+
+// NewMockLogstashServer starts a mock Logstash server serving the fixtures
+// from the repository's fixtures directory. It is closed when the test ends.
+func NewMockLogstashServer(t *testing.T, opts ...MockOption) *MockLogstashServer {
+	t.Helper()
+
+	settings := &mockSettings{}
+	for _, opt := range opts {
+		opt(settings)
 	}
-	mock.NodeInfoJSON = nodeInfo
 
-	nodeStats, err := os.ReadFile(filepath.Join(fixturesDir, "node_stats.json"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to read node_stats.json: %w", err)
+	mock := &MockLogstashServer{
+		responses: map[string][]byte{
+			nodeInfoPath:  readFixture(t, "node_info.json"),
+			nodeStatsPath: readFixture(t, "node_stats.json"),
+		},
+		statusCode: http.StatusOK,
 	}
-	mock.NodeStatsJSON = nodeStats
 
-	// Create HTTP test server
-	mux := http.NewServeMux()
+	handler := http.HandlerFunc(mock.serveHTTP)
+	if settings.tls {
+		mock.Server = httptest.NewTLSServer(handler)
+	} else {
+		mock.Server = httptest.NewServer(handler)
+	}
+	t.Cleanup(mock.Server.Close)
 
-	// Logstash API endpoints
-	// Note: /_node/stats must be registered before / to avoid being caught by the root handler
-	mux.HandleFunc("/_node/stats", func(w http.ResponseWriter, r *http.Request) {
-		mock.RequestCount++
+	return mock
+}
 
-		if mock.FailNextRequest {
-			mock.FailNextRequest = false
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func readFixture(t *testing.T, name string) []byte {
+	t.Helper()
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(mock.NodeStatsJSON); err != nil {
-			fmt.Printf("error writing node stats response: %v\n", err)
-		}
+	data, err := os.ReadFile(filepath.Join("..", "..", "fixtures", name))
+	if err != nil {
+		t.Fatalf("failed to read fixture %s: %v", name, err)
+	}
+	return data
+}
+
+func (m *MockLogstashServer) serveHTTP(w http.ResponseWriter, r *http.Request) {
+	username, password, hasAuth := r.BasicAuth()
+
+	m.mu.Lock()
+	m.requests = append(m.requests, RecordedRequest{
+		Path:     r.URL.Path,
+		Username: username,
+		Password: password,
+		HasAuth:  hasAuth,
 	})
+	body, found := m.responses[r.URL.Path]
+	statusCode := m.statusCode
+	if m.failNext > 0 {
+		m.failNext--
+		statusCode = http.StatusInternalServerError
+	}
+	delay := m.delay
+	m.mu.Unlock()
 
-	// Root endpoint serves node info
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Only handle exact root path for node info
-		if r.URL.Path != "/" {
-			w.WriteHeader(http.StatusNotFound)
+	if delay > 0 {
+		select {
+		case <-time.After(delay):
+		case <-r.Context().Done():
 			return
 		}
+	}
 
-		mock.RequestCount++
+	if !found {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-		if mock.FailNextRequest {
-			mock.FailNextRequest = false
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+		return
+	}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(mock.NodeInfoJSON); err != nil {
-			fmt.Printf("error writing node info response: %v\n", err)
-		}
-	})
-
-	mock.Server = httptest.NewServer(mux)
-
-	return mock, nil
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write(body); err != nil {
+		fmt.Printf("mock logstash: error writing response: %v\n", err)
+	}
 }
 
 // URL returns the base URL of the mock server
@@ -90,23 +137,68 @@ func (m *MockLogstashServer) URL() string {
 	return m.Server.URL
 }
 
-// Close shuts down the mock server
+// Close shuts down the mock server, making the instance unreachable
 func (m *MockLogstashServer) Close() {
 	m.Server.Close()
 }
 
-// Reset resets the request counter and fail flag
-func (m *MockLogstashServer) Reset() {
-	m.RequestCount = 0
-	m.FailNextRequest = false
+// SetResponse replaces the body served for the given path
+func (m *MockLogstashServer) SetResponse(path string, body []byte) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.responses[path] = body
 }
 
-// SetNodeInfo sets custom node info JSON response
-func (m *MockLogstashServer) SetNodeInfo(data []byte) {
-	m.NodeInfoJSON = data
+// SetStatusCode makes every response use the given status code
+func (m *MockLogstashServer) SetStatusCode(code int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.statusCode = code
 }
 
-// SetNodeStats sets custom node stats JSON response
-func (m *MockLogstashServer) SetNodeStats(data []byte) {
-	m.NodeStatsJSON = data
+// SetDelay delays every response by the given duration
+func (m *MockLogstashServer) SetDelay(delay time.Duration) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.delay = delay
+}
+
+// FailNext makes the next n requests return HTTP 500
+func (m *MockLogstashServer) FailNext(n int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.failNext = n
+}
+
+// Requests returns a copy of all requests received so far
+func (m *MockLogstashServer) Requests() []RecordedRequest {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return append([]RecordedRequest(nil), m.requests...)
+}
+
+// RequestCount returns the number of requests received for the given path,
+// or for all paths when path is empty
+func (m *MockLogstashServer) RequestCount(path string) int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if path == "" {
+		return len(m.requests)
+	}
+
+	count := 0
+	for _, req := range m.requests {
+		if req.Path == path {
+			count++
+		}
+	}
+	return count
+}
+
+// ResetRequests forgets all recorded requests
+func (m *MockLogstashServer) ResetRequests() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.requests = nil
 }

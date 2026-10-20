@@ -1,0 +1,34 @@
+name: E2E flakiness check
+
+# Runs the e2e suite many times in random order to find flaky tests
+# before they fail an unrelated pull request.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many times to run each test"
+        default: "10"
+
+jobs:
+  e2e-repeated:
+    name: Run e2e tests repeatedly
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Golang with cache
+        uses: magnetikonline/action-golang-cache@v5
+        with:
+          go-version: "^1.27"
+
+      - name: Build e2e binary with the race detector
+        run: make e2e-prepare
+        env:
+          GOFLAGS: -race
+
+      - name: Run e2e tests repeatedly
+        run: go test -race -timeout 60m -parallel 8 -shuffle=on -count=${{ github.event.inputs.count || '10' }} ./test/e2e

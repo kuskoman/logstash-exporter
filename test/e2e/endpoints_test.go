@@ -1,250 +1,80 @@
 package e2e
 
 import (
+	"encoding/json"
+	"net/http"
 	"strings"
 	"testing"
-	"time"
 )
 
-func TestHealthCheckEndpoint(t *testing.T) {
+func TestEndpoints(t *testing.T) {
 	t.Parallel()
 
-	// Get a free port for this test
-	port, err := GetFreePort()
-	if err != nil {
-		t.Fatalf("failed to get free port: %v", err)
-	}
+	mockLogstash := NewMockLogstashServer(t)
+	exporter := StartExporter(t, NewConfigBuilder().AddInstance(mockLogstash.URL()))
 
-	// Create mock Logstash server
-	mockLogstash, err := NewMockLogstashServer()
-	if err != nil {
-		t.Fatalf("failed to create mock Logstash server: %v", err)
-	}
-	defer mockLogstash.Close()
-
-	// Build configuration
-	configYAML := NewConfigBuilder().
-		AddInstance(mockLogstash.URL()).
-		WithServerPort(port).
-		WithLogLevel("error").
-		Build()
-
-	configPath := TestConfig(t, configYAML)
-
-	// Start exporter
-	exporter := StartExporter(t, configPath, port)
-	defer func() {
-		if err := exporter.Stop(); err != nil {
-			t.Logf("error stopping exporter: %v", err)
-		}
-	}()
-
-	time.Sleep(1 * time.Second)
-
-	t.Run("returns_200_when_healthy", func(t *testing.T) {
-		resp, err := httpGet(exporter.GetHealthCheckURL())
+	t.Run("healthcheck_returns_200_when_logstash_is_reachable", func(t *testing.T) {
+		resp, err := exporter.Get("/healthcheck")
 		if err != nil {
-			t.Fatalf("failed to get healthcheck: %v", err)
+			t.Fatal(err)
 		}
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				t.Logf("error closing response body: %v", err)
-			}
-		}()
-
-		if resp.StatusCode != 200 {
-			t.Errorf("expected status 200, got %d", resp.StatusCode)
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("expected status 200, got %d: %s", resp.StatusCode, resp.Body)
 		}
 	})
 
-	t.Run("responds_quickly", func(t *testing.T) {
-		start := time.Now()
-		resp, err := httpGet(exporter.GetHealthCheckURL())
-		duration := time.Since(start)
-
+	t.Run("version_returns_build_information_as_json", func(t *testing.T) {
+		resp, err := exporter.Get("/version")
 		if err != nil {
-			t.Fatalf("failed to get healthcheck: %v", err)
+			t.Fatal(err)
 		}
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				t.Logf("error closing response body: %v", err)
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("expected status 200, got %d", resp.StatusCode)
+		}
+		if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
+			t.Errorf("expected content type application/json, got %q", contentType)
+		}
+
+		var versionInfo map[string]any
+		if err := json.Unmarshal([]byte(resp.Body), &versionInfo); err != nil {
+			t.Fatalf("version response is not valid JSON: %v\n%s", err, resp.Body)
+		}
+		for _, field := range []string{"Version", "GitCommit", "GoVersion", "BuildArch", "BuildOS", "BuildDate"} {
+			if _, ok := versionInfo[field]; !ok {
+				t.Errorf("version response is missing %s: %s", field, resp.Body)
 			}
-		}()
-
-		// Health check should respond within reasonable time
-		if duration > 5*time.Second {
-			t.Errorf("healthcheck took too long: %v", duration)
-		}
-	})
-}
-
-func TestVersionEndpoint(t *testing.T) {
-	t.Parallel()
-
-	// Get a free port for this test
-	port, err := GetFreePort()
-	if err != nil {
-		t.Fatalf("failed to get free port: %v", err)
-	}
-
-	// Create mock Logstash server
-	mockLogstash, err := NewMockLogstashServer()
-	if err != nil {
-		t.Fatalf("failed to create mock Logstash server: %v", err)
-	}
-	defer mockLogstash.Close()
-
-	// Build configuration
-	configYAML := NewConfigBuilder().
-		AddInstance(mockLogstash.URL()).
-		WithServerPort(port).
-		WithLogLevel("error").
-		Build()
-
-	configPath := TestConfig(t, configYAML)
-
-	// Start exporter
-	exporter := StartExporter(t, configPath, port)
-	defer func() {
-		if err := exporter.Stop(); err != nil {
-			t.Logf("error stopping exporter: %v", err)
-		}
-	}()
-
-	time.Sleep(1 * time.Second)
-
-	t.Run("returns_build_info", func(t *testing.T) {
-		resp, err := httpGet(exporter.GetVersionURL())
-		if err != nil {
-			t.Fatalf("failed to get version: %v", err)
-		}
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				t.Logf("error closing response body: %v", err)
-			}
-		}()
-
-		if resp.StatusCode != 200 {
-			t.Errorf("expected status 200, got %d", resp.StatusCode)
-		}
-
-		// Read response
-		body, err := readResponseBody(resp)
-		if err != nil {
-			t.Fatalf("failed to read response: %v", err)
-		}
-
-		// Should contain version information (JSON with capital V)
-		if !strings.Contains(body, "Version") && !strings.Contains(body, "version") {
-			t.Errorf("version endpoint response does not contain version info: %s", body)
-		}
-
-		// Should be JSON
-		if !strings.HasPrefix(strings.TrimSpace(body), "{") {
-			t.Error("version endpoint should return JSON")
 		}
 	})
 
-	t.Run("accessible_without_auth", func(t *testing.T) {
-		// Version endpoint should not require authentication
-		resp, err := httpGet(exporter.GetVersionURL())
+	t.Run("metrics_returns_prometheus_text_format", func(t *testing.T) {
+		resp, err := exporter.Get("/metrics")
 		if err != nil {
-			t.Fatalf("failed to get version: %v", err)
+			t.Fatal(err)
 		}
-
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				t.Logf("error closing response body: %v", err)
-			}
-		}()
-
-		// Should get 200, not 401 Unauthorized
-		if resp.StatusCode == 401 {
-			t.Error("version endpoint requires authentication but should be public")
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("expected status 200, got %d", resp.StatusCode)
+		}
+		if contentType := resp.Header.Get("Content-Type"); !strings.HasPrefix(contentType, "text/plain") {
+			t.Errorf("expected text/plain content type, got %q", contentType)
+		}
+		if _, err := ParseMetrics(resp.Body); err != nil {
+			t.Error(err)
+		}
+		if !strings.Contains(resp.Body, "# HELP logstash_info_build") || !strings.Contains(resp.Body, "# TYPE logstash_info_build") {
+			t.Error("expected HELP and TYPE comments for logstash_info_build")
 		}
 	})
-}
 
-func TestMetricsEndpoint(t *testing.T) {
-	t.Parallel()
-
-	// Get a free port for this test
-	port, err := GetFreePort()
-	if err != nil {
-		t.Fatalf("failed to get free port: %v", err)
-	}
-
-	// Create mock Logstash server
-	mockLogstash, err := NewMockLogstashServer()
-	if err != nil {
-		t.Fatalf("failed to create mock Logstash server: %v", err)
-	}
-	defer mockLogstash.Close()
-
-	// Build configuration
-	configYAML := NewConfigBuilder().
-		AddInstance(mockLogstash.URL()).
-		WithServerPort(port).
-		WithLogLevel("error").
-		Build()
-
-	configPath := TestConfig(t, configYAML)
-
-	// Start exporter
-	exporter := StartExporter(t, configPath, port)
-	defer func() {
-		if err := exporter.Stop(); err != nil {
-			t.Logf("error stopping exporter: %v", err)
-		}
-	}()
-
-	time.Sleep(2 * time.Second)
-
-	t.Run("returns_prometheus_format", func(t *testing.T) {
-		resp, err := httpGet(exporter.GetMetricsURL())
+	t.Run("root_redirects_to_metrics", func(t *testing.T) {
+		resp, err := exporter.Get("/")
 		if err != nil {
-			t.Fatalf("failed to get metrics: %v", err)
+			t.Fatal(err)
 		}
-
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				t.Logf("error closing response body: %v", err)
-			}
-		}()
-
-		// Check content type
-		contentType := resp.Header.Get("Content-Type")
-		if !strings.Contains(contentType, "text/plain") {
-			t.Errorf("unexpected content type: %s", contentType)
+		if resp.StatusCode != http.StatusMovedPermanently {
+			t.Errorf("expected status 301, got %d", resp.StatusCode)
 		}
-	})
-
-	t.Run("includes_exporter_metadata", func(t *testing.T) {
-		metricsText := FetchMetrics(t, exporter.GetMetricsURL())
-
-		// Should include HELP and TYPE comments
-		if !strings.Contains(metricsText, "# HELP") {
-			t.Error("metrics missing HELP comments")
-		}
-
-		if !strings.Contains(metricsText, "# TYPE") {
-			t.Error("metrics missing TYPE comments")
-		}
-	})
-
-	t.Run("includes_logstash_metrics", func(t *testing.T) {
-		metricsText := FetchMetrics(t, exporter.GetMetricsURL())
-
-		// Should include various Logstash metrics
-		expectedMetrics := []string{
-			"logstash_info",
-			"logstash_exporter",
-		}
-
-		for _, metric := range expectedMetrics {
-			if !strings.Contains(metricsText, metric) {
-				t.Errorf("missing expected metric family: %s", metric)
-			}
+		if location := resp.Header.Get("Location"); location != "/metrics" {
+			t.Errorf("expected redirect to /metrics, got %q", location)
 		}
 	})
 }

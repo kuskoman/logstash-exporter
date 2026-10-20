@@ -64,6 +64,12 @@ func TestHandleFlags(t *testing.T) {
 		if !contains(output, "Usage of") {
 			t.Errorf("expected 'Usage of' to be printed, but it was not found in output: %s", output)
 		}
+
+		for _, flag := range []string{"-config", "-watch", "-version", "-help"} {
+			if !contains(output, flag) {
+				t.Errorf("expected help to describe %s, but it was not found in output: %s", flag, output)
+			}
+		}
 	})
 
 	t.Run("prints version when Version flag is true", func(t *testing.T) {

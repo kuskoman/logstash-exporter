@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -310,6 +312,22 @@ func TestGetConfig(t *testing.T) {
 
 		if config != nil {
 			t.Fatal("expected config to be nil")
+		}
+	})
+
+	t.Run("ignores the removed max_connections setting", func(t *testing.T) {
+		location := filepath.Join(t.TempDir(), "config.yml")
+		content := "server:\n  port: 9300\n  max_connections: 512\n"
+		if err := os.WriteFile(location, []byte(content), 0644); err != nil {
+			t.Fatalf("failed to write config: %v", err)
+		}
+
+		config, err := GetConfig(location)
+		if err != nil {
+			t.Fatalf("expected configs that still set max_connections to load, got %v", err)
+		}
+		if config.Server.Port != 9300 {
+			t.Errorf("expected port 9300, got %d", config.Server.Port)
 		}
 	})
 

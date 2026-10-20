@@ -38,13 +38,12 @@ server:
     users_file: /path/to/users_file
 ```
 
-### Connection Limits and Timeouts
+### Connection Timeouts
 
 ```yaml
 server:
   read_timeout_seconds: 30
   write_timeout_seconds: 30
-  max_connections: 512
 ```
 
 ## Client TLS Configuration (for Logstash connections)

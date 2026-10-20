@@ -81,9 +81,6 @@ type ServerConfig struct {
 
 	// WriteTimeout defines the maximum duration before timing out writes of the response.
 	WriteTimeout int `yaml:"write_timeout_seconds,omitempty"`
-
-	// MaxConnections defines the maximum number of simultaneous connections.
-	MaxConnections int `yaml:"max_connections,omitempty"`
 }
 
 // TLSServerConfig configures TLS for the server.

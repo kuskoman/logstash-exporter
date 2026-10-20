@@ -2,6 +2,10 @@ package startup_manager
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/kuskoman/logstash-exporter/internal/file_utils"
@@ -126,6 +130,69 @@ server:
 
 		if changed {
 			t.Error("expected config to not be marked as changed on error")
+		}
+	})
+}
+
+func TestConfigManager_ReloadAndCompareConfig(t *testing.T) {
+	ctx := context.Background()
+
+	for _, content := range []string{"", "  \n\t\n"} {
+		t.Run(fmt.Sprintf("rejects empty config %q and keeps the current one", content), func(t *testing.T) {
+			configPath := file_utils.CreateTempFile(t, "server:\n  port: 8080\n")
+			defer file_utils.RemoveFile(t, configPath)
+
+			cc := NewConfigManager(configPath)
+			if _, err := cc.LoadAndCompareConfig(ctx); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+				t.Fatalf("failed to write config: %v", err)
+			}
+
+			changed, err := cc.ReloadAndCompareConfig(ctx)
+			if !errors.Is(err, ErrEmptyConfigFile) {
+				t.Errorf("expected ErrEmptyConfigFile, got %v", err)
+			}
+			if changed {
+				t.Error("expected config not to be marked as changed")
+			}
+			if port := cc.GetCurrentConfig().Server.Port; port != initialServerPort {
+				t.Errorf("expected port to stay %d, got %d", initialServerPort, port)
+			}
+		})
+	}
+
+	t.Run("applies a changed config", func(t *testing.T) {
+		configPath := file_utils.CreateTempFile(t, "server:\n  port: 8080\n")
+		defer file_utils.RemoveFile(t, configPath)
+
+		cc := NewConfigManager(configPath)
+		if _, err := cc.LoadAndCompareConfig(ctx); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if err := os.WriteFile(configPath, []byte("server:\n  port: 9090\n"), 0644); err != nil {
+			t.Fatalf("failed to write config: %v", err)
+		}
+
+		changed, err := cc.ReloadAndCompareConfig(ctx)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !changed {
+			t.Error("expected config to be marked as changed")
+		}
+		if port := cc.GetCurrentConfig().Server.Port; port != updatedServerPort {
+			t.Errorf("expected port to be %d, got %d", updatedServerPort, port)
+		}
+	})
+
+	t.Run("returns an error when the file is missing", func(t *testing.T) {
+		cc := NewConfigManager(filepath.Join(t.TempDir(), "missing.yml"))
+		if _, err := cc.ReloadAndCompareConfig(ctx); err == nil {
+			t.Error("expected an error for a missing file")
 		}
 	})
 }

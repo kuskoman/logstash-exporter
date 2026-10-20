@@ -67,7 +67,6 @@ server:
   # Connection timeouts in seconds
   read_timeout_seconds: 30
   write_timeout_seconds: 30
-  max_connections: 512
 
 logging:
   level: info

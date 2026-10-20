@@ -78,11 +78,13 @@ jobs:
         with:
           go-version: "^1.27"
 
-      - name: Build e2e binary
+      - name: Build e2e binary with the race detector
         run: make e2e-prepare
+        env:
+          GOFLAGS: -race
 
-      - name: Run e2e tests
-        run: make e2e-run
+      - name: Run e2e tests with the race detector
+        run: go test -race -v -timeout 10m -parallel 4 -shuffle=on ./test/e2e
 
   verify-helm-readme:
     name: Verify that Helm README is up to date
@@ -439,6 +441,15 @@ jobs:
       - name: Load Docker image
         run: docker load -i .helm/files/logstash-exporter.tar.gz
 
+      - name: Download Controller Docker image
+        uses: actions/download-artifact@v8
+        with:
+          name: logstash-exporter-controller-docker-image
+          path: .helm/files
+
+      - name: Load Controller Docker image
+        run: docker load -i .helm/files/logstash-exporter-controller.tar.gz
+
       - name: Install Helm
         uses: azure/setup-helm@v5
         with:
@@ -453,8 +464,10 @@ jobs:
         with:
           cluster_name: kind-chart-testing
 
-      - name: Export Docker image to Kind cluster
-        run: kind load docker-image logstash-exporter:latest --name kind-chart-testing
+      - name: Export Docker images to Kind cluster
+        run: |
+          kind load docker-image logstash-exporter:latest --name kind-chart-testing
+          kind load docker-image logstash-exporter-controller:latest --name kind-chart-testing
 
       - name: Template Helm chart
         working-directory: .helm/logstash-integration-test-chart
@@ -464,8 +477,26 @@ jobs:
         working-directory: .helm/logstash-integration-test-chart
         run: helm install --wait --timeout 10m --debug logstash-integration-test-chart .
 
+      - name: Install Helm chart in Kubernetes controller mode
+        run: |
+          helm install --wait --timeout 5m controller-test ./chart \
+            --set logstash.kubernetes.enabled=true \
+            --set serviceAccount.enabled=true \
+            --set serviceAccount.create=true \
+            --set rbac.create=true \
+            --set image.repository=logstash-exporter \
+            --set image.controllerRepository=logstash-exporter-controller \
+            --set image.tag=latest
+
+      - name: Verify that the controller discovers the annotated Logstash pod
+        run: ./scripts/verify_k8s_controller.sh controller-test-logstash-exporter
+
       - name: Print exporter logs
-        run: kubectl logs -n default -l app=logstash-exporter
+        run: kubectl logs -n default -l app=logstash-exporter --all-containers --prefix
+        if: failure()
+
+      - name: Print Logstash logs
+        run: kubectl logs -n default -l app=logstash-integration-test-chart-logstash --tail=200
         if: failure()
 
   create-release:

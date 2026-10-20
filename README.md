@@ -327,6 +327,15 @@ This [script](./scripts/install_helm_readme_generator.sh) is used to install
 The tool is used to generate Helm chart [README.md](./chart/README.md) file.
 The script installs the tool under [helm-generator](./helm-generator) directory.
 
+### verify_k8s_controller.sh
+
+This [script](./scripts/verify_k8s_controller.sh) is used to verify that the exporter running in
+Kubernetes controller mode discovers an annotated Logstash pod and exports its metrics.
+Used by the Helm integration test in the [CI workflow](./.github/workflows/go-application.yml),
+but it works against any cluster in the current `kubectl` context.
+
+    ./scripts/verify_k8s_controller.sh <controller service name> [timeout seconds]
+
 ### verify_metrics.sh
 
 This [script](./scripts/verify_metrics.sh) is used to verify the metrics from the Go Exporter application.
@@ -396,6 +405,7 @@ Table of exported metrics:
 | Name | Type | Description |
 | ----------- | ----------- | ----------- |
 | logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, goversion from which logstash_exporter was built, and the goos and goarch for the build. |
+| logstash_exporter_scrape_duration_seconds | summary | logstash_exporter: Duration of a scrape job. |
 | logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance. |
 | logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance. |
 | logstash_info_pipeline_batch_delay | gauge | Amount of time to wait for events to fill the batch before sending to the filter and output stages. |

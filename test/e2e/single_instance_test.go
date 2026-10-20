@@ -1,99 +1,89 @@
 package e2e
 
 import (
-	"strings"
+	"fmt"
 	"testing"
-	"time"
 )
 
 func TestSingleInstance(t *testing.T) {
 	t.Parallel()
 
-	// Get a free port for this test
-	port, err := GetFreePort()
-	if err != nil {
-		t.Fatalf("failed to get free port: %v", err)
-	}
+	mockLogstash := NewMockLogstashServer(t)
+	exporter := StartExporter(t, NewConfigBuilder().AddInstance(mockLogstash.URL()))
 
-	// Create mock Logstash server
-	mockLogstash, err := NewMockLogstashServer()
-	if err != nil {
-		t.Fatalf("failed to create mock Logstash server: %v", err)
-	}
-	defer mockLogstash.Close()
+	metrics := exporter.WaitForInstances(1)
 
-	// Build configuration
-	configYAML := NewConfigBuilder().
-		AddInstance(mockLogstash.URL()).
-		WithServerPort(port).
-		WithLogLevel("error").
-		Build()
-
-	configPath := TestConfig(t, configYAML)
-
-	// Start exporter
-	exporter := StartExporter(t, configPath, port)
-	defer func() {
-		if err := exporter.Stop(); err != nil {
-			t.Logf("error stopping exporter: %v", err)
-		}
-	}()
-
-	// Wait a bit for metrics to be collected
-	time.Sleep(2 * time.Second)
-
-	t.Run("metrics_endpoint_returns_data", func(t *testing.T) {
-		metricsText := FetchMetrics(t, exporter.GetMetricsURL())
-
-		// Verify we got metrics
-		if len(metricsText) == 0 {
-			t.Fatal("metrics endpoint returned empty response")
-		}
-
-		// Check for expected metric families (not specific metrics which may vary)
-		AssertMetricExists(t, metricsText, "logstash_info")
-		AssertMetricExists(t, metricsText, "logstash_exporter_build_info")
-	})
-
-	t.Run("metrics_contain_instance_labels", func(t *testing.T) {
-		metricsText := FetchMetrics(t, exporter.GetMetricsURL())
-
-		// Should have at least some metrics with instance_name or hostname labels
-		foundInstanceMetric := strings.Contains(metricsText, "instance_name=") ||
-			strings.Contains(metricsText, "hostname=")
-
-		if !foundInstanceMetric {
-			t.Error("no metrics with instance_name or hostname labels found")
-		}
-	})
-
-	t.Run("exporter_queries_logstash_api", func(t *testing.T) {
-		if mockLogstash.RequestCount == 0 {
-			t.Error("mock Logstash server received no requests")
-		}
-	})
-
-	t.Run("metrics_are_valid_prometheus_format", func(t *testing.T) {
-		metricsText := FetchMetrics(t, exporter.GetMetricsURL())
-
-		// Try to parse metrics
-		metrics := ParseMetrics(t, metricsText)
-
-		if len(metrics) == 0 {
-			t.Error("no metrics parsed from response")
-		}
-
-		// Check for required exporter metrics
-		foundBuildInfo := false
-		for key := range metrics {
-			if strings.Contains(key, "logstash_exporter_build_info") {
-				foundBuildInfo = true
-				break
+	t.Run("exports_logstash_and_exporter_metrics", func(t *testing.T) {
+		for _, name := range []string{
+			"logstash_info_build",
+			"logstash_info_up",
+			"logstash_stats_jvm_threads_count",
+			"logstash_stats_pipeline_up",
+			"logstash_exporter_build_info",
+			"logstash_exporter_scrape_duration_seconds",
+		} {
+			if !metrics.Has(name) {
+				t.Errorf("expected metric %s to be exported", name)
 			}
 		}
+	})
 
-		if !foundBuildInfo {
-			t.Error("required metric logstash_exporter_build_info not found")
+	t.Run("labels_metrics_with_the_instance", func(t *testing.T) {
+		instances := metrics.Instances()
+		if len(instances) != 1 || instances[0] != InstanceName(mockLogstash.URL()) {
+			t.Errorf("expected instance_name label %q, got %v", InstanceName(mockLogstash.URL()), instances)
 		}
+	})
+
+	t.Run("queries_both_logstash_endpoints", func(t *testing.T) {
+		for _, path := range []string{nodeInfoPath, nodeStatsPath} {
+			if mockLogstash.RequestCount(path) == 0 {
+				t.Errorf("expected exporter to query %s", path)
+			}
+		}
+	})
+
+	t.Run("reports_successful_scrapes", func(t *testing.T) {
+		for _, collector := range []string{"nodeinfo", "nodestats"} {
+			count, err := metrics.Value("logstash_exporter_scrape_duration_seconds", map[string]string{
+				"collector": collector,
+				"result":    "success",
+			})
+			if err != nil {
+				t.Errorf("collector %s: %v", collector, err)
+				continue
+			}
+			if count == 0 {
+				t.Errorf("expected successful scrapes for collector %s", collector)
+			}
+		}
+	})
+
+	t.Run("scrapes_logstash_on_every_request", func(t *testing.T) {
+		before := mockLogstash.RequestCount(nodeStatsPath)
+		if _, err := exporter.Metrics(); err != nil {
+			t.Fatal(err)
+		}
+		if after := mockLogstash.RequestCount(nodeStatsPath); after <= before {
+			t.Errorf("expected a new request to Logstash, request count stayed at %d", before)
+		}
+	})
+}
+
+func TestNamedInstance(t *testing.T) {
+	t.Parallel()
+
+	mockLogstash := NewMockLogstashServer(t)
+	exporter := StartExporter(t, NewConfigBuilder().AddInstanceWith(Instance{
+		URL:  mockLogstash.URL(),
+		Name: "primary",
+	}))
+
+	exporter.WaitForMetrics(func(m *Metrics) error {
+		instances := m.Instances()
+		if len(instances) != 1 || instances[0] != "primary" {
+			return fmt.Errorf("expected instance_name label %q, got %v", "primary", instances)
+		}
+		return nil
 	})
 }

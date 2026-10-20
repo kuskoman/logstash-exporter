@@ -22,7 +22,7 @@ func (sm *StartupManager) handleConfigChange() error {
 
 // Reload reloads the configuration and restarts the server if the configuration has changed.
 func (sm *StartupManager) Reload(ctx context.Context) error {
-	changed, err := sm.configManager.LoadAndCompareConfig(ctx)
+	changed, err := sm.configManager.ReloadAndCompareConfig(ctx)
 	if err != nil {
 		return err
 	}
@@ -60,6 +60,10 @@ func (sm *StartupManager) handleServerErrors(applicationErrorChan chan error) {
 		slog.Debug("server error occurred", "error", err)
 
 		if errors.Is(err, ErrServerClosed) {
+			if sm.shuttingDown.Load() {
+				slog.Debug("server closed for shutdown")
+				continue
+			}
 			if sm.watchEnabled {
 				slog.Info("server closed for hot reload")
 				continue

@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/kuskoman/logstash-exporter/internal/flags"
 	"github.com/kuskoman/logstash-exporter/internal/startup_manager"
@@ -11,9 +15,12 @@ import (
 
 func main() {
 	flagsConfig, err := flags.ParseFlags(os.Args[1:])
+	if errors.Is(err, flag.ErrHelp) {
+		os.Exit(0)
+	}
 	if err != nil {
 		slog.Error("failed to parse flags", "err", err)
-		return
+		os.Exit(2)
 	}
 
 	if shouldExit := flags.HandleFlags(flagsConfig); shouldExit {
@@ -26,7 +33,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := context.TODO()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	if err := startupManager.Initialize(ctx); err != nil {
 		slog.Error("critical error", "error", err)
 		os.Exit(1)
