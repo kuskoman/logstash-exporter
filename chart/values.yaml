@@ -278,3 +278,18 @@ rbac:
       ## @param rbac.rules[0].verbs Allowed verbs for the specified resources
       ##
       verbs: ["get", "list", "watch"]
+
+## @section serviceMonitor settings for Kubernetes controller
+##
+serviceMonitor:
+  ## @param serviceMonitor.enabled Create ServiceMonitor resources
+  ##
+  enabled: false
+  ## @param serviceMonitor.labels Additional serviceMonitor labels
+  ##
+  labels: {}
+  ## @param serviceMonitor.annotations Additional serviceMonitor annotations
+  ##
+  annotations: {}
+
+
