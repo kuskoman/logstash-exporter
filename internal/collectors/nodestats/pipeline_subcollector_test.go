@@ -1,11 +1,15 @@
 package nodestats
 
 import (
+	"encoding/json"
+	"math"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 
 	"github.com/kuskoman/logstash-exporter/internal/fetcher/responses"
 	"github.com/kuskoman/logstash-exporter/internal/prometheus_helper"
@@ -136,5 +140,87 @@ func TestIsPipelineHealthy(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func TestPipelineSubcollector_PluginFlow(t *testing.T) {
+	t.Parallel()
+
+	pipelineJSON := `{
+		"plugins": {
+			"filters": [
+				{"id": "busy", "name": "ruby", "flow": {
+					"worker_utilization": {"current": 97.5, "lifetime": 96.2},
+					"worker_millis_per_event": {"current": "Infinity", "lifetime": 112.1}
+				}},
+				{"id": "idle", "name": "drop", "flow": {
+					"worker_utilization": {"current": 0, "lifetime": 0},
+					"worker_millis_per_event": {}
+				}}
+			],
+			"outputs": [
+				{"id": "es", "name": "elasticsearch", "flow": {
+					"worker_utilization": {"current": 2.25, "lifetime": 1.15},
+					"worker_millis_per_event": {"current": 2.68, "lifetime": 2.68}
+				}}
+			]
+		}
+	}`
+
+	var pipeStats responses.SinglePipelineResponse
+	if err := json.Unmarshal([]byte(pipelineJSON), &pipeStats); err != nil {
+		t.Fatalf("failed to parse pipeline: %v", err)
+	}
+
+	ch := make(chan prometheus.Metric, 200)
+	NewPipelineSubcollector().Collect(&pipeStats, "main", ch, "http://localhost:9600", "logstash")
+	close(ch)
+
+	// value by "metric plugin_id"
+	values := map[string]float64{}
+	for metric := range ch {
+		name, err := prometheus_helper.ExtractFqName(metric.Desc().String())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.HasPrefix(name, "logstash_stats_pipeline_plugin_flow_") {
+			continue
+		}
+		var written dto.Metric
+		if err := metric.Write(&written); err != nil {
+			t.Fatal(err)
+		}
+		for _, label := range written.GetLabel() {
+			if label.GetName() == "plugin_id" {
+				values[strings.TrimPrefix(name, "logstash_stats_pipeline_plugin_flow_")+" "+label.GetValue()] = written.GetGauge().GetValue()
+			}
+		}
+	}
+
+	expected := map[string]float64{
+		"worker_utilization_current busy":       97.5,
+		"worker_utilization_lifetime busy":      96.2,
+		"worker_millis_per_event_current busy":  math.Inf(1),
+		"worker_millis_per_event_lifetime busy": 112.1,
+		"worker_utilization_current idle":       0,
+		"worker_utilization_lifetime idle":      0,
+		"worker_utilization_current es":         2.25,
+		"worker_utilization_lifetime es":        1.15,
+		"worker_millis_per_event_current es":    2.68,
+		"worker_millis_per_event_lifetime es":   2.68,
+	}
+
+	for key, value := range expected {
+		actual, ok := values[key]
+		if !ok {
+			t.Errorf("expected %s to be exported", key)
+		} else if actual != value {
+			t.Errorf("expected %s to be %v, got %v", key, value, actual)
+		}
+	}
+	for key := range values {
+		if _, ok := expected[key]; !ok {
+			t.Errorf("did not expect %s to be exported", key)
+		}
 	}
 }

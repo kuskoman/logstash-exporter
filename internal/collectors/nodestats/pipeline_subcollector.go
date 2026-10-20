@@ -36,10 +36,15 @@ type PipelineSubcollector struct {
 	QueueEventsQueueSize     *prometheus.Desc
 	QueueMaxQueueSizeInBytes *prometheus.Desc
 
-	PipelinePluginEventsIn                *prometheus.Desc
-	PipelinePluginEventsOut               *prometheus.Desc
-	PipelinePluginEventsDuration          *prometheus.Desc
-	PipelinePluginEventsQueuePushDuration *prometheus.Desc
+	PipelinePluginEventsIn       *prometheus.Desc
+	PipelinePluginEventsOut      *prometheus.Desc
+	PipelinePluginEventsDuration *prometheus.Desc
+
+	PipelinePluginFlowWorkerUtilizationCurrent     *prometheus.Desc
+	PipelinePluginFlowWorkerUtilizationLifetime    *prometheus.Desc
+	PipelinePluginFlowWorkerMillisPerEventCurrent  *prometheus.Desc
+	PipelinePluginFlowWorkerMillisPerEventLifetime *prometheus.Desc
+	PipelinePluginEventsQueuePushDuration          *prometheus.Desc
 
 	PipelinePluginDocumentsSuccesses            *prometheus.Desc
 	PipelinePluginDocumentsNonRetryableFailures *prometheus.Desc
@@ -85,10 +90,15 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		QueueEventsQueueSize:     descHelper.NewDesc("queue_events_queue_size", "Number of events that the queue can accommodate", "pipeline"),
 		QueueMaxQueueSizeInBytes: descHelper.NewDesc("queue_max_size_in_bytes", "Maximum size of given queue in bytes.", "pipeline"),
 
-		PipelinePluginEventsIn:                descHelper.NewDesc("plugin_events_in", "Number of events received this pipeline.", "plugin_type", "plugin", "plugin_id", "pipeline"),
-		PipelinePluginEventsOut:               descHelper.NewDesc("plugin_events_out", "Number of events output by this pipeline.", "plugin_type", "plugin", "plugin_id", "pipeline"),
-		PipelinePluginEventsDuration:          descHelper.NewDesc("plugin_events_duration", "Time spent processing events in this plugin.", "plugin_type", "plugin", "plugin_id", "pipeline"),
-		PipelinePluginEventsQueuePushDuration: descHelper.NewDesc("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsIn:       descHelper.NewDesc("plugin_events_in", "Number of events received this pipeline.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsOut:      descHelper.NewDesc("plugin_events_out", "Number of events output by this pipeline.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsDuration: descHelper.NewDesc("plugin_events_duration", "Time spent processing events in this plugin.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+
+		PipelinePluginFlowWorkerUtilizationCurrent:     descHelper.NewDesc("plugin_flow_worker_utilization_current", "Current percentage of the pipeline workers' time spent in this plugin.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginFlowWorkerUtilizationLifetime:    descHelper.NewDesc("plugin_flow_worker_utilization_lifetime", "Lifetime percentage of the pipeline workers' time spent in this plugin.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginFlowWorkerMillisPerEventCurrent:  descHelper.NewDesc("plugin_flow_worker_millis_per_event_current", "Current worker time in milliseconds this plugin spends per event.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginFlowWorkerMillisPerEventLifetime: descHelper.NewDesc("plugin_flow_worker_millis_per_event_lifetime", "Lifetime worker time in milliseconds this plugin spends per event.", "plugin_type", "plugin", "plugin_id", "pipeline"),
+		PipelinePluginEventsQueuePushDuration:          descHelper.NewDesc("plugin_events_queue_push_duration", "Time spent pushing events into the input queue.", "plugin_type", "plugin", "plugin_id", "pipeline"),
 
 		PipelinePluginDocumentsSuccesses:            descHelper.NewDesc("plugin_documents_successes", "Number of successful bulk requests.", "plugin_type", "plugin", "plugin_id", "pipeline"),
 		PipelinePluginDocumentsNonRetryableFailures: descHelper.NewDesc("plugin_documents_non_retryable_failures", "Number of output events with non-retryable failures.", "plugin_type", "plugin", "plugin_id", "pipeline"),
@@ -224,9 +234,6 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	// ******************
 
 	// ***** FILTERS *****
-	// TODO: export the plugin flow metrics (plugin.Flow.WorkerUtilization and
-	// plugin.Flow.WorkerMillisPerEvent) for filter and output plugins. They are
-	// parsed from the API response, including "Infinity" values, but not exported.
 	for _, plugin := range pipeStats.Plugins.Filters {
 		pluginType := "filter"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
@@ -235,6 +242,7 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+		subcollector.collectPluginFlow(&metricsHelper, plugin.Flow)
 	}
 	// *******************
 
@@ -247,12 +255,33 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsIn, prometheus.CounterValue, plugin.Events.In)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsOut, prometheus.CounterValue, plugin.Events.Out)
 		metricsHelper.NewIntMetric(subcollector.PipelinePluginEventsDuration, prometheus.CounterValue, plugin.Events.DurationInMillis)
+		subcollector.collectPluginFlow(&metricsHelper, plugin.Flow)
 	}
 	// *******************
 	// ===================
 
 	collectingEnd := time.Now()
 	slog.Debug("collected pipeline stats for pipeline", "duration", collectingEnd.Sub(collectingStart), "pipelineID", pipelineID, "endpoint", endpoint)
+}
+
+// collectPluginFlow exports the flow metrics of a filter or output plugin.
+// Values that Logstash did not report are skipped instead of exported as 0.
+func (subcollector *PipelineSubcollector) collectPluginFlow(metricsHelper *prometheus_helper.SimpleMetricsHelper, flow responses.PluginFlowResponse) {
+	values := []struct {
+		desc  *prometheus.Desc
+		value *responses.InfinityFloat
+	}{
+		{subcollector.PipelinePluginFlowWorkerUtilizationCurrent, flow.WorkerUtilization.Current},
+		{subcollector.PipelinePluginFlowWorkerUtilizationLifetime, flow.WorkerUtilization.Lifetime},
+		{subcollector.PipelinePluginFlowWorkerMillisPerEventCurrent, flow.WorkerMillisPerEvent.Current},
+		{subcollector.PipelinePluginFlowWorkerMillisPerEventLifetime, flow.WorkerMillisPerEvent.Lifetime},
+	}
+
+	for _, v := range values {
+		if v.value != nil {
+			metricsHelper.NewFloatMetric(v.desc, prometheus.GaugeValue, float64(*v.value))
+		}
+	}
 }
 
 // isPipelineHealthy returns 1 if the pipeline is healthy, 0 if it is not

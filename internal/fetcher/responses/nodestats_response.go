@@ -140,21 +140,7 @@ type SinglePipelineResponse struct {
 				In               int `json:"in"`
 				DurationInMillis int `json:"duration_in_millis"`
 			} `json:"events"`
-			Flow struct {
-				WorkerUtilization struct {
-					Current  InfinityFloat `json:"current"`
-					Lifetime InfinityFloat `json:"lifetime"`
-				} `json:"worker_utilization"`
-				WorkerMillisPerEvent struct {
-					Current         InfinityFloat `json:"current"`
-					Lifetime        InfinityFloat `json:"lifetime"`
-					Last_1_minute   InfinityFloat `json:"last_1_minute"`
-					Last_5_minutes  InfinityFloat `json:"last_5_minutes"`
-					Last_15_minutes InfinityFloat `json:"last_15_minutes"`
-					Last_1_hour     InfinityFloat `json:"last_1_hour"`
-					Last_24_hours   InfinityFloat `json:"last_24_hours"`
-				} `json:"worker_millis_per_event"`
-			} `json:"flow"`
+			Flow PluginFlowResponse `json:"flow"`
 		} `json:"filters"`
 		Outputs []struct {
 			ID     string `json:"id"`
@@ -172,21 +158,7 @@ type SinglePipelineResponse struct {
 				WithErrors int            `json:"with_errors"`
 				Responses  map[string]int `json:"responses"`
 			} `json:"bulk_requests"`
-			Flow struct {
-				WorkerUtilization struct {
-					Current  InfinityFloat `json:"current"`
-					Lifetime InfinityFloat `json:"lifetime"`
-				} `json:"worker_utilization"`
-				WorkerMillisPerEvent struct {
-					Current         InfinityFloat `json:"current"`
-					Lifetime        InfinityFloat `json:"lifetime"`
-					Last_1_minute   InfinityFloat `json:"last_1_minute"`
-					Last_5_minutes  InfinityFloat `json:"last_5_minutes"`
-					Last_15_minutes InfinityFloat `json:"last_15_minutes"`
-					Last_1_hour     InfinityFloat `json:"last_1_hour"`
-					Last_24_hours   InfinityFloat `json:"last_24_hours"`
-				} `json:"worker_millis_per_event"`
-			} `json:"flow"`
+			Flow PluginFlowResponse `json:"flow"`
 		} `json:"outputs"`
 	} `json:"plugins"`
 	Reloads PipelineReloadResponse `json:"reloads"`
@@ -288,6 +260,20 @@ type NodeStatsResponse struct {
 	Queue       QueueResponse    `json:"queue"`
 
 	Pipelines map[string]SinglePipelineResponse `json:"pipelines"`
+}
+
+// PluginFlowResponse contains the flow metrics of a filter or output plugin
+type PluginFlowResponse struct {
+	WorkerUtilization    FlowValues `json:"worker_utilization"`
+	WorkerMillisPerEvent FlowValues `json:"worker_millis_per_event"`
+}
+
+// FlowValues contains the current and lifetime value of a flow metric. Values
+// that Logstash does not report, for example the worker millis per event of a
+// plugin that has not processed events yet, are nil.
+type FlowValues struct {
+	Current  *InfinityFloat `json:"current"`
+	Lifetime *InfinityFloat `json:"lifetime"`
 }
 
 // InfinityFloat is a float type that also accepts the string Infinity

@@ -79,7 +79,7 @@ responses.NodeStatsResponse{
                 WorkerConcurrency: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:8, Lifetime:7.797},
                 WorkerUtilization: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:100, Lifetime:97.46},
             },
-            Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Flow struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" } "json:\"flow\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\""; Flow struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" } "json:\"flow\"" } "json:\"outputs\"" }{
+            Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Flow responses.PluginFlowResponse "json:\"flow\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\""; Flow responses.PluginFlowResponse "json:\"flow\"" } "json:\"outputs\"" }{
                 Inputs: {
                     {
                         ID:     "5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",
@@ -117,49 +117,85 @@ responses.NodeStatsResponse{
                         ID:     "json-filter",
                         Name:   "json",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1000, In:1000, DurationInMillis:138},
-                        Flow:   struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{
-                            WorkerUtilization:    struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:0.1162, Lifetime:0.05919},
-                            WorkerMillisPerEvent: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" }{Current:0.138, Lifetime:0.138, Last_1_minute:0, Last_5_minutes:0, Last_15_minutes:0, Last_1_hour:0, Last_24_hours:0},
+                        Flow:   responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0.1162),
+                                Lifetime: &responses.InfinityFloat(0.05919),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0.138),
+                                Lifetime: &responses.InfinityFloat(0.138),
+                            },
                         },
                     },
                     {
                         ID:     "drop-80-percent",
                         Name:   "drop",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
-                        Flow:   struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{},
+                        Flow:   responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0),
+                                Lifetime: &responses.InfinityFloat(0),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{},
+                        },
                     },
                     {
                         ID:     "mutate-path-001",
                         Name:   "mutate",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1000, In:1000, DurationInMillis:104},
-                        Flow:   struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{
-                            WorkerUtilization:    struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:0.08761, Lifetime:0.04461},
-                            WorkerMillisPerEvent: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" }{Current:0.104, Lifetime:0.104, Last_1_minute:0, Last_5_minutes:0, Last_15_minutes:0, Last_1_hour:0, Last_24_hours:0},
+                        Flow:   responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0.08761),
+                                Lifetime: &responses.InfinityFloat(0.04461),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0.104),
+                                Lifetime: &responses.InfinityFloat(0.104),
+                            },
                         },
                     },
                     {
                         ID:     "ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",
                         Name:   "ruby",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1000, In:2000, DurationInMillis:224234},
-                        Flow:   struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{
-                            WorkerUtilization:    struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:97.46, Lifetime:96.18},
-                            WorkerMillisPerEvent: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" }{Current:115.7, Lifetime:112.1, Last_1_minute:0, Last_5_minutes:0, Last_15_minutes:0, Last_1_hour:0, Last_24_hours:0},
+                        Flow:   responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(97.46),
+                                Lifetime: &responses.InfinityFloat(96.18),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(115.7),
+                                Lifetime: &responses.InfinityFloat(112.1),
+                            },
                         },
                     },
                     {
                         ID:     "prune-http-input-fields",
                         Name:   "prune",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{Out:1000, In:1000, DurationInMillis:87},
-                        Flow:   struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{
-                            WorkerUtilization:    struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:0.07329, Lifetime:0.03731},
-                            WorkerMillisPerEvent: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" }{Current:0.087, Lifetime:0.087, Last_1_minute:0, Last_5_minutes:0, Last_15_minutes:0, Last_1_hour:0, Last_24_hours:0},
+                        Flow:   responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0.07329),
+                                Lifetime: &responses.InfinityFloat(0.03731),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0.087),
+                                Lifetime: &responses.InfinityFloat(0.087),
+                            },
                         },
                     },
                     {
                         ID:     "drop-non-existent",
                         Name:   "drop",
                         Events: struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" }{},
-                        Flow:   struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{},
+                        Flow:   responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(0),
+                                Lifetime: &responses.InfinityFloat(0),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{},
+                        },
                     },
                 },
                 Outputs: {
@@ -172,9 +208,15 @@ responses.NodeStatsResponse{
                             WithErrors: 0,
                             Responses:  {"200":8},
                         },
-                        Flow: struct { WorkerUtilization struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" } "json:\"worker_utilization\""; WorkerMillisPerEvent struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" } "json:\"worker_millis_per_event\"" }{
-                            WorkerUtilization:    struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:2.255, Lifetime:1.148},
-                            WorkerMillisPerEvent: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\""; Last_1_minute responses.InfinityFloat "json:\"last_1_minute\""; Last_5_minutes responses.InfinityFloat "json:\"last_5_minutes\""; Last_15_minutes responses.InfinityFloat "json:\"last_15_minutes\""; Last_1_hour responses.InfinityFloat "json:\"last_1_hour\""; Last_24_hours responses.InfinityFloat "json:\"last_24_hours\"" }{Current:2.677, Lifetime:2.677, Last_1_minute:0, Last_5_minutes:0, Last_15_minutes:0, Last_1_hour:0, Last_24_hours:0},
+                        Flow: responses.PluginFlowResponse{
+                            WorkerUtilization: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(2.255),
+                                Lifetime: &responses.InfinityFloat(1.148),
+                            },
+                            WorkerMillisPerEvent: responses.FlowValues{
+                                Current:  &responses.InfinityFloat(2.677),
+                                Lifetime: &responses.InfinityFloat(2.677),
+                            },
                         },
                     },
                 },
