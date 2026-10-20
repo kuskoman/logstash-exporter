@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -203,12 +204,21 @@ func (h *PodResourceHandler) onPodUpdate(oldObj, newObj interface{}) {
 		return
 	}
 
-	// Check if annotations have changed
-	if fmt.Sprintf("%v", oldPod.Annotations) == fmt.Sprintf("%v", newPod.Annotations) {
-		return
-	}
+	// Pods are created before they run and get an IP, and can stop running
+	// or lose their annotation later, so compare what each version means for
+	// scraping instead of only the annotations
+	_, oldInstance := h.podInstance(oldPod)
+	resourceName, newInstance := h.podInstance(newPod)
 
-	h.processPod(newPod)
+	switch {
+	case newInstance == nil && oldInstance != nil:
+		h.removePod(newPod)
+	case newInstance != nil && !reflect.DeepEqual(oldInstance, newInstance):
+		slog.Info("discovered logstash instance from pod annotation",
+			"instance", resourceName,
+			"url", newInstance.Host)
+		h.collectorMgr.AddInstance(resourceName, newInstance)
+	}
 }
 
 // onPodDelete is called when a pod is deleted
@@ -232,17 +242,33 @@ func (h *PodResourceHandler) onPodDelete(obj interface{}) {
 	h.removePod(pod)
 }
 
-// processPod processes a pod to see if it has the required annotations
+// processPod adds a pod to monitoring if it should be scraped
 func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
-	if pod.Status.Phase != corev1.PodRunning {
+	resourceName, instance := h.podInstance(pod)
+	if instance == nil {
 		return
+	}
+
+	slog.Info("discovered logstash instance from pod annotation",
+		"instance", resourceName,
+		"url", instance.Host)
+
+	// Add the instance to the collector manager
+	h.collectorMgr.AddInstance(resourceName, instance)
+}
+
+// podInstance returns the Logstash instance to scrape for a pod, or nil if
+// the pod is not running or not annotated
+func (h *PodResourceHandler) podInstance(pod *corev1.Pod) (string, *config.LogstashInstance) {
+	if pod.Status.Phase != corev1.PodRunning {
+		return "", nil
 	}
 
 	instanceName := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	resourceName, instance := h.extractLogstashInfo(pod.Annotations, instanceName)
 
 	if instance == nil {
-		return
+		return "", nil
 	}
 
 	// Replace $(pod_ip) template variable with the actual pod IP
@@ -258,16 +284,11 @@ func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
 				"instance", instanceName,
 				"url", replacedURL,
 				"error", err)
-			return
+			return "", nil
 		}
 	}
 
-	slog.Info("discovered logstash instance from pod annotation",
-		"instance", instanceName,
-		"url", instance.Host)
-
-	// Add the instance to the collector manager
-	h.collectorMgr.AddInstance(resourceName, instance)
+	return resourceName, instance
 }
 
 // removePod removes a pod from monitoring
@@ -383,12 +404,18 @@ func (h *ServiceResourceHandler) onServiceUpdate(oldObj, newObj interface{}) {
 		return
 	}
 
-	// Check if annotations have changed
-	if fmt.Sprintf("%v", oldService.Annotations) == fmt.Sprintf("%v", newService.Annotations) {
-		return
-	}
+	_, oldInstance := h.serviceInstance(oldService)
+	resourceName, newInstance := h.serviceInstance(newService)
 
-	h.processService(newService)
+	switch {
+	case newInstance == nil && oldInstance != nil:
+		h.removeService(newService)
+	case newInstance != nil && !reflect.DeepEqual(oldInstance, newInstance):
+		slog.Info("discovered logstash instance from service annotation",
+			"instance", resourceName,
+			"url", newInstance.Host)
+		h.collectorMgr.AddInstance(resourceName, newInstance)
+	}
 }
 
 // onServiceDelete is called when a service is deleted
@@ -412,17 +439,22 @@ func (h *ServiceResourceHandler) onServiceDelete(obj interface{}) {
 	h.removeService(service)
 }
 
-// processService processes a service to see if it has the required annotations
-func (h *ServiceResourceHandler) processService(service *corev1.Service) {
+// serviceInstance returns the Logstash instance to scrape for a service, or
+// nil if the service is not annotated
+func (h *ServiceResourceHandler) serviceInstance(service *corev1.Service) (string, *config.LogstashInstance) {
 	instanceName := fmt.Sprintf("%s/%s", service.Namespace, service.Name)
-	resourceName, instance := h.extractLogstashInfo(service.Annotations, instanceName)
+	return h.extractLogstashInfo(service.Annotations, instanceName)
+}
 
+// processService adds a service to monitoring if it should be scraped
+func (h *ServiceResourceHandler) processService(service *corev1.Service) {
+	resourceName, instance := h.serviceInstance(service)
 	if instance == nil {
 		return
 	}
 
 	slog.Info("discovered logstash instance from service annotation",
-		"instance", instanceName,
+		"instance", resourceName,
 		"url", instance.Host)
 
 	// Add the instance to the collector manager
