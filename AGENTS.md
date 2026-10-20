@@ -119,6 +119,8 @@ CI fails if `go mod tidy`, `make helm-readme` or `make update-readme-description
 - Small, focused commits with a message that explains the problem and the reason for the change.
 - One logical change per commit: production fixes, their tests, and refactors in separate commits
   where practical.
+- Work on one issue or roadmap item per branch. When the branch completes a roadmap item, mark it
+  done (`- [x]`) in the roadmap below in the same branch, so the roadmap is always up to date.
 
 ## Supported versions
 
