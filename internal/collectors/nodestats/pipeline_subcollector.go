@@ -224,6 +224,9 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	// ******************
 
 	// ***** FILTERS *****
+	// TODO: export the plugin flow metrics (plugin.Flow.WorkerUtilization and
+	// plugin.Flow.WorkerMillisPerEvent) for filter and output plugins. They are
+	// parsed from the API response, including "Infinity" values, but not exported.
 	for _, plugin := range pipeStats.Plugins.Filters {
 		pluginType := "filter"
 		slog.Debug("collecting pipeline plugin stats for pipeline", "plugin type", pluginType, "name", plugin.Name, "id", plugin.ID, "pipelineID", pipelineID, "endpoint", endpoint)
