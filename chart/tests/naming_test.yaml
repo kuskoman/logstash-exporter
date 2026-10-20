@@ -1,5 +1,6 @@
 suite: Naming Tests
 templates:
+  - configmap.yaml
   - deployment.yaml
   - service.yaml
   - service-account.yaml
@@ -62,6 +63,10 @@ tests:
         documentIndex: 1
         equal:
           path: roleRef.name
+          value: custom-exporter
+      - template: deployment.yaml
+        equal:
+          path: spec.template.spec.volumes[0].configMap.name
           value: custom-exporter
       - template: cluster-role.yaml
         documentIndex: 1

@@ -75,8 +75,8 @@ tests:
           path: spec.template.spec.containers[0].livenessProbe
           value:
             httpGet:
-              path: /health
-              port: 9198
+              path: /version
+              port: http
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -102,7 +102,7 @@ tests:
           value:
             - name: config-volume
               configMap:
-                name: logstash-exporter
+                name: logstash-exporter-test
 
   - it: should use the image tag when specified
     set:
@@ -218,6 +218,25 @@ tests:
       - equal:
           path: spec.template.spec.serviceAccountName
           value: logstash-exporter-test
+
+  - it: should use a custom name for the created service account
+    set:
+      serviceAccount.enabled: true
+      serviceAccount.create: true
+      serviceAccount.name: custom-sa
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: custom-sa
+
+  - it: should use the default service account when not created and no name is set
+    set:
+      serviceAccount.enabled: true
+      serviceAccount.create: false
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: default
 
   - it: should use an existing service account when not created by the chart
     set:

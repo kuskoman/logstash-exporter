@@ -94,39 +94,39 @@
 
 ### Deployment settings
 
-| Name                                  | Description                                                            | Value    |
-| ------------------------------------- | ---------------------------------------------------------------------- | -------- |
-| `deployment.replicas`                 | Number of replicas for the deployment                                  | `1`      |
-| `deployment.restartPolicy`            | Restart policy for the deployment.                                     | `Always` |
-| `deployment.annotations`              | Additional deployment annotations                                      | `{}`     |
-| `deployment.labels`                   | Additional deployment labels                                           | `{}`     |
-| `deployment.pullSecret`               | Kubernetes secret for pulling the image                                | `[]`     |
-| `deployment.resources`                | Resource requests and limits                                           | `{}`     |
-| `deployment.nodeSelector`             | Node selector for the deployment                                       | `{}`     |
-| `deployment.tolerations`              | Tolerations for the deployment                                         | `[]`     |
-| `deployment.podAnnotations`           | Additional pod annotations                                             | `{}`     |
-| `deployment.podLabels`                | Additional pod labels                                                  | `{}`     |
-| `deployment.affinity`                 | Affinity for the deployment                                            | `{}`     |
-| `deployment.env`                      | Additional environment variables                                       | `{}`     |
-| `deployment.envFrom`                  | Additional environment variables from config maps or secrets           | `[]`     |
-| `deployment.priorityClassName`        | Priority class name for the deployment                                 | `""`     |
-| `deployment.dnsConfig`                | DNS configuration for the deployment                                   | `{}`     |
-| `deployment.securityContext`          | Security context for the deployment                                    | `{}`     |
-| `deployment.podSecurityContext`       | Security context for the deployment that only applies to the pod       | `{}`     |
-| `deployment.containerSecurityContext` | Security context for the deployment that only applies to the container | `{}`     |
+| Name                                  | Description                                                                                                   | Value    |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------- |
+| `deployment.replicas`                 | Number of replicas for the deployment                                                                         | `1`      |
+| `deployment.restartPolicy`            | Restart policy for the deployment.                                                                            | `Always` |
+| `deployment.annotations`              | Additional deployment annotations                                                                             | `{}`     |
+| `deployment.labels`                   | Additional deployment labels                                                                                  | `{}`     |
+| `deployment.pullSecret`               | Kubernetes secret for pulling the image                                                                       | `[]`     |
+| `deployment.resources`                | Resource requests and limits                                                                                  | `{}`     |
+| `deployment.nodeSelector`             | Node selector for the deployment                                                                              | `{}`     |
+| `deployment.tolerations`              | Tolerations for the deployment                                                                                | `[]`     |
+| `deployment.podAnnotations`           | Additional pod annotations                                                                                    | `{}`     |
+| `deployment.podLabels`                | Additional pod labels                                                                                         | `{}`     |
+| `deployment.affinity`                 | Affinity for the deployment                                                                                   | `{}`     |
+| `deployment.env`                      | Additional environment variables                                                                              | `{}`     |
+| `deployment.envFrom`                  | Additional environment variables from config maps or secrets, as a map of variable name to `valueFrom` source | `{}`     |
+| `deployment.priorityClassName`        | Priority class name for the deployment                                                                        | `""`     |
+| `deployment.dnsConfig`                | DNS configuration for the deployment                                                                          | `{}`     |
+| `deployment.securityContext`          | Security context for the deployment                                                                           | `{}`     |
+| `deployment.podSecurityContext`       | Security context for the deployment that only applies to the pod                                              | `{}`     |
+| `deployment.containerSecurityContext` | Security context for the deployment that only applies to the container                                        | `{}`     |
 
 ### Liveness probe settings
 
-| Name                                           | Description                          | Value     |
-| ---------------------------------------------- | ------------------------------------ | --------- |
-| `deployment.livenessProbe.httpGet.path`        | Path for liveness probe              | `/health` |
-| `deployment.livenessProbe.httpGet.port`        | Port for liveness probe              | `9198`    |
-| `deployment.livenessProbe.initialDelaySeconds` | Initial delay for liveness probe     | `30`      |
-| `deployment.livenessProbe.periodSeconds`       | Period for liveness probe            | `10`      |
-| `deployment.livenessProbe.timeoutSeconds`      | Timeout for liveness probe           | `5`       |
-| `deployment.livenessProbe.successThreshold`    | Success threshold for liveness probe | `1`       |
-| `deployment.livenessProbe.failureThreshold`    | Failure threshold for liveness probe | `3`       |
-| `deployment.readinessProbe`                    | Readiness probe configuration        | `{}`      |
+| Name                                           | Description                          | Value      |
+| ---------------------------------------------- | ------------------------------------ | ---------- |
+| `deployment.livenessProbe.httpGet.path`        | Path for liveness probe              | `/version` |
+| `deployment.livenessProbe.httpGet.port`        | Port for liveness probe              | `http`     |
+| `deployment.livenessProbe.initialDelaySeconds` | Initial delay for liveness probe     | `30`       |
+| `deployment.livenessProbe.periodSeconds`       | Period for liveness probe            | `10`       |
+| `deployment.livenessProbe.timeoutSeconds`      | Timeout for liveness probe           | `5`        |
+| `deployment.livenessProbe.successThreshold`    | Success threshold for liveness probe | `1`        |
+| `deployment.livenessProbe.failureThreshold`    | Failure threshold for liveness probe | `3`        |
+| `deployment.readinessProbe`                    | Readiness probe configuration        | `{}`       |
 
 ### Rolling update settings
 
@@ -146,12 +146,12 @@
 
 ### ServiceAccount settings
 
-| Name                         | Description                            | Value   |
-| ---------------------------- | -------------------------------------- | ------- |
-| `serviceAccount.enabled`     | Enable service account creation        | `false` |
-| `serviceAccount.create`      | Create service account                 | `false` |
-| `serviceAccount.name`        | Service account name                   | `""`    |
-| `serviceAccount.annotations` | Additional service account annotations | `{}`    |
+| Name                         | Description                                                                                       | Value   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- | ------- |
+| `serviceAccount.enabled`     | Enable service account creation                                                                   | `false` |
+| `serviceAccount.create`      | Create service account                                                                            | `false` |
+| `serviceAccount.name`        | Service account name. If not set, the fullname is used when `create` is true, otherwise `default` | `""`    |
+| `serviceAccount.annotations` | Additional service account annotations                                                            | `{}`    |
 
 ### RBAC settings for Kubernetes controller
 

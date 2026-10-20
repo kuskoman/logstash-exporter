@@ -12,7 +12,7 @@ tests:
           of: ConfigMap
       - equal:
           path: metadata.name
-          value: logstash-exporter
+          value: logstash-exporter-test
       - equal:
           path: metadata.labels
           value:

@@ -174,9 +174,15 @@ deployment:
   ## @param deployment.env Additional environment variables
   ##
   env: {}
-  ## @param deployment.envFrom Additional environment variables from config maps or secrets
+  ## @param deployment.envFrom Additional environment variables from config maps or secrets, as a map of variable name to `valueFrom` source
+  ## e.g.
+  ## envFrom:
+  ##   LOGSTASH_PASSWORD:
+  ##     secretKeyRef:
+  ##       name: logstash-credentials
+  ##       key: password
   ##
-  envFrom: []
+  envFrom: {}
   ## @param deployment.priorityClassName Priority class name for the deployment
   ##
   priorityClassName: ""
@@ -198,10 +204,10 @@ deployment:
     httpGet:
       ## @param deployment.livenessProbe.httpGet.path Path for liveness probe
       ##
-      path: /health
+      path: /version
       ## @param deployment.livenessProbe.httpGet.port Port for liveness probe
       ##
-      port: 9198
+      port: http
     ## @param deployment.livenessProbe.initialDelaySeconds Initial delay for liveness probe
     ##
     initialDelaySeconds: 30
@@ -255,7 +261,7 @@ serviceAccount:
   ## @param serviceAccount.create Create service account
   ##
   create: false
-  ## @param serviceAccount.name Service account name
+  ## @param serviceAccount.name Service account name. If not set, the fullname is used when `create` is true, otherwise `default`
   ##
   name: ""
   ## @param serviceAccount.annotations Additional service account annotations

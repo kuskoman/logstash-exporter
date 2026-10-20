@@ -68,6 +68,20 @@ tests:
               name: logstash-exporter-test
               namespace: monitoring
 
+  - it: should bind the custom service account name when provided
+    set:
+      rbac.create: true
+      serviceAccount.create: true
+      serviceAccount.name: custom-sa
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: subjects
+          value:
+            - kind: ServiceAccount
+              name: custom-sa
+              namespace: monitoring
+
   - it: should use custom rules when provided
     set:
       rbac.create: true

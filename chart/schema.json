@@ -232,10 +232,9 @@
                     "default": {}
                 },
                 "envFrom": {
-                    "type": "array",
-                    "description": "Additional environment variables from config maps or secrets",
-                    "default": [],
-                    "items": {}
+                    "type": "object",
+                    "description": "Additional environment variables from config maps or secrets, as a map of variable name to `valueFrom` source",
+                    "default": {}
                 },
                 "priorityClassName": {
                     "type": "string",
@@ -271,12 +270,12 @@
                                 "path": {
                                     "type": "string",
                                     "description": "Path for liveness probe",
-                                    "default": "/health"
+                                    "default": "/version"
                                 },
                                 "port": {
-                                    "type": "number",
+                                    "type": "string",
                                     "description": "Port for liveness probe",
-                                    "default": 9198
+                                    "default": "http"
                                 }
                             }
                         },
@@ -369,7 +368,7 @@
                 },
                 "name": {
                     "type": "string",
-                    "description": "Service account name",
+                    "description": "Service account name. If not set, the fullname is used when `create` is true, otherwise `default`",
                     "default": ""
                 },
                 "annotations": {
