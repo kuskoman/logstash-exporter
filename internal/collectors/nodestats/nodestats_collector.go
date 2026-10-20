@@ -302,9 +302,9 @@ func (collector *NodestatsCollector) collectSingleInstance(client logstash_clien
 	metricsHelper.NewFloatMetric(collector.FlowOutputCurrent, prometheus.GaugeValue, float64(flowStats.OutputThroughput.Current))
 	metricsHelper.NewFloatMetric(collector.FlowOutputLifetime, prometheus.GaugeValue, float64(flowStats.OutputThroughput.Lifetime))
 	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureCurrent, prometheus.GaugeValue, float64(flowStats.QueueBackpressure.Current))
-	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureLifetime, prometheus.GaugeValue, float64( flowStats.QueueBackpressure.Lifetime))
+	metricsHelper.NewFloatMetric(collector.FlowQueueBackpressureLifetime, prometheus.GaugeValue, float64(flowStats.QueueBackpressure.Lifetime))
 	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyCurrent, prometheus.GaugeValue, float64(flowStats.WorkerConcurrency.Current))
-	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, float64( flowStats.WorkerConcurrency.Lifetime))
+	metricsHelper.NewFloatMetric(collector.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, float64(flowStats.WorkerConcurrency.Lifetime))
 	// ******************************
 
 	for pipelineId, pipelineStats := range nodeStats.Pipelines {

@@ -55,7 +55,7 @@ func TestNewCollectorManager(t *testing.T) {
 		}
 
 		mockEndpoints := []*config.LogstashInstance{endpoint1, endpoint2}
-		
+
 		// Execute
 		cm := NewCollectorManager(mockEndpoints, httpTimeout)
 
@@ -239,7 +239,7 @@ func TestDescribe(t *testing.T) {
 	}
 
 	ch := make(chan *prometheus.Desc, 1)
-	
+
 	// Execute
 	cm.Describe(ch)
 
@@ -249,7 +249,7 @@ func TestDescribe(t *testing.T) {
 		t.Errorf("expected description to be non-nil")
 		return
 	}
-	
+
 	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", unit: \"\", constLabels: {}, variableLabels: {collector,result}}"
 	if desc.String() != expectedDesc {
 		t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc.String())

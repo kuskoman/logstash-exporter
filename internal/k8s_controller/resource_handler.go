@@ -241,7 +241,7 @@ func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
 	if pod.Status.PodIP != "" && instance.Host != "" {
 		// Replace $(pod_ip) in the URL string
 		replacedURL := strings.ReplaceAll(instance.Host, "$(pod_ip)", pod.Status.PodIP)
-		
+
 		// Validate the URL after replacement
 		if _, err := url.Parse(replacedURL); err == nil {
 			instance.Host = replacedURL
@@ -253,7 +253,6 @@ func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
 			return
 		}
 	}
-
 
 	slog.Info("discovered logstash instance from pod annotation",
 		"instance", instanceName,

@@ -8,7 +8,7 @@ import (
 type ResourceConfig struct {
 	// Enable monitoring this resource type
 	Enabled bool `yaml:"enabled"`
-	
+
 	// AnnotationPrefix is the prefix used for annotations that the controller will watch
 	AnnotationPrefix string `yaml:"annotationPrefix"`
 }
@@ -25,7 +25,7 @@ type KubernetesConfig struct {
 	Resources struct {
 		// Pods configuration
 		Pods ResourceConfig `yaml:"pods"`
-		
+
 		// Services configuration
 		Services ResourceConfig `yaml:"services"`
 	} `yaml:"resources"`
@@ -52,24 +52,24 @@ type KubernetesConfig struct {
 // DefaultKubernetesConfig returns the default Kubernetes controller configuration
 func DefaultKubernetesConfig() KubernetesConfig {
 	config := KubernetesConfig{
-		Enabled:                 false,
-		ResyncPeriod:            10 * time.Minute,
-		ScrapeInterval:          15 * time.Second,
-		LogstashURLAnnotation:   "logstash-exporter.io/url",
+		Enabled:                    false,
+		ResyncPeriod:               10 * time.Minute,
+		ScrapeInterval:             15 * time.Second,
+		LogstashURLAnnotation:      "logstash-exporter.io/url",
 		LogstashUsernameAnnotation: "logstash-exporter.io/username",
 		LogstashPasswordAnnotation: "logstash-exporter.io/password",
 	}
-	
+
 	// Default resource configurations
 	config.Resources.Pods = ResourceConfig{
-		Enabled:         true,
+		Enabled:          true,
 		AnnotationPrefix: "logstash-exporter.io",
 	}
-	
+
 	config.Resources.Services = ResourceConfig{
-		Enabled:         false,
+		Enabled:          false,
 		AnnotationPrefix: "logstash-exporter.io",
 	}
-	
+
 	return config
 }
