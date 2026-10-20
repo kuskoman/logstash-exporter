@@ -73,6 +73,14 @@ func (h *BaseResourceHandler) extractLogstashInfo(annotations map[string]string,
 		Name: resourceName,
 	}
 
+	// Use basic authentication if the credentials annotations are set
+	if username := annotations[h.config.LogstashUsernameAnnotation]; username != "" {
+		instance.BasicAuth = &config.ClientAuthConfig{
+			Username: username,
+			Password: annotations[h.config.LogstashPasswordAnnotation],
+		}
+	}
+
 	// Configure TLS if the URL is HTTPS
 	if strings.HasPrefix(logstashURL, "https://") {
 		instance.TLSConfig = &config.TLSClientConfig{
