@@ -36,9 +36,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-      {{- if .Values.deployment.imagePullSecrets }}
+      {{- with .Values.deployment.pullSecret }}
       imagePullSecrets:
-      {{- range $pullSecret := .Values.deployment.pullSecret }}
+      {{- range $pullSecret := . }}
       - name: {{ $pullSecret }}
       {{- end }}
       {{- end }}

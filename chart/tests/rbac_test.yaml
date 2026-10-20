@@ -3,7 +3,7 @@ templates:
   - cluster-role.yaml
 release:
   name: logstash-exporter-test
-  namespace: default
+  namespace: monitoring
 
 tests:
   - it: should not create any RBAC resources by default
@@ -11,13 +11,62 @@ tests:
       - hasDocuments:
           count: 0
 
-  - it: should create RBAC resources when enabled
+  - it: should not create RBAC resources without a service account created by the chart
+    set:
+      rbac.create: true
+      serviceAccount.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create a cluster role with default rules when enabled
     set:
       rbac.create: true
       serviceAccount.create: true
+    documentIndex: 0
     asserts:
       - hasDocuments:
           count: 2
+      - isKind:
+          of: ClusterRole
+      - equal:
+          path: metadata.name
+          value: logstash-exporter-test
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+      - equal:
+          path: rules
+          value:
+            - apiGroups: [""]
+              resources: ["pods", "services"]
+              verbs: ["get", "list", "watch"]
+
+  - it: should bind the cluster role to the service account
+    set:
+      rbac.create: true
+      serviceAccount.create: true
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: ClusterRoleBinding
+      - equal:
+          path: metadata.name
+          value: logstash-exporter-test
+      - equal:
+          path: roleRef
+          value:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: logstash-exporter-test
+      - equal:
+          path: subjects
+          value:
+            - kind: ServiceAccount
+              name: logstash-exporter-test
+              namespace: monitoring
 
   - it: should use custom rules when provided
     set:
@@ -30,6 +79,14 @@ tests:
         - apiGroups: ["extensions", "apps"]
           resources: ["deployments"]
           verbs: ["get"]
+    documentIndex: 0
     asserts:
-      - hasDocuments:
-          count: 2
+      - equal:
+          path: rules
+          value:
+            - apiGroups: [""]
+              resources: ["pods", "services", "configmaps"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: ["extensions", "apps"]
+              resources: ["deployments"]
+              verbs: ["get"]

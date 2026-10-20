@@ -11,55 +11,375 @@ tests:
       - isKind:
           of: Deployment
       - equal:
+          path: metadata.name
+          value: logstash-exporter-test
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+      - notExists:
+          path: metadata.annotations
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+      - equal:
+          path: spec.strategy
+          value:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 1
+              maxUnavailable: 0
+      - equal:
+          path: spec.template.metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+      - equal:
+          path: spec.template.spec.restartPolicy
+          value: Always
+      - notExists:
+          path: spec.template.spec.serviceAccountName
+      - notExists:
+          path: spec.template.spec.imagePullSecrets
+      - notExists:
+          path: spec.template.spec.securityContext
+
+  - it: should configure the exporter container with default settings
+    asserts:
+      - equal:
           path: spec.template.spec.containers[0].name
           value: exporter
-  
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: kuskoman/logstash-exporter:v2.0.0
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: IfNotPresent
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: EXPORTER_CONFIG_LOCATION
+              value: /app/config.yml
+      - equal:
+          path: spec.template.spec.containers[0].ports
+          value:
+            - name: http
+              containerPort: 9198
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe
+          value:
+            httpGet:
+              path: /health
+              port: 9198
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe
+      - notExists:
+          path: spec.template.spec.containers[0].resources
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext
+
+  - it: should mount the config map as the exporter config file
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: config-volume
+              mountPath: /app/config.yml
+              subPath: config.yml
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: config-volume
+              configMap:
+                name: logstash-exporter
+
+  - it: should use the image tag when specified
+    set:
+      image.repository: example/exporter
+      image.tag: v9.9.9
+      image.pullPolicy: Always
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: example/exporter:v9.9.9
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+
   - it: should create a controller deployment when kubernetes controller is enabled
     set:
       logstash.kubernetes.enabled: true
     asserts:
-      - isKind:
-          of: Deployment
       - equal:
           path: spec.template.spec.containers[0].name
           value: controller
-  
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: kuskoman/logstash-exporter-controller:v2.0.0
+
   - it: should use custom controller repository when specified
     set:
       logstash.kubernetes.enabled: true
       image.controllerRepository: custom/logstash-controller
+      image.tag: v9.9.9
     asserts:
-      - isKind:
-          of: Deployment
-  
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: custom/logstash-controller:v9.9.9
+
+  - it: should set replicas and rolling update strategy
+    set:
+      deployment.replicas: 3
+      deployment.rollingUpdate.maxSurge: 2
+      deployment.rollingUpdate.maxUnavailable: 1
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+      - equal:
+          path: spec.strategy.rollingUpdate
+          value:
+            maxSurge: 2
+            maxUnavailable: 1
+
+  - it: should fail when replicas are not set
+    set:
+      deployment.replicas: null
+    asserts:
+      - failedTemplate:
+          errorMessage: deployment.replicas is required
+
+  - it: should add deployment labels and annotations
+    set:
+      deployment.labels:
+        team: observability
+      deployment.annotations:
+        example.com/owner: observability
+    asserts:
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+            team: observability
+      - equal:
+          path: metadata.annotations
+          value:
+            example.com/owner: observability
+
+  - it: should add pod labels and annotations
+    set:
+      deployment.podLabels:
+        team: observability
+      deployment.podAnnotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9198"
+    asserts:
+      - equal:
+          path: spec.template.metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+            team: observability
+      - equal:
+          path: spec.template.metadata.annotations
+          value:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9198"
+
+  - it: should add image pull secrets when specified
+    set:
+      deployment.pullSecret:
+        - registry-credentials
+        - other-credentials
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: registry-credentials
+            - name: other-credentials
+
+  - it: should use the created service account when enabled
+    set:
+      serviceAccount.enabled: true
+      serviceAccount.create: true
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: logstash-exporter-test
+
+  - it: should use an existing service account when not created by the chart
+    set:
+      serviceAccount.enabled: true
+      serviceAccount.create: false
+      serviceAccount.name: existing-sa
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: existing-sa
+
+  - it: should set scheduling options when specified
+    set:
+      deployment.priorityClassName: high-priority
+      deployment.nodeSelector:
+        kubernetes.io/os: linux
+      deployment.tolerations:
+        - key: dedicated
+          operator: Equal
+          value: monitoring
+          effect: NoSchedule
+      deployment.affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values: ["amd64"]
+    asserts:
+      - equal:
+          path: spec.template.spec.priorityClassName
+          value: high-priority
+      - equal:
+          path: spec.template.spec.nodeSelector
+          value:
+            kubernetes.io/os: linux
+      - equal:
+          path: spec.template.spec.tolerations
+          value:
+            - key: dedicated
+              operator: Equal
+              value: monitoring
+              effect: NoSchedule
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0]
+          value:
+            key: kubernetes.io/arch
+            operator: In
+            values: ["amd64"]
+
+  - it: should set dns config when specified
+    set:
+      deployment.dnsConfig:
+        nameservers: ["1.1.1.1"]
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsConfig
+          value:
+            nameservers: ["1.1.1.1"]
+
+  - it: should set pod and container security contexts separately
+    set:
+      deployment.podSecurityContext:
+        runAsNonRoot: true
+        fsGroup: 65534
+      deployment.containerSecurityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsNonRoot: true
+            fsGroup: 65534
+      - equal:
+          path: spec.template.spec.containers[0].securityContext
+          value:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+
+  - it: should apply the shared security context to both pod and container
+    set:
+      deployment.securityContext:
+        runAsUser: 65534
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsUser: 65534
+      - equal:
+          path: spec.template.spec.containers[0].securityContext
+          value:
+            runAsUser: 65534
+
+  - it: should add environment variables
+    set:
+      deployment.env:
+        LOG_LEVEL: debug
+        HTTP_TIMEOUT: 5s
+      deployment.envFrom:
+        LOGSTASH_PASSWORD:
+          secretKeyRef:
+            name: logstash-credentials
+            key: password
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: EXPORTER_CONFIG_LOCATION
+              value: /app/config.yml
+            - name: HTTP_TIMEOUT
+              value: 5s
+            - name: LOG_LEVEL
+              value: debug
+            - name: LOGSTASH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: logstash-credentials
+                  key: password
+
   - it: should set resources when specified
     set:
-      deployment.resources.limits.cpu: 100m
-      deployment.resources.limits.memory: 128Mi
-      deployment.resources.requests.cpu: 50m
-      deployment.resources.requests.memory: 64Mi
+      deployment.resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
     asserts:
       - equal:
-          path: spec.template.spec.containers[0].resources.limits.cpu
-          value: 100m
-      - equal:
-          path: spec.template.spec.containers[0].resources.limits.memory
-          value: 128Mi
-      - equal:
-          path: spec.template.spec.containers[0].resources.requests.cpu
-          value: 50m
-      - equal:
-          path: spec.template.spec.containers[0].resources.requests.memory
-          value: 64Mi
-  
-  - it: should set pod annotations when specified
+          path: spec.template.spec.containers[0].resources
+          value:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+
+  - it: should set readiness probe and allow disabling liveness probe
     set:
-      deployment.podAnnotations.prometheus.io/scrape: "true"
-      deployment.podAnnotations.prometheus.io/port: "9198"
+      deployment.livenessProbe: null
+      deployment.readinessProbe:
+        httpGet:
+          path: /healthcheck
+          port: http
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].livenessProbe
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe
+          value:
+            httpGet:
+              path: /healthcheck
+              port: http
+
+  - it: should use the service port as container port
+    set:
+      service.port: 8080
     asserts:
       - equal:
-          path: spec.template.metadata.annotations.prometheus\.io/scrape
-          value: "true"
-      - equal:
-          path: spec.template.metadata.annotations.prometheus\.io/port
-          value: "9198"
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8080

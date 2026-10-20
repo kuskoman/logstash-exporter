@@ -10,6 +10,14 @@ tests:
     asserts:
       - isKind:
           of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: logstash-exporter
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
   
   - it: should create a configmap when kubernetes controller is enabled
     set:
