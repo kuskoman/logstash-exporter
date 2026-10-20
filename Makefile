@@ -107,15 +107,15 @@ e2e-clean:
 
 #: Starts a Docker-compose configuration
 compose:
-	docker-compose up -d --build
+	docker compose up -d --build
 
 #: Starts a Docker-compose configuration until it's ready
 wait-for-compose:
-	docker-compose up -d --wait
+	docker compose up -d --wait
 
 #: Stops a Docker-compose configuration
 compose-down:
-	docker-compose down
+	docker compose down
 
 #: Verifies the metrics from the Go Exporter application
 verify-metrics:
@@ -123,11 +123,11 @@ verify-metrics:
 
 #: Pulls the Docker image from the registry
 pull:
-	docker-compose pull
+	docker compose pull
 
 #: Shows logs from the Docker-compose configuration
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 #: Minifies the binary executables
 minify:

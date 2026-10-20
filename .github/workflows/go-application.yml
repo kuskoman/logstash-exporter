@@ -186,24 +186,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Install Compose
-        uses: ndeloof/install-compose-action@v0.0.1
-        with:
-          version: v5.6.0
-          legacy: true
-
       - name: Print compose version
-        run: docker-compose version
+        run: docker compose version
 
       - name: Wait for compose
         run: make wait-for-compose
 
       - name: Print compose logs if failed
-        run: docker-compose logs
+        run: docker compose logs
         if: failure()
 
       - name: Print exporter logs if failed
-        run: docker-compose logs exporter
+        run: docker compose logs exporter
         if: failure()
 
       - name: Run metrics integration test
@@ -216,7 +210,7 @@ jobs:
         run: git diff --exit-code || echo "README.md is not up to date. Please use add_metrics_to_readme.sh and commit the changes."
 
       - name: Shutdown compose
-        run: docker-compose down -v
+        run: docker compose down -v
 
   build-linux:
     name: Build Linux binary
