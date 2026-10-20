@@ -3,13 +3,13 @@ dependencies:
   repository: https://helm.elastic.co
   version: 8.5.1
 - name: apache
-  repository: https://charts.bitnami.com/bitnami
-  version: 11.3.4
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 11.4.29
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
-  version: 27.5.0
+  version: 29.37.0
 - name: logstash-exporter
   repository: file://../../chart/
   version: 1.6.1
-digest: sha256:ece8128b6be2e47dfefb61b064d3c09c322570d2ad2bd499bb13b3e73fa4e163
-generated: "2025-02-28T11:45:28.097598+01:00"
+digest: sha256:c86517b04bd0efbc83af2485baf9ab6078a3e09f90b280a8931f4c1054bedd7e
+generated: "2026-10-20T14:19:07.704919637Z"
