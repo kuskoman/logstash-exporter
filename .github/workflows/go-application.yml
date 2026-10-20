@@ -240,7 +240,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-linux
-          path: out/main-linux
+          path: |
+            out/exporter-linux
+            out/controller-linux
 
   build-linux-arm:
     name: Build Linux ARM binary
@@ -265,7 +267,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-linux-arm
-          path: out/main-linux-arm
+          path: |
+            out/exporter-linux-arm
+            out/controller-linux-arm
 
   build-darwin:
     name: Build Mac binary
@@ -290,7 +294,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-darwin
-          path: out/main-darwin
+          path: out/exporter-darwin
 
   build-windows:
     name: Build Windows binary
@@ -315,7 +319,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-windows
-          path: out/main-windows
+          path: out/exporter-windows
 
   build-linux-docker-image:
     name: Build and push Docker image (${{ matrix.component }})
@@ -514,9 +518,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      release_id: ${{ steps.create_release.outputs.id }}
     needs:
       - build-linux
       - build-darwin
@@ -544,20 +545,18 @@ jobs:
       - name: Determine if prerelease
         id: prerelease
         run: |
-          # if tag name does not start with v, or when the tag name contains -suffix, then it is a prerelease
-          if [[ "${{ env.TAG_NAME }}" =~ ^v.*$ ]] && [[ "${{ env.TAG_NAME }}" =~ -.*$ ]]; then
-            echo "::set-output name=is_prerelease::true"
+          # Tags with a suffix, such as v2.0.0-pre12, are pre-releases
+          if [[ "${{ env.TAG_NAME }}" =~ ^v.*-.*$ ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=is_prerelease::false"
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Create GitHub release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          token: ${{ secrets.GH_PAT }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body_path: "./release_notes.txt"
           draft: false
           prerelease: ${{ steps.prerelease.outputs.is_prerelease }}
@@ -638,30 +637,23 @@ jobs:
       - build-linux-arm
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download binary
+      - name: Download binaries
         uses: actions/download-artifact@v8
         with:
           name: logstash-exporter-${{ matrix.binary }}
-      - name: Generate sha256 checksum
+      - name: Name binaries and generate sha256 checksums
         run: |
-          CHECKSUM_FILE="main-${{ matrix.binary }}.sha256"
-          sha256sum main-${{ matrix.binary }} | cut -d ' ' -f1 | tr -d $'\n' > "$CHECKSUM_FILE"
-          echo -n '  logstash-exporter-${{ matrix.binary }}' >> "$CHECKSUM_FILE"
-      - name: Upload binary to GitHub release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          mv "exporter-${{ matrix.binary }}" "logstash-exporter-${{ matrix.binary }}"
+          # The controller runs in Kubernetes, so it is only built for Linux
+          if [ -f "controller-${{ matrix.binary }}" ]; then
+            mv "controller-${{ matrix.binary }}" "logstash-exporter-controller-${{ matrix.binary }}"
+          fi
+          for binary in logstash-exporter-*; do
+            sha256sum "$binary" > "$binary.sha256"
+          done
+      - name: Upload binaries to GitHub release
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: main-${{ matrix.binary }}
-          asset_name: logstash-exporter-${{ matrix.binary }}
-          asset_content_type: application/octet-stream
-      - name: Upload sha256 checksum to GitHub release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: main-${{ matrix.binary }}.sha256
-          asset_name: logstash-exporter-${{ matrix.binary }}.sha256
-          asset_content_type: text/plain
+          token: ${{ secrets.GH_PAT }}
+          tag_name: ${{ github.ref_name }}
+          files: logstash-exporter-*

@@ -1,6 +1,7 @@
 GOOS_VALUES := linux darwin windows
 GOOS_EXPORTER_BINARIES := $(foreach goos,$(GOOS_VALUES),out/exporter-$(goos))
-GOOS_CONTROLLER_BINARIES := $(foreach goos,$(GOOS_VALUES),out/controller-$(goos))
+# The controller runs in Kubernetes, so it is only built for Linux
+GOOS_CONTROLLER_BINARIES := out/controller-linux
 GOOS_BINARIES := $(GOOS_EXPORTER_BINARIES) $(GOOS_CONTROLLER_BINARIES)
 GOOS_EXES := $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/exporter-$(goos),out/exporter-$(goos))) $(foreach goos,$(GOOS_VALUES),$(if $(filter windows,$(goos)),out/controller-$(goos),out/controller-$(goos)))
 
@@ -47,10 +48,10 @@ run-and-watch-config:
 
 #: Builds exporter and controller binaries for Linux
 build-linux: out/exporter-linux out/controller-linux
-#: Builds exporter and controller binaries for Darwin
-build-darwin: out/exporter-darwin out/controller-darwin
-#: Builds exporter and controller binaries for Windows
-build-windows: out/exporter-windows out/controller-windows
+#: Builds the exporter binary for Darwin (the controller only runs on Linux)
+build-darwin: out/exporter-darwin
+#: Builds the exporter binary for Windows (the controller only runs on Linux)
+build-windows: out/exporter-windows
 #: Builds exporter and controller binaries for Linux ARM
 build-linux-arm:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -a -installsuffix cgo -ldflags="$(ldflags)" -o out/exporter-linux-arm cmd/exporter/main.go

@@ -179,7 +179,7 @@ are what remains before v2 can be recommended over v1.
 - [x] Verify that #447 (`Infinity` in node stats) is fixed on `master` and close it. All flow
       fields use `InfinityFloat` now.
 - [x] `automountServiceAccountToken` option in the chart (#499).
-- [ ] Replace archived actions in the release jobs: `actions/create-release` and
+- [x] Replace archived actions in the release jobs: `actions/create-release` and
       `actions/upload-release-asset` (for example with `softprops/action-gh-release`), and replace
       the deprecated `::set-output` in the prerelease step with `$GITHUB_OUTPUT`.
 - [ ] Replace the deprecated Elastic Logstash Helm chart (last version 8.5.1) in
