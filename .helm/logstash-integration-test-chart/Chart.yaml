@@ -4,10 +4,6 @@ description: Helm chart for testing the logstash-exporter Helm chart
 type: application
 version: 0.1.0
 dependencies:
-  - name: logstash
-    version: "^8.5.1"
-    repository: https://helm.elastic.co
-    condition: logstash.enabled
   - name: prometheus
     version: "^29.37.0"
     repository: https://prometheus-community.github.io/helm-charts

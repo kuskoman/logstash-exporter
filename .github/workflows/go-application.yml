@@ -509,7 +509,7 @@ jobs:
         if: failure()
 
       - name: Print Logstash logs
-        run: kubectl logs -n default -l app=logstash-integration-test-chart-logstash --tail=200
+        run: kubectl logs -n default -l app=logstash --tail=200
         if: failure()
 
   create-release:
