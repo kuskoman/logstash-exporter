@@ -246,6 +246,38 @@ logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name=
 # TYPE logstash_stats_pipeline_plugin_events_queue_push_duration gauge
 logstash_stats_pipeline_plugin_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="dead_letter_queue",plugin_id="5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",plugin_type="input"} 0
 logstash_stats_pipeline_plugin_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="generator",plugin_id="95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",plugin_type="input"} 28340
+# HELP logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current Current worker time in milliseconds this plugin spends per event.
+# TYPE logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current gauge
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 2.677
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 0.138
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 0.104
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 0.087
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 115.7
+# HELP logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime Lifetime worker time in milliseconds this plugin spends per event.
+# TYPE logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime gauge
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 2.677
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 0.138
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 0.104
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 0.087
+logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 112.1
+# HELP logstash_stats_pipeline_plugin_flow_worker_utilization_current Current percentage of the pipeline workers' time spent in this plugin.
+# TYPE logstash_stats_pipeline_plugin_flow_worker_utilization_current gauge
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-80-percent",plugin_type="filter"} 0
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-non-existent",plugin_type="filter"} 0
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 2.255
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 0.1162
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 0.08761
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 0.07329
+logstash_stats_pipeline_plugin_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 97.46
+# HELP logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime Lifetime percentage of the pipeline workers' time spent in this plugin.
+# TYPE logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime gauge
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-80-percent",plugin_type="filter"} 0
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-non-existent",plugin_type="filter"} 0
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1.148
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 0.05919
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 0.04461
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 0.03731
+logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 96.18
 # HELP logstash_stats_pipeline_queue_events_count Number of events in the queue.
 # TYPE logstash_stats_pipeline_queue_events_count counter
 logstash_stats_pipeline_queue_events_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0

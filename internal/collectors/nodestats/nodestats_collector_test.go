@@ -125,6 +125,10 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_jvm_mem_pool_committed_bytes",
 		"logstash_stats_jvm_gc_collection_count",
 		"logstash_stats_jvm_gc_collection_time_millis_total",
+		"logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current",
+		"logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime",
+		"logstash_stats_pipeline_plugin_flow_worker_utilization_current",
+		"logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime",
 	}
 
 	var foundMetrics []string

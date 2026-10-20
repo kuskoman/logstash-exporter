@@ -479,6 +479,10 @@ Table of exported metrics:
 | logstash_stats_pipeline_plugin_events_in | counter | Number of events received this pipeline. |
 | logstash_stats_pipeline_plugin_events_out | counter | Number of events output by this pipeline. |
 | logstash_stats_pipeline_plugin_events_queue_push_duration | gauge | Time spent pushing events into the input queue. |
+| logstash_stats_pipeline_plugin_flow_worker_millis_per_event_current | gauge | Current worker time in milliseconds this plugin spends per event. |
+| logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime | gauge | Lifetime worker time in milliseconds this plugin spends per event. |
+| logstash_stats_pipeline_plugin_flow_worker_utilization_current | gauge | Current percentage of the pipeline workers' time spent in this plugin. |
+| logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime | gauge | Lifetime percentage of the pipeline workers' time spent in this plugin. |
 | logstash_stats_pipeline_queue_events_count | counter | Number of events in the queue. |
 | logstash_stats_pipeline_queue_events_queue_size | gauge | Number of events that the queue can accommodate |
 | logstash_stats_pipeline_queue_max_size_in_bytes | gauge | Maximum size of given queue in bytes. |

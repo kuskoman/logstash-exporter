@@ -201,7 +201,7 @@ are what remains before v2 can be recommended over v1.
 
 ### Later
 
-- [ ] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
+- [x] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
       see the TODO in `internal/collectors/nodestats/pipeline_subcollector.go`.
 - [ ] Export the metrics that are new in Logstash 9: per-pipeline batch statistics
       (`batch.byte_size`, `batch.event_count`), the pipeline settings (`pipeline.workers`,
