@@ -99,8 +99,6 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_queue_max_size_in_bytes",
 		"logstash_stats_pipeline_reloads_failures",
 		"logstash_stats_pipeline_reloads_successes",
-		"logstash_stats_pipeline_reloads_last_success_timestamp",
-		"logstash_stats_pipeline_reloads_last_failure_timestamp",
 		"logstash_stats_pipeline_plugin_events_in",
 		"logstash_stats_pipeline_plugin_events_out",
 		"logstash_stats_pipeline_plugin_events_duration",

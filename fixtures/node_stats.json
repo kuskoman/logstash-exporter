@@ -1,241 +1,157 @@
 {
-  "host": "814a8393fbd5",
-  "version": "8.15.0",
+  "host": "64c9aae8c4d2",
+  "version": "9.5.5",
   "http_address": "0.0.0.0:9600",
-  "id": "690de5cc-deb1-48d9-ba02-d4ec1b22e62a",
-  "name": "814a8393fbd5",
-  "ephemeral_id": "eb4d9042-5642-4e21-bb8d-27454b81c5bc",
-  "status": "green",
+  "id": "ec53064e-be14-4264-8f3f-10d502c84cbc",
+  "name": "64c9aae8c4d2",
+  "ephemeral_id": "a0ab204e-e4c2-4357-a6e9-7dd649303b06",
   "snapshot": false,
+  "status": "green",
   "pipeline": {
-    "workers": 10,
+    "workers": 8,
     "batch_size": 125,
     "batch_delay": 50
   },
   "jvm": {
     "threads": {
-      "count": 65,
-      "peak_count": 65
+      "count": 53,
+      "peak_count": 53
     },
     "mem": {
-      "heap_used_percent": 36,
+      "heap_used_percent": 19,
       "heap_committed_in_bytes": 1073741824,
       "heap_max_in_bytes": 1073741822,
-      "heap_used_in_bytes": 395837440,
-      "non_heap_used_in_bytes": 172607568,
-      "non_heap_committed_in_bytes": 183304192,
+      "heap_used_in_bytes": 206045184,
+      "non_heap_used_in_bytes": 174356144,
+      "non_heap_committed_in_bytes": 181207040,
       "pools": {
-        "young": {
-          "committed_in_bytes": 668991488,
-          "peak_used_in_bytes": 351272960,
-          "max_in_bytes": -1,
-          "used_in_bytes": 257949696,
-          "peak_max_in_bytes": -1
+        "old": {
+          "committed_in_bytes": 530579456,
+          "max_in_bytes": 1073741824,
+          "peak_max_in_bytes": 1073741824,
+          "used_in_bytes": 135790592,
+          "peak_used_in_bytes": 135790592
         },
         "survivor": {
-          "committed_in_bytes": 7340032,
-          "peak_used_in_bytes": 47185920,
+          "committed_in_bytes": 9437184,
           "max_in_bytes": -1,
-          "used_in_bytes": 7340032,
-          "peak_max_in_bytes": -1
+          "peak_max_in_bytes": -1,
+          "used_in_bytes": 9437184,
+          "peak_used_in_bytes": 29360128
         },
-        "old": {
-          "committed_in_bytes": 397410304,
-          "peak_used_in_bytes": 132644864,
-          "max_in_bytes": 1073741824,
-          "used_in_bytes": 130547712,
-          "peak_max_in_bytes": 1073741824
+        "young": {
+          "committed_in_bytes": 533725184,
+          "max_in_bytes": -1,
+          "peak_max_in_bytes": -1,
+          "used_in_bytes": 60817408,
+          "peak_used_in_bytes": 233832448
         }
       }
     },
     "gc": {
       "collectors": {
-        "young": {
-          "collection_count": 11,
-          "collection_time_in_millis": 110
-        },
         "old": {
           "collection_count": 0,
           "collection_time_in_millis": 0
+        },
+        "young": {
+          "collection_count": 11,
+          "collection_time_in_millis": 156
         }
       }
     },
-    "uptime_in_millis": 56226
+    "uptime_in_millis": 32119
   },
   "process": {
-    "open_file_descriptors": 108,
-    "peak_open_file_descriptors": 109,
+    "open_file_descriptors": 105,
+    "peak_open_file_descriptors": 105,
     "max_file_descriptors": 1048576,
     "mem": {
-      "total_virtual_in_bytes": 8282685440
+      "total_virtual_in_bytes": 7177076736
     },
     "cpu": {
-      "total_in_millis": 35730,
-      "percent": 0,
+      "total_in_millis": 31700,
+      "percent": 1,
       "load_average": {
-        "1m": 2.25,
-        "5m": 0.68,
-        "15m": 0.24
+        "1m": 1.7,
+        "5m": 1.14,
+        "15m": 1.0
       }
     }
   },
   "events": {
-    "in": 3751,
-    "filtered": 1250,
-    "out": 1250,
-    "duration_in_millis": 494960,
-    "queue_push_duration_in_millis": 49451
+    "in": 3001,
+    "filtered": 1000,
+    "out": 1000,
+    "duration_in_millis": 227140,
+    "queue_push_duration_in_millis": 28330
   },
   "flow": {
     "input_throughput": {
-      "current": 0.0,
-      "lifetime": 73.9
+      "current": 67.45,
+      "lifetime": 100.6
     },
     "filter_throughput": {
-      "current": 0.0,
-      "lifetime": 24.63
+      "current": 67.45,
+      "lifetime": 33.51
     },
     "output_throughput": {
-      "current": 0.0,
-      "lifetime": 24.63
+      "current": 67.45,
+      "lifetime": 33.52
     },
     "queue_backpressure": {
-      "current": 1.0,
-      "lifetime": 0.9743
+      "current": 0.9977,
+      "lifetime": 0.95
     },
     "worker_concurrency": {
-      "current": 10.0,
-      "lifetime": 9.752
+      "current": 8.0,
+      "lifetime": 7.617
     }
   },
   "pipelines": {
-    ".monitoring-logstash": {
-      "events": {
-        "filtered": 0,
-        "duration_in_millis": 0,
-        "queue_push_duration_in_millis": 0,
-        "out": 0,
-        "in": 0
-      },
-      "flow": {
-        "input_throughput": {
-          "current": 0.0,
-          "lifetime": 0.0
-        },
-        "filter_throughput": {
-          "current": 0.0,
-          "lifetime": 0.0
-        },
-        "worker_concurrency": {
-          "current": 0.0,
-          "lifetime": 0.0
-        },
-        "queue_backpressure": {
-          "current": 0.0,
-          "lifetime": 0.0
-        },
-        "output_throughput": {
-          "current": 0.0,
-          "lifetime": 0.0
-        },
-        "worker_utilization": {
-          "current": 0.0,
-          "lifetime": 0.0
-        }
-      },
-      "plugins": {
-        "inputs": [
-          {
-            "id": "9a9bed30135e19c8047fe6aa0588b70b15280fb9161fea8ed8e7368e1fb1e6d3",
-            "events": {
-              "out": 0
-            },
-            "flow": {
-              "throughput": {
-                "current": 0.0,
-                "lifetime": 0.0
-              }
-            }
-          }
-        ],
-        "codecs": [],
-        "filters": [],
-        "outputs": [
-          {
-            "id": "e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",
-            "events": {
-              "duration_in_millis": 0,
-              "in": 0
-            },
-            "flow": {
-              "worker_millis_per_event": {},
-              "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.0
-              }
-            }
-          }
-        ]
-      },
-      "reloads": {
-        "last_failure_timestamp": "2023-04-20T20:00:32.437218256Z",
-        "successes": 3,
-        "failures": 1,
-        "last_success_timestamp": "2023-04-20T22:30:32.437218256Z",
-        "last_error": {
-          "message": "No configuration found in the configured sources.",
-          "backtrace": [
-            "org/logstash/execution/AbstractPipelineExt.java:151:in `reload_pipeline'",
-            "/usr/share/logstash/logstash-core/lib/logstash/java_pipeline.rb:181:in `block in reload_pipeline'",
-            "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/stud-0.0.23/lib/stud/task.rb:24:in `block in initialize'"
-          ]
-        }
-      },
-      "queue": null
-    },
     "main": {
       "events": {
-        "filtered": 1250,
-        "duration_in_millis": 495018,
-        "queue_push_duration_in_millis": 49455,
-        "out": 1250,
-        "in": 3751
+        "out": 1000,
+        "duration_in_millis": 227245,
+        "queue_push_duration_in_millis": 28342,
+        "filtered": 1000,
+        "in": 3001
       },
       "flow": {
-        "input_throughput": {
-          "current": 0.0,
-          "lifetime": 74.88
-        },
-        "filter_throughput": {
-          "current": 0.0,
-          "lifetime": 24.95
-        },
-        "worker_concurrency": {
-          "current": 10.0,
-          "lifetime": 9.882
-        },
-        "queue_backpressure": {
-          "current": 1.0,
-          "lifetime": 0.9872
-        },
-        "output_throughput": {
-          "current": 0.0,
-          "lifetime": 24.95
-        },
         "worker_utilization": {
           "current": 100.0,
-          "lifetime": 98.82
+          "lifetime": 97.46
+        },
+        "worker_concurrency": {
+          "current": 8.0,
+          "lifetime": 7.797
+        },
+        "queue_backpressure": {
+          "current": 0.9976,
+          "lifetime": 0.9724
+        },
+        "output_throughput": {
+          "current": 67.39,
+          "lifetime": 34.31
+        },
+        "filter_throughput": {
+          "current": 67.39,
+          "lifetime": 34.31
+        },
+        "input_throughput": {
+          "current": 67.39,
+          "lifetime": 103.0
         }
       },
       "plugins": {
         "inputs": [
           {
             "id": "5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",
-            "name": "dead_letter_queue",
             "events": {
-              "queue_push_duration_in_millis": 0,
-              "out": 0
+              "out": 0,
+              "queue_push_duration_in_millis": 0
             },
+            "name": "dead_letter_queue",
             "flow": {
               "throughput": {
                 "current": 0.0,
@@ -245,192 +161,196 @@
           },
           {
             "id": "95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",
-            "name": "generator",
             "events": {
-              "queue_push_duration_in_millis": 49454,
-              "out": 3751
+              "out": 3001,
+              "queue_push_duration_in_millis": 28340
             },
+            "name": "generator",
             "flow": {
               "throughput": {
-                "current": 0.0,
-                "lifetime": 74.88
+                "current": 67.39,
+                "lifetime": 103.0
               }
             }
           }
         ],
         "codecs": [
           {
-            "id": "plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",
-            "decode": {
-              "writes_in": 0,
-              "duration_in_millis": 0,
-              "out": 0
-            },
-            "name": "plain",
-            "encode": {
-              "writes_in": 0,
-              "duration_in_millis": 0
-            }
-          },
-          {
-            "id": "plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",
-            "decode": {
-              "writes_in": 0,
-              "duration_in_millis": 0,
-              "out": 0
-            },
-            "name": "plain",
-            "encode": {
-              "writes_in": 0,
-              "duration_in_millis": 0
-            }
-          },
-          {
             "id": "plain-codec-001",
             "name": "plain"
+          },
+          {
+            "id": "plain_aac18e8c-e13c-471b-a553-0129ea85e7f6",
+            "name": "plain",
+            "decode": {
+              "writes_in": 0,
+              "out": 0,
+              "duration_in_millis": 0
+            },
+            "encode": {
+              "writes_in": 0,
+              "duration_in_millis": 0
+            }
+          },
+          {
+            "id": "plain_dbd36621-7a6c-446b-8100-48696d80d4e4",
+            "name": "plain",
+            "decode": {
+              "writes_in": 0,
+              "out": 0,
+              "duration_in_millis": 0
+            },
+            "encode": {
+              "writes_in": 0,
+              "duration_in_millis": 0
+            }
           }
         ],
         "filters": [
           {
-            "id": "prune-http-input-fields",
-            "name": "prune",
-            "events": {
-              "duration_in_millis": 127,
-              "out": 1250,
-              "in": 1250
-            },
-            "flow": {
-              "worker_millis_per_event": {
-                "lifetime": 0.1016
-              },
-              "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.02535
-              }
-            }
-          },
-          {
-            "id": "ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",
-            "name": "ruby",
-            "events": {
-              "duration_in_millis": 489610,
-              "out": 1250,
-              "in": 2500
-            },
-            "flow": {
-              "worker_millis_per_event": {
-                "current": "Infinity",
-                "lifetime": 195.8
-              },
-              "worker_utilization": {
-                "current": "-Infinity",
-                "lifetime": 97.74
-              }
-            }
-          },
-          {
-            "id": "drop-non-existent",
-            "name": "drop",
-            "events": {
-              "duration_in_millis": 0,
-              "out": 0,
-              "in": 0
-            },
-            "flow": {
-              "worker_millis_per_event": {},
-              "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.0
-              }
-            }
-          },
-          {
             "id": "json-filter",
+            "events": {
+              "out": 1000,
+              "duration_in_millis": 138,
+              "in": 1000
+            },
             "name": "json",
-            "events": {
-              "duration_in_millis": 214,
-              "out": 1250,
-              "in": 1250
-            },
             "flow": {
-              "worker_millis_per_event": {
-                "lifetime": 0.1712
-              },
               "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.04272
-              }
-            }
-          },
-          {
-            "id": "mutate-path-001",
-            "name": "mutate",
-            "events": {
-              "duration_in_millis": 170,
-              "out": 1250,
-              "in": 1250
-            },
-            "flow": {
-              "worker_millis_per_event": {
-                "lifetime": 0.136
+                "current": 0.1162,
+                "lifetime": 0.05919
               },
-              "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.03394
+              "worker_millis_per_event": {
+                "current": 0.138,
+                "lifetime": 0.138
               }
             }
           },
           {
             "id": "drop-80-percent",
-            "name": "drop",
             "events": {
-              "duration_in_millis": 0,
               "out": 0,
+              "duration_in_millis": 0,
               "in": 0
             },
+            "name": "drop",
             "flow": {
-              "worker_millis_per_event": {},
               "worker_utilization": {
                 "current": 0.0,
                 "lifetime": 0.0
+              },
+              "worker_millis_per_event": {}
+            }
+          },
+          {
+            "id": "mutate-path-001",
+            "events": {
+              "out": 1000,
+              "duration_in_millis": 104,
+              "in": 1000
+            },
+            "name": "mutate",
+            "flow": {
+              "worker_utilization": {
+                "current": 0.08761,
+                "lifetime": 0.04461
+              },
+              "worker_millis_per_event": {
+                "current": 0.104,
+                "lifetime": 0.104
               }
+            }
+          },
+          {
+            "id": "ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",
+            "events": {
+              "out": 1000,
+              "duration_in_millis": 224234,
+              "in": 2000
+            },
+            "name": "ruby",
+            "flow": {
+              "worker_utilization": {
+                "current": 97.46,
+                "lifetime": 96.18
+              },
+              "worker_millis_per_event": {
+                "current": 115.7,
+                "lifetime": 112.1
+              }
+            }
+          },
+          {
+            "id": "prune-http-input-fields",
+            "events": {
+              "out": 1000,
+              "duration_in_millis": 87,
+              "in": 1000
+            },
+            "name": "prune",
+            "flow": {
+              "worker_utilization": {
+                "current": 0.07329,
+                "lifetime": 0.03731
+              },
+              "worker_millis_per_event": {
+                "current": 0.087,
+                "lifetime": 0.087
+              }
+            }
+          },
+          {
+            "id": "drop-non-existent",
+            "events": {
+              "out": 0,
+              "duration_in_millis": 0,
+              "in": 0
+            },
+            "name": "drop",
+            "flow": {
+              "worker_utilization": {
+                "current": 0.0,
+                "lifetime": 0.0
+              },
+              "worker_millis_per_event": {}
             }
           }
         ],
         "outputs": [
           {
             "id": "81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",
-            "name": "elasticsearch",
             "events": {
-              "duration_in_millis": 4887,
-              "out": 1250,
-              "in": 1250
-            },
-            "bulk_requests": {
-              "successes": 10,
-              "responses": {
-                "200": 10
-              }
+              "out": 1000,
+              "duration_in_millis": 2677,
+              "in": 1000
             },
             "documents": {
-              "successes": 1250
+              "successes": 1000
+            },
+            "name": "elasticsearch",
+            "bulk_requests": {
+              "responses": {
+                "200": 8
+              },
+              "successes": 8
             },
             "flow": {
-              "worker_millis_per_event": {
-                "lifetime": 3.91
-              },
               "worker_utilization": {
-                "current": 0.0,
-                "lifetime": 0.9756
+                "current": 2.255,
+                "lifetime": 1.148
+              },
+              "worker_millis_per_event": {
+                "current": 2.677,
+                "lifetime": 2.677
               }
             }
           }
         ]
       },
       "reloads": {
-        "last_success_timestamp": null,
         "failures": 0,
         "last_error": null,
+        "last_success_timestamp": null,
         "successes": 0,
         "last_failure_timestamp": null
       },
@@ -440,23 +360,68 @@
         "queue_size_in_bytes": 0,
         "max_queue_size_in_bytes": 0
       },
+      "pipeline": {
+        "workers": 8,
+        "batch_size": 125,
+        "batch_delay": 50
+      },
+      "batch": {
+        "event_count": {
+          "current": "undefined",
+          "average": {
+            "lifetime": 0
+          }
+        },
+        "byte_size": {
+          "current": "undefined",
+          "average": {
+            "lifetime": 0
+          },
+          "p50": {
+            "lifetime": 0
+          },
+          "p90": {
+            "lifetime": 0
+          },
+          "max": {
+            "lifetime": 0
+          }
+        }
+      },
       "dead_letter_queue": {
+        "dropped_events": 0,
         "queue_size_in_bytes": 1,
         "last_error": "no errors",
-        "expired_events": 0,
+        "max_queue_size_in_bytes": 1073741824,
         "storage_policy": "drop_newer",
-        "dropped_events": 0,
-        "max_queue_size_in_bytes": 1073741824
+        "expired_events": 0
       },
       "hash": "d30c4ff4da9fdb1a6b06ee390df1336aa80cc5ce6582d316af3dc0695af2d82e",
-      "ephemeral_id": "31caf4d6-162d-4eeb-bc04-411ae2e996f1"
+      "ephemeral_id": "3ee239c4-2f6b-4ed7-bcba-7179b059bcab"
     }
   },
   "reloads": {
     "failures": 0,
     "successes": 0
   },
-  "os": {},
+  "os": {
+    "cgroup": {
+      "cpuacct": {
+        "control_group": "/",
+        "usage_nanos": 31869096000
+      },
+      "cpu": {
+        "control_group": "/",
+        "cfs_period_micros": 100000,
+        "cfs_quota_micros": -1,
+        "stat": {
+          "number_of_elapsed_periods": 0,
+          "number_of_times_throttled": 0,
+          "time_throttled_nanos": 0
+        }
+      }
+    }
+  },
   "queue": {
     "events_count": 0
   }
