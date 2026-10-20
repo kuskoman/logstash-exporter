@@ -83,6 +83,48 @@ func TestNewCollectorManager(t *testing.T) {
 		wg.Wait()
 	})
 
+	t.Run("labels_build_info_with_the_exporter_version", func(t *testing.T) {
+		// Not parallel: changes the global version variables
+		originalVersion, originalSemanticVersion, originalCommit := config.Version, config.SemanticVersion, config.GitCommit
+		t.Cleanup(func() {
+			config.Version, config.SemanticVersion, config.GitCommit = originalVersion, originalSemanticVersion, originalCommit
+		})
+
+		tests := []struct {
+			name            string
+			version         string
+			semanticVersion string
+			expectedVersion string
+		}{
+			{name: "uses_the_semantic_version", version: "master", semanticVersion: "v2.0.0-3-gabc1234", expectedVersion: "v2.0.0-3-gabc1234"},
+			{name: "falls_back_to_the_version", version: "v2.0.0", semanticVersion: "unknown", expectedVersion: "v2.0.0"},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				config.Version, config.SemanticVersion, config.GitCommit = tt.version, tt.semanticVersion, "abc1234"
+
+				registry := prometheus.NewRegistry()
+				registry.MustRegister(newBuildInfoCollector())
+				families, err := registry.Gather()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				labels := map[string]string{}
+				for _, pair := range families[0].GetMetric()[0].GetLabel() {
+					labels[pair.GetName()] = pair.GetValue()
+				}
+				if labels["version"] != tt.expectedVersion {
+					t.Errorf("expected version label %q, got %q", tt.expectedVersion, labels["version"])
+				}
+				if labels["revision"] != "abc1234" {
+					t.Errorf("expected revision label %q, got %q", "abc1234", labels["revision"])
+				}
+			})
+		}
+	})
+
 	t.Run("registers_build_info_in_the_default_registry", func(t *testing.T) {
 		t.Parallel()
 

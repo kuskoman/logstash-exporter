@@ -8,6 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors/version"
+	commonversion "github.com/prometheus/common/version"
 
 	"github.com/kuskoman/logstash-exporter/internal/collectors/nodeinfo"
 	"github.com/kuskoman/logstash-exporter/internal/collectors/nodestats"
@@ -79,8 +80,23 @@ var buildInfoOnce sync.Once
 // also makes creating collector managers concurrently safe.
 func registerBuildInfoCollector() {
 	buildInfoOnce.Do(func() {
-		prometheus.MustRegister(version.NewCollector("logstash_exporter"))
+		prometheus.MustRegister(newBuildInfoCollector())
 	})
+}
+
+// newBuildInfoCollector creates the logstash_exporter_build_info collector.
+// It reads the build information from github.com/prometheus/common/version,
+// but the build sets the exporter's own version variables in pkg/config, so
+// copy them over first. Otherwise the version and revision labels are empty.
+func newBuildInfoCollector() prometheus.Collector {
+	commonversion.Version = config.Version
+	if config.SemanticVersion != "" && config.SemanticVersion != "unknown" {
+		commonversion.Version = config.SemanticVersion
+	}
+	commonversion.Revision = config.GitCommit
+	commonversion.BuildDate = config.BuildDate
+
+	return version.NewCollector("logstash_exporter")
 }
 
 // NewCollectorManager creates a new CollectorManager with the provided logstash instances and http timeout
