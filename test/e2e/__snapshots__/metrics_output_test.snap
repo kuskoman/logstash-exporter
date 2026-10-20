@@ -2,10 +2,10 @@
 [TestMetricsOutput/matches_the_snapshot_for_the_fixtures - 1]
 # HELP logstash_info_build A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance.
 # TYPE logstash_info_build counter
-logstash_info_build{date="2024-07-24T09:37:48+00:00",hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",sha="46b996c24da17cdc7a16bc3037edab5c6132ccd0",snapshot="false"} 1
+logstash_info_build{date="2026-09-29T21:04:06+00:00",hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",sha="cda423d9c7eabdb5b38d5ac7c49aa3ec546c2423",snapshot="false"} 1
 # HELP logstash_info_node A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance.
 # TYPE logstash_info_node counter
-logstash_info_node{host="0.0.0.0:9600",hostname="LOGSTASH_URL",http_address="814a8393fbd5",id="690de5cc-deb1-48d9-ba02-d4ec1b22e62a",instance_name="INSTANCE_NAME",name="814a8393fbd5",version="8.15.2"} 1
+logstash_info_node{host="0.0.0.0:9600",hostname="LOGSTASH_URL",http_address="64c9aae8c4d2",id="ec53064e-be14-4264-8f3f-10d502c84cbc",instance_name="INSTANCE_NAME",name="64c9aae8c4d2",version="9.5.5"} 1
 # HELP logstash_info_pipeline_batch_delay Amount of time to wait for events to fill the batch before sending to the filter and output stages.
 # TYPE logstash_info_pipeline_batch_delay gauge
 logstash_info_pipeline_batch_delay{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 50
@@ -14,7 +14,7 @@ logstash_info_pipeline_batch_delay{hostname="LOGSTASH_URL",instance_name="INSTAN
 logstash_info_pipeline_batch_size{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 125
 # HELP logstash_info_pipeline_workers Number of worker threads that will process pipeline events.
 # TYPE logstash_info_pipeline_workers gauge
-logstash_info_pipeline_workers{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 10
+logstash_info_pipeline_workers{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 8
 # HELP logstash_info_status A metric with a constant '1' value labeled by status.
 # TYPE logstash_info_status counter
 logstash_info_status{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",status="green"} 1
@@ -23,49 +23,49 @@ logstash_info_status{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",statu
 logstash_info_up{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1
 # HELP logstash_stats_events_duration_millis Duration of events processing in milliseconds.
 # TYPE logstash_stats_events_duration_millis gauge
-logstash_stats_events_duration_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 494960
+logstash_stats_events_duration_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 227140
 # HELP logstash_stats_events_filtered Number of events filtered out.
 # TYPE logstash_stats_events_filtered gauge
-logstash_stats_events_filtered{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1250
+logstash_stats_events_filtered{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1000
 # HELP logstash_stats_events_in Number of events received.
 # TYPE logstash_stats_events_in gauge
-logstash_stats_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 3751
+logstash_stats_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 3001
 # HELP logstash_stats_events_out Number of events out.
 # TYPE logstash_stats_events_out gauge
-logstash_stats_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1250
+logstash_stats_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1000
 # HELP logstash_stats_events_queue_push_duration_millis Duration of events push to queue in milliseconds.
 # TYPE logstash_stats_events_queue_push_duration_millis gauge
-logstash_stats_events_queue_push_duration_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 49451
+logstash_stats_events_queue_push_duration_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 28330
 # HELP logstash_stats_flow_filter_current Current number of events in the filter queue.
 # TYPE logstash_stats_flow_filter_current gauge
-logstash_stats_flow_filter_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0
+logstash_stats_flow_filter_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 67.45
 # HELP logstash_stats_flow_filter_lifetime Lifetime number of events in the filter queue.
 # TYPE logstash_stats_flow_filter_lifetime gauge
-logstash_stats_flow_filter_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 24.63
+logstash_stats_flow_filter_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 33.51
 # HELP logstash_stats_flow_input_current Current number of events in the input queue.
 # TYPE logstash_stats_flow_input_current gauge
-logstash_stats_flow_input_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0
+logstash_stats_flow_input_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 67.45
 # HELP logstash_stats_flow_input_lifetime Lifetime number of events in the input queue.
 # TYPE logstash_stats_flow_input_lifetime gauge
-logstash_stats_flow_input_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 73.9
+logstash_stats_flow_input_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 100.6
 # HELP logstash_stats_flow_output_current Current number of events in the output queue.
 # TYPE logstash_stats_flow_output_current gauge
-logstash_stats_flow_output_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0
+logstash_stats_flow_output_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 67.45
 # HELP logstash_stats_flow_output_lifetime Lifetime number of events in the output queue.
 # TYPE logstash_stats_flow_output_lifetime gauge
-logstash_stats_flow_output_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 24.63
+logstash_stats_flow_output_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 33.52
 # HELP logstash_stats_flow_queue_backpressure_current Current number of events in the backpressure queue.
 # TYPE logstash_stats_flow_queue_backpressure_current gauge
-logstash_stats_flow_queue_backpressure_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1
+logstash_stats_flow_queue_backpressure_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0.9977
 # HELP logstash_stats_flow_queue_backpressure_lifetime Lifetime number of events in the backpressure queue.
 # TYPE logstash_stats_flow_queue_backpressure_lifetime gauge
-logstash_stats_flow_queue_backpressure_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0.9743
+logstash_stats_flow_queue_backpressure_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0.95
 # HELP logstash_stats_flow_worker_concurrency_current Current number of workers.
 # TYPE logstash_stats_flow_worker_concurrency_current gauge
-logstash_stats_flow_worker_concurrency_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 10
+logstash_stats_flow_worker_concurrency_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 8
 # HELP logstash_stats_flow_worker_concurrency_lifetime Lifetime number of workers.
 # TYPE logstash_stats_flow_worker_concurrency_lifetime gauge
-logstash_stats_flow_worker_concurrency_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 9.752
+logstash_stats_flow_worker_concurrency_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 7.617
 # HELP logstash_stats_jvm_gc_collection_count Count of garbage collection runs for a given JVM memory pool.
 # TYPE logstash_stats_jvm_gc_collection_count counter
 logstash_stats_jvm_gc_collection_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 0
@@ -73,7 +73,7 @@ logstash_stats_jvm_gc_collection_count{hostname="LOGSTASH_URL",instance_name="IN
 # HELP logstash_stats_jvm_gc_collection_time_millis_total Total time spent running garbage collection for a given JVM memory pool.
 # TYPE logstash_stats_jvm_gc_collection_time_millis_total counter
 logstash_stats_jvm_gc_collection_time_millis_total{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 0
-logstash_stats_jvm_gc_collection_time_millis_total{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 110
+logstash_stats_jvm_gc_collection_time_millis_total{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 156
 # HELP logstash_stats_jvm_mem_heap_committed_bytes Amount of heap memory in bytes that is committed for the Java virtual machine to use.
 # TYPE logstash_stats_jvm_mem_heap_committed_bytes gauge
 logstash_stats_jvm_mem_heap_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.073741824e+09
@@ -82,18 +82,18 @@ logstash_stats_jvm_mem_heap_committed_bytes{hostname="LOGSTASH_URL",instance_nam
 logstash_stats_jvm_mem_heap_max_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.073741822e+09
 # HELP logstash_stats_jvm_mem_heap_used_bytes Amount of used heap memory in bytes.
 # TYPE logstash_stats_jvm_mem_heap_used_bytes gauge
-logstash_stats_jvm_mem_heap_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 3.9583744e+08
+logstash_stats_jvm_mem_heap_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 2.06045184e+08
 # HELP logstash_stats_jvm_mem_heap_used_percent Percentage of the heap memory that is used.
 # TYPE logstash_stats_jvm_mem_heap_used_percent gauge
-logstash_stats_jvm_mem_heap_used_percent{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 36
+logstash_stats_jvm_mem_heap_used_percent{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 19
 # HELP logstash_stats_jvm_mem_non_heap_committed_bytes Amount of non-heap memory in bytes that is committed for the Java virtual machine to use.
 # TYPE logstash_stats_jvm_mem_non_heap_committed_bytes gauge
-logstash_stats_jvm_mem_non_heap_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.83304192e+08
+logstash_stats_jvm_mem_non_heap_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.8120704e+08
 # HELP logstash_stats_jvm_mem_pool_committed_bytes Amount of bytes that are committed for the Java virtual machine to use in a given JVM memory pool.
 # TYPE logstash_stats_jvm_mem_pool_committed_bytes gauge
-logstash_stats_jvm_mem_pool_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 3.97410304e+08
-logstash_stats_jvm_mem_pool_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="survivor"} 7.340032e+06
-logstash_stats_jvm_mem_pool_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 6.68991488e+08
+logstash_stats_jvm_mem_pool_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 5.30579456e+08
+logstash_stats_jvm_mem_pool_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="survivor"} 9.437184e+06
+logstash_stats_jvm_mem_pool_committed_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 5.33725184e+08
 # HELP logstash_stats_jvm_mem_pool_max_bytes Maximum amount of bytes that can be used in a given JVM memory pool.
 # TYPE logstash_stats_jvm_mem_pool_max_bytes gauge
 logstash_stats_jvm_mem_pool_max_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 1.073741824e+09
@@ -106,229 +106,188 @@ logstash_stats_jvm_mem_pool_peak_max_bytes{hostname="LOGSTASH_URL",instance_name
 logstash_stats_jvm_mem_pool_peak_max_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} -1
 # HELP logstash_stats_jvm_mem_pool_peak_used_bytes Peak used bytes of a given JVM memory pool.
 # TYPE logstash_stats_jvm_mem_pool_peak_used_bytes gauge
-logstash_stats_jvm_mem_pool_peak_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 1.32644864e+08
-logstash_stats_jvm_mem_pool_peak_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="survivor"} 4.718592e+07
-logstash_stats_jvm_mem_pool_peak_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 3.5127296e+08
+logstash_stats_jvm_mem_pool_peak_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 1.35790592e+08
+logstash_stats_jvm_mem_pool_peak_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="survivor"} 2.9360128e+07
+logstash_stats_jvm_mem_pool_peak_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 2.33832448e+08
 # HELP logstash_stats_jvm_mem_pool_used_bytes Currently used bytes of a given JVM memory pool.
 # TYPE logstash_stats_jvm_mem_pool_used_bytes gauge
-logstash_stats_jvm_mem_pool_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 1.30547712e+08
-logstash_stats_jvm_mem_pool_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="survivor"} 7.340032e+06
-logstash_stats_jvm_mem_pool_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 2.57949696e+08
+logstash_stats_jvm_mem_pool_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="old"} 1.35790592e+08
+logstash_stats_jvm_mem_pool_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="survivor"} 9.437184e+06
+logstash_stats_jvm_mem_pool_used_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pool="young"} 6.0817408e+07
 # HELP logstash_stats_jvm_threads_count Number of live threads including both daemon and non-daemon threads.
 # TYPE logstash_stats_jvm_threads_count gauge
-logstash_stats_jvm_threads_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 65
+logstash_stats_jvm_threads_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 53
 # HELP logstash_stats_jvm_threads_peak_count Peak live thread count since the Java virtual machine started or peak was reset.
 # TYPE logstash_stats_jvm_threads_peak_count gauge
-logstash_stats_jvm_threads_peak_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 65
+logstash_stats_jvm_threads_peak_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 53
 # HELP logstash_stats_jvm_uptime_millis Uptime of the JVM in milliseconds.
 # TYPE logstash_stats_jvm_uptime_millis gauge
-logstash_stats_jvm_uptime_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 56226
+logstash_stats_jvm_uptime_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 32119
 # HELP logstash_stats_pipeline_dead_letter_queue_dropped_events Number of events dropped by the dead letter queue.
 # TYPE logstash_stats_pipeline_dead_letter_queue_dropped_events counter
-logstash_stats_pipeline_dead_letter_queue_dropped_events{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_dead_letter_queue_dropped_events{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
 # HELP logstash_stats_pipeline_dead_letter_queue_expired_events Number of events expired in the dead letter queue.
 # TYPE logstash_stats_pipeline_dead_letter_queue_expired_events counter
-logstash_stats_pipeline_dead_letter_queue_expired_events{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_dead_letter_queue_expired_events{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
 # HELP logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes Maximum size of the dead letter queue in bytes.
 # TYPE logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes gauge
-logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1.073741824e+09
 # HELP logstash_stats_pipeline_dead_letter_queue_size_in_bytes Current size of the dead letter queue in bytes.
 # TYPE logstash_stats_pipeline_dead_letter_queue_size_in_bytes gauge
-logstash_stats_pipeline_dead_letter_queue_size_in_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_dead_letter_queue_size_in_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1
 # HELP logstash_stats_pipeline_events_duration Time needed to process event.
 # TYPE logstash_stats_pipeline_events_duration gauge
-logstash_stats_pipeline_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 495018
+logstash_stats_pipeline_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 227245
 # HELP logstash_stats_pipeline_events_filtered Number of events that have been filtered out by this pipeline.
 # TYPE logstash_stats_pipeline_events_filtered counter
-logstash_stats_pipeline_events_filtered{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_events_filtered{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1250
+logstash_stats_pipeline_events_filtered{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1000
 # HELP logstash_stats_pipeline_events_in Number of events that have been inputted into this pipeline.
 # TYPE logstash_stats_pipeline_events_in counter
-logstash_stats_pipeline_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 3751
+logstash_stats_pipeline_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 3001
 # HELP logstash_stats_pipeline_events_out Number of events that have been processed by this pipeline.
 # TYPE logstash_stats_pipeline_events_out counter
-logstash_stats_pipeline_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1250
+logstash_stats_pipeline_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1000
 # HELP logstash_stats_pipeline_events_queue_push_duration Time needed to push event to queue.
 # TYPE logstash_stats_pipeline_events_queue_push_duration gauge
-logstash_stats_pipeline_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 49455
+logstash_stats_pipeline_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 28342
 # HELP logstash_stats_pipeline_flow_filter_current Current number of events in the filter queue.
 # TYPE logstash_stats_pipeline_flow_filter_current gauge
-logstash_stats_pipeline_flow_filter_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_filter_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
+logstash_stats_pipeline_flow_filter_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 67.39
 # HELP logstash_stats_pipeline_flow_filter_lifetime Lifetime number of events in the filter queue.
 # TYPE logstash_stats_pipeline_flow_filter_lifetime gauge
-logstash_stats_pipeline_flow_filter_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_filter_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 24.95
+logstash_stats_pipeline_flow_filter_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 34.31
 # HELP logstash_stats_pipeline_flow_input_current Current number of events in the input queue.
 # TYPE logstash_stats_pipeline_flow_input_current gauge
-logstash_stats_pipeline_flow_input_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_input_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
+logstash_stats_pipeline_flow_input_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 67.39
 # HELP logstash_stats_pipeline_flow_input_lifetime Lifetime number of events in the input queue.
 # TYPE logstash_stats_pipeline_flow_input_lifetime gauge
-logstash_stats_pipeline_flow_input_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_input_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 74.88
+logstash_stats_pipeline_flow_input_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 103
 # HELP logstash_stats_pipeline_flow_output_current Current number of events in the output queue.
 # TYPE logstash_stats_pipeline_flow_output_current gauge
-logstash_stats_pipeline_flow_output_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_output_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
+logstash_stats_pipeline_flow_output_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 67.39
 # HELP logstash_stats_pipeline_flow_output_lifetime Lifetime number of events in the output queue.
 # TYPE logstash_stats_pipeline_flow_output_lifetime gauge
-logstash_stats_pipeline_flow_output_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_output_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 24.95
+logstash_stats_pipeline_flow_output_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 34.31
 # HELP logstash_stats_pipeline_flow_queue_backpressure_current Current number of events in the backpressure queue.
 # TYPE logstash_stats_pipeline_flow_queue_backpressure_current gauge
-logstash_stats_pipeline_flow_queue_backpressure_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_queue_backpressure_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1
+logstash_stats_pipeline_flow_queue_backpressure_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0.9976
 # HELP logstash_stats_pipeline_flow_queue_backpressure_lifetime Lifetime number of events in the backpressure queue.
 # TYPE logstash_stats_pipeline_flow_queue_backpressure_lifetime gauge
-logstash_stats_pipeline_flow_queue_backpressure_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_queue_backpressure_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0.9872
+logstash_stats_pipeline_flow_queue_backpressure_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0.9724
 # HELP logstash_stats_pipeline_flow_worker_concurrency_current Current number of workers.
 # TYPE logstash_stats_pipeline_flow_worker_concurrency_current gauge
-logstash_stats_pipeline_flow_worker_concurrency_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_worker_concurrency_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 10
+logstash_stats_pipeline_flow_worker_concurrency_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 8
 # HELP logstash_stats_pipeline_flow_worker_concurrency_lifetime Lifetime number of workers.
 # TYPE logstash_stats_pipeline_flow_worker_concurrency_lifetime gauge
-logstash_stats_pipeline_flow_worker_concurrency_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_worker_concurrency_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 9.882
+logstash_stats_pipeline_flow_worker_concurrency_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 7.797
 # HELP logstash_stats_pipeline_flow_worker_utilization_current Current worker utilization.
 # TYPE logstash_stats_pipeline_flow_worker_utilization_current gauge
-logstash_stats_pipeline_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_flow_worker_utilization_current{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 100
 # HELP logstash_stats_pipeline_flow_worker_utilization_lifetime Lifetime worker utilization.
 # TYPE logstash_stats_pipeline_flow_worker_utilization_lifetime gauge
-logstash_stats_pipeline_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
-logstash_stats_pipeline_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 98.82
+logstash_stats_pipeline_flow_worker_utilization_lifetime{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 97.46
 # HELP logstash_stats_pipeline_plugin_bulk_requests_errors Number of bulk request errors.
 # TYPE logstash_stats_pipeline_plugin_bulk_requests_errors counter
-logstash_stats_pipeline_plugin_bulk_requests_errors{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",plugin_type="output"} 0
 logstash_stats_pipeline_plugin_bulk_requests_errors{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 0
 # HELP logstash_stats_pipeline_plugin_bulk_requests_responses Bulk request HTTP response counts by code.
 # TYPE logstash_stats_pipeline_plugin_bulk_requests_responses counter
-logstash_stats_pipeline_plugin_bulk_requests_responses{code="200",hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 10
+logstash_stats_pipeline_plugin_bulk_requests_responses{code="200",hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 8
 # HELP logstash_stats_pipeline_plugin_documents_non_retryable_failures Number of output events with non-retryable failures.
 # TYPE logstash_stats_pipeline_plugin_documents_non_retryable_failures counter
-logstash_stats_pipeline_plugin_documents_non_retryable_failures{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",plugin_type="output"} 0
 logstash_stats_pipeline_plugin_documents_non_retryable_failures{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 0
 # HELP logstash_stats_pipeline_plugin_documents_successes Number of successful bulk requests.
 # TYPE logstash_stats_pipeline_plugin_documents_successes counter
-logstash_stats_pipeline_plugin_documents_successes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",plugin_type="output"} 0
-logstash_stats_pipeline_plugin_documents_successes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1250
+logstash_stats_pipeline_plugin_documents_successes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1000
 # HELP logstash_stats_pipeline_plugin_events_duration Time spent processing events in this plugin.
 # TYPE logstash_stats_pipeline_plugin_events_duration counter
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",plugin_type="output"} 0
 logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-80-percent",plugin_type="filter"} 0
 logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-non-existent",plugin_type="filter"} 0
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 4887
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 214
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 170
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 2677
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 138
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 104
 logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain-codec-001",plugin_type="codec:decode"} 0
 logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain-codec-001",plugin_type="codec:encode"} 0
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",plugin_type="codec:encode"} 0
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",plugin_type="codec:encode"} 0
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 127
-logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 489610
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_aac18e8c-e13c-471b-a553-0129ea85e7f6",plugin_type="codec:decode"} 0
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_aac18e8c-e13c-471b-a553-0129ea85e7f6",plugin_type="codec:encode"} 0
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_dbd36621-7a6c-446b-8100-48696d80d4e4",plugin_type="codec:decode"} 0
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_dbd36621-7a6c-446b-8100-48696d80d4e4",plugin_type="codec:encode"} 0
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 87
+logstash_stats_pipeline_plugin_events_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 224234
 # HELP logstash_stats_pipeline_plugin_events_in Number of events received this pipeline.
 # TYPE logstash_stats_pipeline_plugin_events_in counter
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",plugin_type="output"} 0
 logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-80-percent",plugin_type="filter"} 0
 logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-non-existent",plugin_type="filter"} 0
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1250
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 1250
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 1250
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1000
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 1000
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 1000
 logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain-codec-001",plugin_type="codec:decode"} 0
 logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain-codec-001",plugin_type="codec:encode"} 0
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",plugin_type="codec:encode"} 0
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",plugin_type="codec:encode"} 0
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 1250
-logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 2500
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_aac18e8c-e13c-471b-a553-0129ea85e7f6",plugin_type="codec:decode"} 0
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_aac18e8c-e13c-471b-a553-0129ea85e7f6",plugin_type="codec:encode"} 0
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_dbd36621-7a6c-446b-8100-48696d80d4e4",plugin_type="codec:decode"} 0
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_dbd36621-7a6c-446b-8100-48696d80d4e4",plugin_type="codec:encode"} 0
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 1000
+logstash_stats_pipeline_plugin_events_in{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 2000
 # HELP logstash_stats_pipeline_plugin_events_out Number of events output by this pipeline.
 # TYPE logstash_stats_pipeline_plugin_events_out counter
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="9a9bed30135e19c8047fe6aa0588b70b15280fb9161fea8ed8e7368e1fb1e6d3",plugin_type="input"} 0
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="e7aab1e17ec42d6573f3be4b8fce17c5dc69db8473f9505f386b1160434b141b",plugin_type="output"} 0
 logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="dead_letter_queue",plugin_id="5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",plugin_type="input"} 0
 logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-80-percent",plugin_type="filter"} 0
 logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="drop",plugin_id="drop-non-existent",plugin_type="filter"} 0
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1250
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="generator",plugin_id="95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",plugin_type="input"} 3751
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 1250
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 1250
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="elasticsearch",plugin_id="81d12b78dc90935689721a2220cbd7ad2f75910cdafdc01b5b77f6ca8f356cef",plugin_type="output"} 1000
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="generator",plugin_id="95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",plugin_type="input"} 3001
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="json",plugin_id="json-filter",plugin_type="filter"} 1000
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="mutate",plugin_id="mutate-path-001",plugin_type="filter"} 1000
 logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain-codec-001",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_4ffdd0bf-b707-419b-b425-d3986a43c35a",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_b4b163b6-effd-454a-9605-c3f8ef0cde5e",plugin_type="codec:decode"} 0
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 1250
-logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 1250
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_aac18e8c-e13c-471b-a553-0129ea85e7f6",plugin_type="codec:decode"} 0
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="plain",plugin_id="plain_dbd36621-7a6c-446b-8100-48696d80d4e4",plugin_type="codec:decode"} 0
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="prune",plugin_id="prune-http-input-fields",plugin_type="filter"} 1000
+logstash_stats_pipeline_plugin_events_out{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="ruby",plugin_id="ca953dac49c8fd3b00ba8275af10f9c6bcd9ca95755cd7892952966c5a13d427",plugin_type="filter"} 1000
 # HELP logstash_stats_pipeline_plugin_events_queue_push_duration Time spent pushing events into the input queue.
 # TYPE logstash_stats_pipeline_plugin_events_queue_push_duration gauge
-logstash_stats_pipeline_plugin_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash",plugin="",plugin_id="9a9bed30135e19c8047fe6aa0588b70b15280fb9161fea8ed8e7368e1fb1e6d3",plugin_type="input"} 0
 logstash_stats_pipeline_plugin_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="dead_letter_queue",plugin_id="5ee0ea3d45c32bab3b41963bd900e758ba6e193a11079649302574c706fd5e2f",plugin_type="input"} 0
-logstash_stats_pipeline_plugin_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="generator",plugin_id="95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",plugin_type="input"} 49454
+logstash_stats_pipeline_plugin_events_queue_push_duration{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main",plugin="generator",plugin_id="95bb3e4f2a40f87147b6ab5035e08ba31858eace7604a57d2e719db790097222",plugin_type="input"} 28340
 # HELP logstash_stats_pipeline_queue_events_count Number of events in the queue.
 # TYPE logstash_stats_pipeline_queue_events_count counter
-logstash_stats_pipeline_queue_events_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_queue_events_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
 # HELP logstash_stats_pipeline_queue_events_queue_size Number of events that the queue can accommodate
 # TYPE logstash_stats_pipeline_queue_events_queue_size gauge
-logstash_stats_pipeline_queue_events_queue_size{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_queue_events_queue_size{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
 # HELP logstash_stats_pipeline_queue_max_size_in_bytes Maximum size of given queue in bytes.
 # TYPE logstash_stats_pipeline_queue_max_size_in_bytes gauge
-logstash_stats_pipeline_queue_max_size_in_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 0
 logstash_stats_pipeline_queue_max_size_in_bytes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
 # HELP logstash_stats_pipeline_reloads_failures Number of failed pipeline reloads.
 # TYPE logstash_stats_pipeline_reloads_failures counter
-logstash_stats_pipeline_reloads_failures{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 1
 logstash_stats_pipeline_reloads_failures{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
-# HELP logstash_stats_pipeline_reloads_last_failure_timestamp Timestamp of last failed pipeline reload.
-# TYPE logstash_stats_pipeline_reloads_last_failure_timestamp gauge
-logstash_stats_pipeline_reloads_last_failure_timestamp{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 1 1682020832437
-# HELP logstash_stats_pipeline_reloads_last_success_timestamp Timestamp of last successful pipeline reload.
-# TYPE logstash_stats_pipeline_reloads_last_success_timestamp gauge
-logstash_stats_pipeline_reloads_last_success_timestamp{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 1 1682029832437
 # HELP logstash_stats_pipeline_reloads_successes Number of successful pipeline reloads.
 # TYPE logstash_stats_pipeline_reloads_successes counter
-logstash_stats_pipeline_reloads_successes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 3
 logstash_stats_pipeline_reloads_successes{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
 # HELP logstash_stats_pipeline_up Whether the pipeline is up or not.
 # TYPE logstash_stats_pipeline_up gauge
-logstash_stats_pipeline_up{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline=".monitoring-logstash"} 1
 logstash_stats_pipeline_up{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1
 # HELP logstash_stats_process_cpu_load_average_15m Total 15m system load average.
 # TYPE logstash_stats_process_cpu_load_average_15m gauge
-logstash_stats_process_cpu_load_average_15m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0.24
+logstash_stats_process_cpu_load_average_15m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1
 # HELP logstash_stats_process_cpu_load_average_1m Total 1m system load average.
 # TYPE logstash_stats_process_cpu_load_average_1m gauge
-logstash_stats_process_cpu_load_average_1m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 2.25
+logstash_stats_process_cpu_load_average_1m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.7
 # HELP logstash_stats_process_cpu_load_average_5m Total 5m system load average.
 # TYPE logstash_stats_process_cpu_load_average_5m gauge
-logstash_stats_process_cpu_load_average_5m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0.68
+logstash_stats_process_cpu_load_average_5m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.14
 # HELP logstash_stats_process_cpu_percent CPU usage of the process.
 # TYPE logstash_stats_process_cpu_percent gauge
-logstash_stats_process_cpu_percent{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0
+logstash_stats_process_cpu_percent{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1
 # HELP logstash_stats_process_cpu_total_millis Total CPU time used by the process.
 # TYPE logstash_stats_process_cpu_total_millis counter
-logstash_stats_process_cpu_total_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 35730
+logstash_stats_process_cpu_total_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 31700
 # HELP logstash_stats_process_max_file_descriptors Limit of open file descriptors.
 # TYPE logstash_stats_process_max_file_descriptors gauge
 logstash_stats_process_max_file_descriptors{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1.048576e+06
 # HELP logstash_stats_process_mem_total_virtual Total virtual memory used by the process.
 # TYPE logstash_stats_process_mem_total_virtual gauge
-logstash_stats_process_mem_total_virtual{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 8.28268544e+09
+logstash_stats_process_mem_total_virtual{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 7.177076736e+09
 # HELP logstash_stats_process_open_file_descriptors Number of currently open file descriptors.
 # TYPE logstash_stats_process_open_file_descriptors gauge
-logstash_stats_process_open_file_descriptors{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 108
+logstash_stats_process_open_file_descriptors{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 105
 # HELP logstash_stats_queue_events_count Number of events in the queue.
 # TYPE logstash_stats_queue_events_count gauge
 logstash_stats_queue_events_count{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 0

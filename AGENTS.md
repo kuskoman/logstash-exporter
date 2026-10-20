@@ -126,6 +126,8 @@ CI fails if `go mod tidy`, `make helm-readme` or `make update-readme-description
 ## Supported versions
 
 - **Logstash:** only the latest 9.x is officially supported and tested (see `docker-compose.yml`).
+  `fixtures/` holds the API responses of that single version, captured from the docker-compose
+  setup without edits. Replace them when the supported version changes instead of adding more.
 - **Go:** the version in `go.mod`.
 - **Kubernetes and Helm:** whatever the kind job in CI uses (Helm 4).
 
@@ -188,8 +190,9 @@ are what remains before v2 can be recommended over v1.
       the deprecated `::set-output` in the prerelease step with `$GITHUB_OUTPUT`.
 - [x] Replace the deprecated Elastic Logstash Helm chart (last version 8.5.1) in
       `.helm/logstash-integration-test-chart` with a plain Deployment.
+- [ ] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
 - [x] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
-- [ ] Add a Logstash 9.x fixture captured from a real instance (`fixtures/` is from 8.15.2).
+- [x] Replace the 8.15.2 fixtures in `fixtures/` with responses captured from Logstash 9.5.5.
 - [x] Format the files `gofmt -l` reports and add a format check to the lint job.
 - [x] Raise coverage in `pkg/config` (56% → 100%), `pkg/collector_manager` (65% → 90%) and
       `internal/fetcher/logstash_client` (67% → 95%). `internal/file_utils` (61%) only contains
@@ -199,6 +202,10 @@ are what remains before v2 can be recommended over v1.
 
 - [ ] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
       see the TODO in `internal/collectors/nodestats/pipeline_subcollector.go`.
+- [ ] Export the metrics that are new in Logstash 9: per-pipeline batch statistics
+      (`batch.byte_size`, `batch.event_count`), the pipeline settings (`pipeline.workers`,
+      `batch_size`, `batch_delay`) and `worker_millis_per_event` of output plugins. They are in
+      `fixtures/node_stats.json` but not parsed or exported.
 - [ ] Compatibility matrix of metrics across Logstash versions (#88).
 - [x] Clean up untagged images in the GitHub package registry (#302).
 - [ ] `/healthcheck` only checks that Logstash answers with HTTP 200; consider also checking that

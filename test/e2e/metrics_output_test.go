@@ -48,10 +48,10 @@ func TestMetricsOutput(t *testing.T) {
 
 	t.Run("exports_values_from_node_stats", func(t *testing.T) {
 		expected := map[string]float64{
-			"logstash_stats_events_in":         3751,
-			"logstash_stats_events_filtered":   1250,
-			"logstash_stats_events_out":        1250,
-			"logstash_stats_jvm_threads_count": 65,
+			"logstash_stats_events_in":         3001,
+			"logstash_stats_events_filtered":   1000,
+			"logstash_stats_events_out":        1000,
+			"logstash_stats_jvm_threads_count": 53,
 		}
 		for name, value := range expected {
 			actual, err := metrics.Value(name, instance)
@@ -68,20 +68,27 @@ func TestMetricsOutput(t *testing.T) {
 	t.Run("exports_node_info_as_labels", func(t *testing.T) {
 		labels := map[string]string{
 			"instance_name": InstanceName(mockLogstash.URL()),
-			"version":       "8.15.2",
-			"id":            "690de5cc-deb1-48d9-ba02-d4ec1b22e62a",
+			"version":       "9.5.5",
+			"id":            "ec53064e-be14-4264-8f3f-10d502c84cbc",
 		}
 		if _, err := metrics.Value("logstash_info_node", labels); err != nil {
 			t.Error(err)
 		}
 	})
 
-	t.Run("exports_one_series_per_pipeline", func(t *testing.T) {
-		for _, pipeline := range []string{"main", ".monitoring-logstash"} {
-			labels := map[string]string{"instance_name": InstanceName(mockLogstash.URL()), "pipeline": pipeline}
-			if _, err := metrics.Value("logstash_stats_pipeline_up", labels); err != nil {
-				t.Error(err)
-			}
+	t.Run("exports_the_pipeline_and_its_plugins", func(t *testing.T) {
+		pipeline := map[string]string{"instance_name": InstanceName(mockLogstash.URL()), "pipeline": "main"}
+		if _, err := metrics.Value("logstash_stats_pipeline_up", pipeline); err != nil {
+			t.Error(err)
+		}
+
+		output := map[string]string{"instance_name": InstanceName(mockLogstash.URL()), "pipeline": "main", "plugin": "elasticsearch"}
+		value, err := metrics.Value("logstash_stats_pipeline_plugin_documents_successes", output)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if value != 1000 {
+			t.Errorf("expected 1000 documents written by the elasticsearch output, got %v", value)
 		}
 	})
 

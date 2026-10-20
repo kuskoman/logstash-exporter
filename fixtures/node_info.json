@@ -1,18 +1,18 @@
 {
-  "host": "814a8393fbd5",
-  "version": "8.15.2",
+  "host": "64c9aae8c4d2",
+  "version": "9.5.5",
   "http_address": "0.0.0.0:9600",
-  "id": "690de5cc-deb1-48d9-ba02-d4ec1b22e62a",
-  "name": "814a8393fbd5",
-  "ephemeral_id": "eb4d9042-5642-4e21-bb8d-27454b81c5bc",
-  "status": "green",
+  "id": "ec53064e-be14-4264-8f3f-10d502c84cbc",
+  "name": "64c9aae8c4d2",
+  "ephemeral_id": "a0ab204e-e4c2-4357-a6e9-7dd649303b06",
   "snapshot": false,
+  "status": "green",
   "pipeline": {
-    "workers": 10,
+    "workers": 8,
     "batch_size": 125,
     "batch_delay": 50
   },
-  "build_date": "2024-07-24T09:37:48+00:00",
-  "build_sha": "46b996c24da17cdc7a16bc3037edab5c6132ccd0",
+  "build_date": "2026-09-29T21:04:06+00:00",
+  "build_sha": "cda423d9c7eabdb5b38d5ac7c49aa3ec546c2423",
   "build_snapshot": false
 }
