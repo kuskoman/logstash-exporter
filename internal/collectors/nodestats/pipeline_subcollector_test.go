@@ -224,3 +224,40 @@ func TestPipelineSubcollector_PluginFlow(t *testing.T) {
 		}
 	}
 }
+
+func TestPipelineSubcollector_Settings(t *testing.T) {
+	t.Parallel()
+
+	settings := []string{
+		"logstash_stats_pipeline_workers",
+		"logstash_stats_pipeline_batch_size",
+		"logstash_stats_pipeline_batch_delay",
+	}
+
+	t.Run("exports_the_pipeline_settings_when_logstash_reports_them", func(t *testing.T) {
+		t.Parallel()
+
+		workers, batchSize, batchDelay := 8, 125, 50
+		names := collectPipelineMetricNames(t, &responses.SinglePipelineResponse{
+			Settings: responses.PipelineSettingsResponse{Workers: &workers, BatchSize: &batchSize, BatchDelay: &batchDelay},
+		})
+
+		for _, metric := range settings {
+			if !slices.Contains(names, metric) {
+				t.Errorf("expected metric %s to be exported", metric)
+			}
+		}
+	})
+
+	t.Run("omits_the_pipeline_settings_for_older_logstash_versions", func(t *testing.T) {
+		t.Parallel()
+
+		names := collectPipelineMetricNames(t, &responses.SinglePipelineResponse{})
+
+		for _, metric := range settings {
+			if slices.Contains(names, metric) {
+				t.Errorf("expected metric %s not to be exported", metric)
+			}
+		}
+	})
+}

@@ -64,6 +64,10 @@ type PipelineSubcollector struct {
 	FlowWorkerUtilizationCurrent  *prometheus.Desc
 	FlowWorkerUtilizationLifetime *prometheus.Desc
 
+	SettingsWorkers    *prometheus.Desc
+	SettingsBatchSize  *prometheus.Desc
+	SettingsBatchDelay *prometheus.Desc
+
 	DeadLetterQueueMaxSizeInBytes *prometheus.Desc
 	DeadLetterQueueSizeInBytes    *prometheus.Desc
 	DeadLetterQueueDroppedEvents  *prometheus.Desc
@@ -117,6 +121,10 @@ func NewPipelineSubcollector() *PipelineSubcollector {
 		FlowWorkerConcurrencyLifetime: descHelper.NewDesc("flow_worker_concurrency_lifetime", "Lifetime number of workers.", "pipeline"),
 		FlowWorkerUtilizationCurrent:  descHelper.NewDesc("flow_worker_utilization_current", "Current worker utilization.", "pipeline"),
 		FlowWorkerUtilizationLifetime: descHelper.NewDesc("flow_worker_utilization_lifetime", "Lifetime worker utilization.", "pipeline"),
+
+		SettingsWorkers:    descHelper.NewDesc("workers", "Number of worker threads that process the events of this pipeline.", "pipeline"),
+		SettingsBatchSize:  descHelper.NewDesc("batch_size", "Number of events a worker of this pipeline retrieves from the input queue at once.", "pipeline"),
+		SettingsBatchDelay: descHelper.NewDesc("batch_delay", "Time in milliseconds this pipeline waits for events to fill a batch.", "pipeline"),
 
 		DeadLetterQueueMaxSizeInBytes: descHelper.NewDesc("dead_letter_queue_max_size_in_bytes", "Maximum size of the dead letter queue in bytes.", "pipeline"),
 		DeadLetterQueueSizeInBytes:    descHelper.NewDesc("dead_letter_queue_size_in_bytes", "Current size of the dead letter queue in bytes.", "pipeline"),
@@ -175,6 +183,20 @@ func (subcollector *PipelineSubcollector) Collect(pipeStats *responses.SinglePip
 	metricsHelper.NewFloatMetric(subcollector.FlowWorkerConcurrencyLifetime, prometheus.GaugeValue, float64(flowStats.WorkerConcurrency.Lifetime))
 	metricsHelper.NewFloatMetric(subcollector.FlowWorkerUtilizationCurrent, prometheus.GaugeValue, float64(flowStats.WorkerUtilization.Current))
 	metricsHelper.NewFloatMetric(subcollector.FlowWorkerUtilizationLifetime, prometheus.GaugeValue, float64(flowStats.WorkerUtilization.Lifetime))
+
+	// Pipeline settings are only reported by Logstash 9 and later
+	for _, setting := range []struct {
+		desc  *prometheus.Desc
+		value *int
+	}{
+		{subcollector.SettingsWorkers, pipeStats.Settings.Workers},
+		{subcollector.SettingsBatchSize, pipeStats.Settings.BatchSize},
+		{subcollector.SettingsBatchDelay, pipeStats.Settings.BatchDelay},
+	} {
+		if setting.value != nil {
+			metricsHelper.NewIntMetric(setting.desc, prometheus.GaugeValue, *setting.value)
+		}
+	}
 	// ****************
 
 	// ***** DEAD LETTER QUEUE *****

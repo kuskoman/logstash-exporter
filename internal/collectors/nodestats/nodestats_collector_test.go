@@ -129,6 +129,9 @@ func TestCollectNotNil(t *testing.T) {
 		"logstash_stats_pipeline_plugin_flow_worker_millis_per_event_lifetime",
 		"logstash_stats_pipeline_plugin_flow_worker_utilization_current",
 		"logstash_stats_pipeline_plugin_flow_worker_utilization_lifetime",
+		"logstash_stats_pipeline_batch_delay",
+		"logstash_stats_pipeline_batch_size",
+		"logstash_stats_pipeline_workers",
 	}
 
 	var foundMetrics []string

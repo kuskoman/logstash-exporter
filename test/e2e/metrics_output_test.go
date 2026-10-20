@@ -52,6 +52,7 @@ func TestMetricsOutput(t *testing.T) {
 			"logstash_stats_events_filtered":   1000,
 			"logstash_stats_events_out":        1000,
 			"logstash_stats_jvm_threads_count": 53,
+			"logstash_stats_pipeline_workers":  8,
 		}
 		for name, value := range expected {
 			actual, err := metrics.Value(name, instance)

@@ -452,6 +452,8 @@ Table of exported metrics:
 | logstash_stats_jvm_threads_count | gauge | Number of live threads including both daemon and non-daemon threads. |
 | logstash_stats_jvm_threads_peak_count | gauge | Peak live thread count since the Java virtual machine started or peak was reset. |
 | logstash_stats_jvm_uptime_millis | gauge | Uptime of the JVM in milliseconds. |
+| logstash_stats_pipeline_batch_delay | gauge | Time in milliseconds this pipeline waits for events to fill a batch. |
+| logstash_stats_pipeline_batch_size | gauge | Number of events a worker of this pipeline retrieves from the input queue at once. |
 | logstash_stats_pipeline_dead_letter_queue_dropped_events | counter | Number of events dropped by the dead letter queue. |
 | logstash_stats_pipeline_dead_letter_queue_expired_events | counter | Number of events expired in the dead letter queue. |
 | logstash_stats_pipeline_dead_letter_queue_max_size_in_bytes | gauge | Maximum size of the dead letter queue in bytes. |
@@ -493,6 +495,7 @@ Table of exported metrics:
 | logstash_stats_pipeline_reloads_last_success_timestamp | gauge | Timestamp of last successful pipeline reload. |
 | logstash_stats_pipeline_reloads_successes | counter | Number of successful pipeline reloads. |
 | logstash_stats_pipeline_up | gauge | Whether the pipeline is up or not. |
+| logstash_stats_pipeline_workers | gauge | Number of worker threads that process the events of this pipeline. |
 | logstash_stats_process_cpu_load_average_1m | gauge | Total 1m system load average. |
 | logstash_stats_process_cpu_load_average_5m | gauge | Total 5m system load average. |
 | logstash_stats_process_cpu_load_average_15m | gauge | Total 15m system load average. |
