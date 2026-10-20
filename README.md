@@ -260,8 +260,8 @@ See more in the [Migration](#migration) section.
 - `make run-controller`: Runs the Go Controller application.
 - `make run-and-watch-config`: Runs the Go Exporter application with watching the configuration file.
 - `make build-linux`: Builds exporter and controller binaries for Linux.
-- `make build-darwin`: Builds exporter and controller binaries for Darwin.
-- `make build-windows`: Builds exporter and controller binaries for Windows.
+- `make build-darwin`: Builds the exporter binary for Darwin (the controller only runs on Linux).
+- `make build-windows`: Builds the exporter binary for Windows (the controller only runs on Linux).
 - `make build-linux-arm`: Builds exporter and controller binaries for Linux ARM.
 - `make build-docker`: Builds a Docker image for the Go Exporter application.
 - `make build-docker-controller`: Builds a Docker image for the Kubernetes Controller.
