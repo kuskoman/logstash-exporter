@@ -80,7 +80,7 @@ func (c *Controller) Start(ctx context.Context) error {
 		return nil
 	}
 
-	slog.Info("starting Kubernetes controller", 
+	slog.Info("starting Kubernetes controller",
 		"namespaces", c.config.Namespaces)
 
 	// If no namespaces are specified, watch all namespaces
@@ -131,7 +131,7 @@ func (c *Controller) Stop(ctx context.Context) error {
 // worker performs periodic reconciliation
 func (c *Controller) worker() {
 	slog.Debug("kubernetes controller worker running")
-	
+
 	// Worker is now just a heartbeat since each resource handler
 	// manages its own resources
 }

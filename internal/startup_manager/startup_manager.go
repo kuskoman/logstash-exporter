@@ -134,11 +134,11 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 
 	slog.Debug("starting application components")
 	sm.startPrometheus(cfg)
-	
+
 	if sm.withController {
 		sm.startKubernetesController(cfg)
 	}
-	
+
 	sm.startServer(cfg)
 
 	slog.Info("application initialized")

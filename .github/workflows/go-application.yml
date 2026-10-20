@@ -38,6 +38,15 @@ jobs:
           go mod tidy
           git diff --exit-code -- go.mod go.sum
 
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l $(git ls-files '*.go'))
+          if [ -n "$unformatted" ]; then
+            echo "These files are not formatted, run gofmt -w on them:"
+            echo "$unformatted"
+            exit 1
+          fi
+
   lint-scripts:
     name: Lint scripts
     runs-on: ubuntu-24.04
