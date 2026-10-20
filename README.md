@@ -43,7 +43,7 @@ Logstash Exporter provides a Kubernetes Controller mode that can automatically d
 
 To use this mode:
 
-1. Deploy logstash-exporter with the Kubernetes controller enabled:
+1. Deploy logstash-exporter with the Kubernetes controller enabled. The `kubernetes` settings belong under `logstash`:
    ```yaml
    logstash:
      kubernetes:
@@ -72,11 +72,15 @@ To use this mode:
    ```yaml
    metadata:
      annotations:
-       logstash-exporter.io/url: "http://localhost:9600"
+       # $(pod_ip) is replaced with the IP of the annotated pod. Do not use
+       # localhost: the URL is scraped from the exporter's pod.
+       logstash-exporter.io/url: "http://$(pod_ip):9600"
        # Optional auth credentials
        logstash-exporter.io/username: "user"
        logstash-exporter.io/password: "pass"
    ```
+
+   Logstash must serve its API on the pod IP, for example with `api.http.host: 0.0.0.0` in `logstash.yml`.
 
    For services (useful for clustered Logstash with stable endpoints):
    ```yaml
