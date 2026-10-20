@@ -156,7 +156,7 @@ are what remains before v2 can be recommended over v1.
       the last chance to rename metrics, labels, config keys, chart values and chart resource names.
       Afterwards they are frozen until v3.
 - [ ] **Release v2.0.0 (#519)**, update the README (remove "V2 is in beta") and the migration guide.
-- [ ] **Clarify the Grafana dashboard in the README.** The "Grafana Dashboard" section links a
+- [x] **Clarify the Grafana dashboard in the README.** The "Grafana Dashboard" section links a
       community dashboard built for v1 metrics. State that it is community-maintained and that v2
       has no official dashboard.
 

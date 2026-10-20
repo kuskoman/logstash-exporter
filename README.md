@@ -382,7 +382,10 @@ Contributors should review these standards before submitting pull requests.
 
 ## Grafana Dashboard
 
-A Grafana Dashboard designed for metrics from Logstash-exporter on Kubernetes is available at
+There is no official Grafana dashboard for v2. Community dashboards are welcome, but they are not
+maintained by this project and may not match the v2 metric names.
+
+A community dashboard built for the metrics of v1 on Kubernetes is available at
 [grafana.com/grafana/dashboards/18628-logstash-on-kubernetes-dashboard/](https://grafana.com/grafana/dashboards/18628-logstash-on-kubernetes-dashboard/).
 This dashboard's JSON source is at [excalq/grafana-logstash-kubernetes](https://github.com/excalq/grafana-logstash-kubernetes).
 
