@@ -87,6 +87,19 @@ func TestLogstashFailures(t *testing.T) {
 				}
 			})
 
+			t.Run("reports_failed_scrapes", func(t *testing.T) {
+				count, err := metrics.Value("logstash_exporter_scrape_duration_seconds", map[string]string{
+					"collector": "nodestats",
+					"result":    "error",
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if count == 0 {
+					t.Error("expected failed scrapes to be counted")
+				}
+			})
+
 			t.Run("does_not_export_stats_for_the_broken_instance", func(t *testing.T) {
 				labels := map[string]string{"instance_name": InstanceName(broken.URL())}
 				if _, err := metrics.Value("logstash_stats_jvm_threads_count", labels); err == nil {

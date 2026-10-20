@@ -396,6 +396,7 @@ Table of exported metrics:
 | Name | Type | Description |
 | ----------- | ----------- | ----------- |
 | logstash_exporter_build_info | gauge | A metric with a constant '1' value labeled by version, revision, branch, goversion from which logstash_exporter was built, and the goos and goarch for the build. |
+| logstash_exporter_scrape_duration_seconds | summary | logstash_exporter: Duration of a scrape job. |
 | logstash_info_build | counter | A metric with a constant '1' value labeled by build date, sha, and snapshot of the logstash instance. |
 | logstash_info_node | counter | A metric with a constant '1' value labeled by node name, version, host, http_address, and id of the logstash instance. |
 | logstash_info_pipeline_batch_delay | gauge | Amount of time to wait for events to fill the batch before sending to the filter and output stages. |

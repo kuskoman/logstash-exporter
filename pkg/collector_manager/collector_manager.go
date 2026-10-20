@@ -131,6 +131,8 @@ func (manager *CollectorManager) Collect(ch chan<- prometheus.Metric) {
 		}(name, collector)
 	}
 	waitGroup.Wait()
+
+	manager.scrapeDurations.Collect(ch)
 }
 
 // Describe runs the describe process for the scrapeDurations collector

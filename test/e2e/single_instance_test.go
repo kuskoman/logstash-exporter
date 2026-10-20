@@ -20,6 +20,7 @@ func TestSingleInstance(t *testing.T) {
 			"logstash_stats_jvm_threads_count",
 			"logstash_stats_pipeline_up",
 			"logstash_exporter_build_info",
+			"logstash_exporter_scrape_duration_seconds",
 		} {
 			if !metrics.Has(name) {
 				t.Errorf("expected metric %s to be exported", name)
@@ -38,6 +39,22 @@ func TestSingleInstance(t *testing.T) {
 		for _, path := range []string{nodeInfoPath, nodeStatsPath} {
 			if mockLogstash.RequestCount(path) == 0 {
 				t.Errorf("expected exporter to query %s", path)
+			}
+		}
+	})
+
+	t.Run("reports_successful_scrapes", func(t *testing.T) {
+		for _, collector := range []string{"nodeinfo", "nodestats"} {
+			count, err := metrics.Value("logstash_exporter_scrape_duration_seconds", map[string]string{
+				"collector": collector,
+				"result":    "success",
+			})
+			if err != nil {
+				t.Errorf("collector %s: %v", collector, err)
+				continue
+			}
+			if count == 0 {
+				t.Errorf("expected successful scrapes for collector %s", collector)
 			}
 		}
 	})

@@ -3,12 +3,13 @@ package collector_manager
 import (
 	"context"
 	"errors"
-	"sync"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 const httpTimeout = 2 * time.Second
@@ -70,10 +71,9 @@ func TestNewCollectorManager(t *testing.T) {
 func TestCollect(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should_fail_when_collector_returns_error", func(t *testing.T) {
+	t.Run("should_report_failed_scrape_duration_when_collector_returns_error", func(t *testing.T) {
 		t.Parallel()
 
-		// Setup
 		cm := &CollectorManager{
 			collectors: map[string]Collector{
 				"mock": newMockCollector(true),
@@ -81,37 +81,17 @@ func TestCollect(t *testing.T) {
 			scrapeDurations: getScrapeDurationsCollector(),
 		}
 
-		ch := make(chan prometheus.Metric)
+		metrics := collectAll(cm)
 
-		var wg sync.WaitGroup
-		wg.Add(1)
-		
-		// Execute
-		go func() {
-			cm.Collect(ch)
-			wg.Done()
-		}()
-
-		// Verify
-		select {
-		case <-ch:
-			t.Errorf("expected no metric to be sent to the channel, but received one")
-		case <-func() chan struct{} {
-			done := make(chan struct{})
-			go func() {
-				wg.Wait()
-				close(done)
-			}()
-			return done
-		}():
-			// Success: No metric was sent to the channel, which is expected
+		if len(metrics) != 1 {
+			t.Fatalf("expected only the scrape duration metric, got %d metrics", len(metrics))
 		}
+		assertScrapeDuration(t, metrics[0], "mock", "error")
 	})
 
-	t.Run("should_succeed_when_collector_returns_metric", func(t *testing.T) {
+	t.Run("should_send_collector_metrics_and_scrape_duration", func(t *testing.T) {
 		t.Parallel()
 
-		// Setup
 		cm := &CollectorManager{
 			collectors: map[string]Collector{
 				"mock": newMockCollector(false),
@@ -119,24 +99,57 @@ func TestCollect(t *testing.T) {
 			scrapeDurations: getScrapeDurationsCollector(),
 		}
 
-		ch := make(chan prometheus.Metric)
-		
-		// Execute
-		go cm.Collect(ch)
+		metrics := collectAll(cm)
 
-		// Verify
-		metric := <-ch
-		if metric == nil {
-			t.Errorf("expected metric to be non-nil")
-			return
+		if len(metrics) != 2 {
+			t.Fatalf("expected the collector metric and the scrape duration, got %d metrics", len(metrics))
 		}
 
-		desc := metric.Desc()
 		expectedDesc := "Desc{fqName: \"mock_metric\", help: \"mock metric description\", unit: \"\", constLabels: {}, variableLabels: {}}"
-		if desc.String() != expectedDesc {
-			t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc.String())
+		if desc := metrics[0].Desc().String(); desc != expectedDesc {
+			t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc)
 		}
+		assertScrapeDuration(t, metrics[1], "mock", "success")
 	})
+}
+
+// collectAll runs Collect and returns every metric it sent, in order
+func collectAll(cm *CollectorManager) []prometheus.Metric {
+	ch := make(chan prometheus.Metric)
+	go func() {
+		cm.Collect(ch)
+		close(ch)
+	}()
+
+	var metrics []prometheus.Metric
+	for metric := range ch {
+		metrics = append(metrics, metric)
+	}
+	return metrics
+}
+
+func assertScrapeDuration(t *testing.T, metric prometheus.Metric, collector, result string) {
+	t.Helper()
+
+	if !strings.Contains(metric.Desc().String(), "logstash_exporter_scrape_duration_seconds") {
+		t.Fatalf("expected the scrape duration metric, got %s", metric.Desc())
+	}
+
+	var written dto.Metric
+	if err := metric.Write(&written); err != nil {
+		t.Fatalf("failed to write metric: %v", err)
+	}
+
+	labels := map[string]string{}
+	for _, pair := range written.GetLabel() {
+		labels[pair.GetName()] = pair.GetValue()
+	}
+	if labels["collector"] != collector || labels["result"] != result {
+		t.Errorf("expected collector=%q result=%q, got %v", collector, result, labels)
+	}
+	if count := written.GetSummary().GetSampleCount(); count != 1 {
+		t.Errorf("expected one observed scrape, got %d", count)
+	}
 }
 
 func TestDescribe(t *testing.T) {
