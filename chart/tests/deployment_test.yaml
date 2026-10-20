@@ -1,12 +1,15 @@
 suite: Deployment Tests
 templates:
   - deployment.yaml
+  # deployment.yaml includes configmap.yaml for the config checksum
+  - configmap.yaml
 release:
   name: logstash-exporter-test
   namespace: default
 
 tests:
   - it: should create a deployment with default settings
+    template: deployment.yaml
     asserts:
       - isKind:
           of: Deployment
@@ -51,6 +54,7 @@ tests:
           path: spec.template.spec.securityContext
 
   - it: should configure the exporter container with default settings
+    template: deployment.yaml
     asserts:
       - equal:
           path: spec.template.spec.containers[0].name
@@ -90,6 +94,7 @@ tests:
           path: spec.template.spec.containers[0].securityContext
 
   - it: should mount the config map as the exporter config file
+    template: deployment.yaml
     asserts:
       - equal:
           path: spec.template.spec.containers[0].volumeMounts
@@ -105,6 +110,7 @@ tests:
                 name: logstash-exporter-test
 
   - it: should use the image tag when specified
+    template: deployment.yaml
     set:
       image.repository: example/exporter
       image.tag: v9.9.9
@@ -118,6 +124,7 @@ tests:
           value: Always
 
   - it: should create a controller deployment when kubernetes controller is enabled
+    template: deployment.yaml
     set:
       logstash.kubernetes.enabled: true
     asserts:
@@ -129,6 +136,7 @@ tests:
           value: kuskoman/logstash-exporter-controller:v2.0.0
 
   - it: should use custom controller repository when specified
+    template: deployment.yaml
     set:
       logstash.kubernetes.enabled: true
       image.controllerRepository: custom/logstash-controller
@@ -139,6 +147,7 @@ tests:
           value: custom/logstash-controller:v9.9.9
 
   - it: should set replicas and rolling update strategy
+    template: deployment.yaml
     set:
       deployment.replicas: 3
       deployment.rollingUpdate.maxSurge: 2
@@ -154,6 +163,7 @@ tests:
             maxUnavailable: 1
 
   - it: should fail when replicas are not set
+    template: deployment.yaml
     set:
       deployment.replicas: null
     asserts:
@@ -161,6 +171,7 @@ tests:
           errorMessage: deployment.replicas is required
 
   - it: should add deployment labels and annotations
+    template: deployment.yaml
     set:
       deployment.labels:
         team: observability
@@ -179,6 +190,7 @@ tests:
             example.com/owner: observability
 
   - it: should add pod labels and annotations
+    template: deployment.yaml
     set:
       deployment.podLabels:
         team: observability
@@ -192,13 +204,21 @@ tests:
             app: logstash-exporter
             release: logstash-exporter-test
             team: observability
-      - equal:
+      - isSubset:
           path: spec.template.metadata.annotations
-          value:
+          content:
             prometheus.io/scrape: "true"
             prometheus.io/port: "9198"
 
+  - it: should add a checksum of the configuration to the pod annotations
+    template: deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.metadata.annotations["checksum/config"]
+          pattern: ^[a-f0-9]{64}$
+
   - it: should add image pull secrets when specified
+    template: deployment.yaml
     set:
       deployment.pullSecret:
         - registry-credentials
@@ -211,6 +231,7 @@ tests:
             - name: other-credentials
 
   - it: should use the created service account when enabled
+    template: deployment.yaml
     set:
       serviceAccount.enabled: true
       serviceAccount.create: true
@@ -220,6 +241,7 @@ tests:
           value: logstash-exporter-test
 
   - it: should use a custom name for the created service account
+    template: deployment.yaml
     set:
       serviceAccount.enabled: true
       serviceAccount.create: true
@@ -230,6 +252,7 @@ tests:
           value: custom-sa
 
   - it: should use the default service account when not created and no name is set
+    template: deployment.yaml
     set:
       serviceAccount.enabled: true
       serviceAccount.create: false
@@ -239,6 +262,7 @@ tests:
           value: default
 
   - it: should use an existing service account when not created by the chart
+    template: deployment.yaml
     set:
       serviceAccount.enabled: true
       serviceAccount.create: false
@@ -249,6 +273,7 @@ tests:
           value: existing-sa
 
   - it: should set scheduling options when specified
+    template: deployment.yaml
     set:
       deployment.priorityClassName: high-priority
       deployment.nodeSelector:
@@ -289,6 +314,7 @@ tests:
             values: ["amd64"]
 
   - it: should set dns config when specified
+    template: deployment.yaml
     set:
       deployment.dnsConfig:
         nameservers: ["1.1.1.1"]
@@ -299,6 +325,7 @@ tests:
             nameservers: ["1.1.1.1"]
 
   - it: should set pod and container security contexts separately
+    template: deployment.yaml
     set:
       deployment.podSecurityContext:
         runAsNonRoot: true
@@ -319,6 +346,7 @@ tests:
             allowPrivilegeEscalation: false
 
   - it: should apply the shared security context to both pod and container
+    template: deployment.yaml
     set:
       deployment.securityContext:
         runAsUser: 65534
@@ -333,6 +361,7 @@ tests:
             runAsUser: 65534
 
   - it: should add environment variables
+    template: deployment.yaml
     set:
       deployment.env:
         LOG_LEVEL: debug
@@ -359,6 +388,7 @@ tests:
                   key: password
 
   - it: should set resources when specified
+    template: deployment.yaml
     set:
       deployment.resources:
         limits:
@@ -379,6 +409,7 @@ tests:
               memory: 64Mi
 
   - it: should set readiness probe and allow disabling liveness probe
+    template: deployment.yaml
     set:
       deployment.livenessProbe: null
       deployment.readinessProbe:
@@ -396,6 +427,7 @@ tests:
               port: http
 
   - it: should use the service port as container port
+    template: deployment.yaml
     set:
       service.port: 8080
     asserts:
