@@ -1,132 +1,368 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
+	"syscall"
 	"testing"
 	"time"
-
-	"github.com/prometheus/common/expfmt"
-	"github.com/prometheus/common/model"
 )
 
-// TestConfig creates a temporary config file with the given content
-func TestConfig(t *testing.T, content string) string {
+const (
+	startupTimeout  = 10 * time.Second
+	shutdownTimeout = 5 * time.Second
+	maxStartRetries = 3
+)
+
+// Exporter is a running exporter binary under test
+type Exporter struct {
+	Port       int
+	ConfigPath string
+
+	t        *testing.T
+	scheme   string
+	client   *http.Client
+	cmd      *exec.Cmd
+	logs     *syncBuffer
+	exited   chan struct{}
+	exitErr  error
+	stopOnce sync.Once
+}
+
+// ExporterOption configures how the exporter is started
+type ExporterOption func(*exporterSettings)
+
+type exporterSettings struct {
+	args   []string
+	env    []string
+	scheme string
+}
+
+// WithWatch enables configuration hot reload
+func WithWatch() ExporterOption {
+	return func(s *exporterSettings) { s.args = append(s.args, "-watch") }
+}
+
+// WithEnv adds environment variables in KEY=VALUE form
+func WithEnv(env ...string) ExporterOption {
+	return func(s *exporterSettings) { s.env = append(s.env, env...) }
+}
+
+// WithHTTPS makes the test client talk to the exporter over HTTPS
+func WithHTTPS() ExporterOption {
+	return func(s *exporterSettings) { s.scheme = "https" }
+}
+
+// StartExporter writes the configuration, starts the exporter and waits until
+// it serves HTTP. It picks a free port and retries when the port is taken by
+// another process before the exporter binds it. The exporter is stopped when
+// the test ends, and its logs are printed if the test failed.
+func StartExporter(t *testing.T, cb *ConfigBuilder, opts ...ExporterOption) *Exporter {
 	t.Helper()
 
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "config.yml")
+	settings := &exporterSettings{scheme: "http"}
+	for _, opt := range opts {
+		opt(settings)
+	}
 
-	err := os.WriteFile(configPath, []byte(content), 0644)
+	configPath := filepath.Join(t.TempDir(), "config.yml")
+
+	var lastErr error
+	for attempt := 1; attempt <= maxStartRetries; attempt++ {
+		port, err := GetFreePort()
+		if err != nil {
+			t.Fatalf("failed to get free port: %v", err)
+		}
+
+		cb.WithServerPort(port)
+		if err := os.WriteFile(configPath, []byte(cb.Build()), 0644); err != nil {
+			t.Fatalf("failed to write config file: %v", err)
+		}
+
+		exporter := startProcess(t, configPath, port, settings)
+		err = exporter.waitUntilServing(startupTimeout)
+		if err == nil {
+			t.Cleanup(exporter.cleanup)
+			return exporter
+		}
+
+		exporter.Stop()
+		lastErr = err
+		if !strings.Contains(exporter.Logs(), "address already in use") {
+			t.Fatalf("exporter did not start: %v\nexporter logs:\n%s", err, exporter.Logs())
+		}
+		t.Logf("port %d was taken, retrying (attempt %d/%d)", port, attempt, maxStartRetries)
+	}
+
+	t.Fatalf("exporter did not start after %d attempts: %v", maxStartRetries, lastErr)
+	return nil
+}
+
+func startProcess(t *testing.T, configPath string, port int, settings *exporterSettings) *Exporter {
+	t.Helper()
+
+	args := append([]string{"-config", configPath}, settings.args...)
+	cmd := exec.Command(GetBinaryPath(t), args...)
+	cmd.Env = append(os.Environ(), settings.env...)
+
+	logs := &syncBuffer{}
+	cmd.Stdout = logs
+	cmd.Stderr = logs
+
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("failed to start exporter: %v", err)
+	}
+
+	exporter := &Exporter{
+		Port:       port,
+		ConfigPath: configPath,
+		t:          t,
+		scheme:     settings.scheme,
+		client:     newTestHTTPClient(),
+		cmd:        cmd,
+		logs:       logs,
+		exited:     make(chan struct{}),
+	}
+
+	go func() {
+		exporter.exitErr = cmd.Wait()
+		close(exporter.exited)
+	}()
+
+	return exporter
+}
+
+func newTestHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout: 5 * time.Second,
+		Transport: &http.Transport{
+			// The exporter uses a self-signed certificate in TLS tests
+			TLSClientConfig:   &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
+			DisableKeepAlives: true,
+		},
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+}
+
+func (e *Exporter) waitUntilServing(timeout time.Duration) error {
+	return poll(timeout, func() error {
+		select {
+		case <-e.exited:
+			return fmt.Errorf("exporter exited: %v", e.exitErr)
+		default:
+		}
+
+		resp, err := e.Get("/version")
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("/version returned %d", resp.StatusCode)
+		}
+		return nil
+	})
+}
+
+func (e *Exporter) cleanup() {
+	e.Stop()
+	if e.t.Failed() {
+		e.t.Logf("exporter logs:\n%s", e.Logs())
+	}
+}
+
+// Stop terminates the exporter. It sends SIGTERM and kills the process if it
+// does not exit within the shutdown timeout.
+func (e *Exporter) Stop() {
+	e.stopOnce.Do(func() {
+		select {
+		case <-e.exited:
+			return
+		default:
+		}
+
+		_ = e.cmd.Process.Signal(syscall.SIGTERM)
+		select {
+		case <-e.exited:
+		case <-time.After(shutdownTimeout):
+			_ = e.cmd.Process.Kill()
+			<-e.exited
+		}
+	})
+}
+
+// Signal sends a signal to the exporter process
+func (e *Exporter) Signal(sig os.Signal) error {
+	return e.cmd.Process.Signal(sig)
+}
+
+// WaitForExit waits for the exporter to exit and returns its exit code
+func (e *Exporter) WaitForExit(timeout time.Duration) (int, error) {
+	select {
+	case <-e.exited:
+		return exitCode(e.exitErr), nil
+	case <-time.After(timeout):
+		return 0, fmt.Errorf("exporter did not exit within %s", timeout)
+	}
+}
+
+// Logs returns everything the exporter wrote to stdout and stderr
+func (e *Exporter) Logs() string {
+	return e.logs.String()
+}
+
+// URL returns the URL of the given path on the exporter
+func (e *Exporter) URL(path string) string {
+	return fmt.Sprintf("%s://127.0.0.1:%d%s", e.scheme, e.Port, path)
+}
+
+// Response is a fully read HTTP response
+type Response struct {
+	StatusCode int
+	Header     http.Header
+	Body       string
+}
+
+// Get requests the given path on the exporter
+func (e *Exporter) Get(path string) (*Response, error) {
+	return e.GetWithAuth(path, "", "")
+}
+
+// GetWithAuth requests the given path using basic authentication when a
+// username is given
+func (e *Exporter) GetWithAuth(path, username, password string) (*Response, error) {
+	req, err := http.NewRequest(http.MethodGet, e.URL(path), nil)
 	if err != nil {
-		t.Fatalf("failed to write test config: %v", err)
+		return nil, err
+	}
+	if username != "" {
+		req.SetBasicAuth(username, password)
 	}
 
-	return configPath
+	resp, err := e.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Response{StatusCode: resp.StatusCode, Header: resp.Header, Body: string(body)}, nil
 }
 
-// ConfigBuilder helps build test configurations programmatically
-type ConfigBuilder struct {
-	instances      []string
-	serverPort     int
-	logLevel       string
-	httpTimeout    string
-	readTimeout    int
-	writeTimeout   int
-	maxConnections int
+// Metrics fetches and parses the metrics endpoint
+func (e *Exporter) Metrics() (*Metrics, error) {
+	resp, err := e.Get("/metrics")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("/metrics returned %d: %s", resp.StatusCode, resp.Body)
+	}
+	return ParseMetrics(resp.Body)
 }
 
-// NewConfigBuilder creates a new configuration builder
-func NewConfigBuilder() *ConfigBuilder {
-	return &ConfigBuilder{
-		instances:      []string{},
-		serverPort:     0,
-		logLevel:       "error",
-		httpTimeout:    "5s",
-		readTimeout:    30,
-		writeTimeout:   30,
-		maxConnections: 512,
+// WaitForMetrics polls the metrics endpoint until check succeeds and returns
+// the metrics that satisfied it
+func (e *Exporter) WaitForMetrics(check func(*Metrics) error) *Metrics {
+	e.t.Helper()
+
+	var result *Metrics
+	Eventually(e.t, defaultWaitTimeout, func() error {
+		metrics, err := e.Metrics()
+		if err != nil {
+			return err
+		}
+		if err := check(metrics); err != nil {
+			return err
+		}
+		result = metrics
+		return nil
+	})
+	return result
+}
+
+// WaitForInstances waits until metrics are exported for exactly the given
+// number of Logstash instances
+func (e *Exporter) WaitForInstances(count int) *Metrics {
+	e.t.Helper()
+
+	return e.WaitForMetrics(func(m *Metrics) error {
+		if instances := m.Instances(); len(instances) != count {
+			return fmt.Errorf("expected %d instances, got %d: %v", count, len(instances), instances)
+		}
+		return nil
+	})
+}
+
+// WriteConfig replaces the configuration file in place. The exporter port is
+// kept unless the builder sets a different one.
+func (e *Exporter) WriteConfig(cb *ConfigBuilder) {
+	e.t.Helper()
+
+	if cb.serverPort == 0 {
+		cb.WithServerPort(e.Port)
+	}
+	if err := os.WriteFile(e.ConfigPath, []byte(cb.Build()), 0644); err != nil {
+		e.t.Fatalf("failed to write config file: %v", err)
 	}
 }
 
-// AddInstance adds a Logstash instance URL
-func (cb *ConfigBuilder) AddInstance(url string) *ConfigBuilder {
-	cb.instances = append(cb.instances, url)
-	return cb
+// RunResult is the outcome of running the exporter to completion
+type RunResult struct {
+	ExitCode int
+	Output   string
 }
 
-// WithServerPort sets the server port
-func (cb *ConfigBuilder) WithServerPort(port int) *ConfigBuilder {
-	cb.serverPort = port
-	return cb
-}
+// RunExporter runs the exporter binary with the given arguments until it
+// exits, and fails the test if it does not exit within the timeout
+func RunExporter(t *testing.T, timeout time.Duration, args ...string) RunResult {
+	t.Helper()
 
-// WithLogLevel sets the log level
-func (cb *ConfigBuilder) WithLogLevel(level string) *ConfigBuilder {
-	cb.logLevel = level
-	return cb
-}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 
-// WithHTTPTimeout sets the HTTP timeout for Logstash requests
-func (cb *ConfigBuilder) WithHTTPTimeout(timeout string) *ConfigBuilder {
-	cb.httpTimeout = timeout
-	return cb
-}
-
-// Build generates the YAML configuration string
-func (cb *ConfigBuilder) Build() string {
-	var sb strings.Builder
-
-	sb.WriteString("logstash:\n")
-	sb.WriteString("  instances:\n")
-	for _, instance := range cb.instances {
-		fmt.Fprintf(&sb, "    - url: %s\n", instance)
+	cmd := exec.CommandContext(ctx, GetBinaryPath(t), args...)
+	output, err := cmd.CombinedOutput()
+	if ctx.Err() != nil {
+		t.Fatalf("exporter did not exit within %s\noutput:\n%s", timeout, output)
 	}
-	fmt.Fprintf(&sb, "  httpTimeout: %s\n", cb.httpTimeout)
-	sb.WriteString("\n")
 
-	sb.WriteString("server:\n")
-	sb.WriteString("  host: 127.0.0.1\n")
-	fmt.Fprintf(&sb, "  port: %d\n", cb.serverPort)
-	fmt.Fprintf(&sb, "  read_timeout_seconds: %d\n", cb.readTimeout)
-	fmt.Fprintf(&sb, "  write_timeout_seconds: %d\n", cb.writeTimeout)
-	fmt.Fprintf(&sb, "  max_connections: %d\n", cb.maxConnections)
-	sb.WriteString("\n")
-
-	sb.WriteString("logging:\n")
-	fmt.Fprintf(&sb, "  level: %s\n", cb.logLevel)
-	sb.WriteString("  format: json\n")
-
-	return sb.String()
+	return RunResult{ExitCode: exitCode(err), Output: string(output)}
 }
 
-// ExporterInstance represents a running exporter binary for testing
-type ExporterInstance struct {
-	BinaryPath string
-	ConfigPath string
-	Port       int
-	cmd        *exec.Cmd
-	ctx        context.Context
-	cancel     context.CancelFunc
+func exitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		return exitErr.ExitCode()
+	}
+	return -1
 }
 
-// GetBinaryPath returns the path to the exporter binary
-// The binary should be built using 'make e2e-prepare' before running tests
+// GetBinaryPath returns the path to the exporter binary built by
+// `make e2e-prepare`
 func GetBinaryPath(t *testing.T) string {
 	t.Helper()
 
-	// Path to the e2e binary (built by make e2e-prepare)
 	binaryPath := filepath.Join("..", "..", "test", "e2e", "bin", "logstash-exporter-e2e")
-
-	// Check if binary exists
 	if _, err := os.Stat(binaryPath); err != nil {
 		t.Fatalf("e2e binary not found at %s. Please run 'make e2e-prepare' first", binaryPath)
 	}
@@ -134,307 +370,33 @@ func GetBinaryPath(t *testing.T) string {
 	return binaryPath
 }
 
-// GetFreePort finds an available TCP port in the range 1000-9999
-// This ensures the port is within commonly allowed ranges in CI environments
-// It uses a random starting point to reduce port collisions in parallel tests
+// GetFreePort asks the operating system for a free TCP port. Another process
+// can still take it before the exporter binds it, which StartExporter handles
+// by retrying.
 func GetFreePort() (int, error) {
-	const minPort = 1000
-	const maxPort = 9999
-	const maxAttempts = 100
-
-	// Use a random starting point to reduce collisions in parallel tests
-	startPort := minPort + rand.Intn(maxPort-minPort-maxAttempts)
-
-	for i := 0; i < maxAttempts; i++ {
-		port := startPort + i
-		if port > maxPort {
-			port = minPort + (port - maxPort - 1)
-		}
-
-		address := fmt.Sprintf("127.0.0.1:%d", port)
-		listener, err := net.Listen("tcp", address)
-		if err != nil {
-			// Port is in use or unavailable, try next one
-			continue
-		}
-
-		// Port is available, close and return it
-		if err := listener.Close(); err != nil {
-			fmt.Printf("error closing listener: %v\n", err)
-		}
-		return port, nil
-	}
-
-	return 0, fmt.Errorf("no free port found after %d attempts in range %d-%d", maxAttempts, minPort, maxPort)
-}
-
-// StartExporter starts an exporter binary with the given configuration
-func StartExporter(t *testing.T, configPath string, port int) *ExporterInstance {
-	t.Helper()
-
-	binaryPath := GetBinaryPath(t)
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	// Start the binary
-	cmd := exec.CommandContext(ctx, binaryPath, "-config", configPath)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Start(); err != nil {
-		cancel()
-		t.Fatalf("failed to start exporter: %v", err)
-	}
-
-	instance := &ExporterInstance{
-		BinaryPath: binaryPath,
-		ConfigPath: configPath,
-		Port:       port,
-		cmd:        cmd,
-		ctx:        ctx,
-		cancel:     cancel,
-	}
-
-	// Wait for server to be ready
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", port)
-	if !waitForServer(serverURL, 10*time.Second) {
-		if err := instance.Stop(); err != nil {
-			t.Logf("error stopping instance: %v", err)
-		}
-		t.Fatal("server did not start in time")
-	}
-
-	return instance
-}
-
-// Stop stops the exporter instance
-func (e *ExporterInstance) Stop() error {
-	if e.cancel != nil {
-		e.cancel()
-	}
-
-	if e.cmd != nil && e.cmd.Process != nil {
-		// Give it time to shut down gracefully
-		done := make(chan struct{})
-		go func() {
-			// Wait's error is ignored: the process is expected to exit due to cancellation
-			_ = e.cmd.Wait()
-			close(done)
-		}()
-
-		select {
-		case <-done:
-			return nil
-		case <-time.After(5 * time.Second):
-			// Force kill if it doesn't stop gracefully
-			if err := e.cmd.Process.Kill(); err != nil {
-				return fmt.Errorf("failed to kill process: %w", err)
-			}
-			<-done // Wait for Wait() to return
-			return nil
-		}
-	}
-
-	return nil
-}
-
-// GetMetricsURL returns the metrics endpoint URL
-func (e *ExporterInstance) GetMetricsURL() string {
-	return fmt.Sprintf("http://127.0.0.1:%d/metrics", e.Port)
-}
-
-// GetHealthCheckURL returns the health check endpoint URL
-func (e *ExporterInstance) GetHealthCheckURL() string {
-	return fmt.Sprintf("http://127.0.0.1:%d/healthcheck", e.Port)
-}
-
-// GetVersionURL returns the version endpoint URL
-func (e *ExporterInstance) GetVersionURL() string {
-	return fmt.Sprintf("http://127.0.0.1:%d/version", e.Port)
-}
-
-// Reload sends a reload signal by updating the config file
-// Note: This requires the exporter to be started with -watch flag
-func (e *ExporterInstance) Reload(newConfig string) error {
-	return os.WriteFile(e.ConfigPath, []byte(newConfig), 0644)
-}
-
-// waitForServer waits for the server to be ready
-func waitForServer(url string, timeout time.Duration) bool {
-	deadline := time.Now().Add(timeout)
-	client := &http.Client{
-		Timeout: 1 * time.Second,
-	}
-
-	for time.Now().Before(deadline) {
-		resp, err := client.Get(url + "/version")
-		if err == nil {
-			err = resp.Body.Close()
-			if err != nil {
-				fmt.Printf("error closing response body: %v\n", err)
-			}
-			if resp.StatusCode == http.StatusOK {
-				return true
-			}
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-
-	return false
-}
-
-// FetchMetrics fetches and returns the metrics from the exporter
-// It retries a few times to handle startup delays
-func FetchMetrics(t *testing.T, url string) string {
-	t.Helper()
-
-	var lastErr error
-	maxRetries := 10
-
-	for i := 0; i < maxRetries; i++ {
-		resp, err := http.Get(url)
-		if err != nil {
-			lastErr = err
-			if i < maxRetries-1 {
-				time.Sleep(500 * time.Millisecond)
-				continue
-			}
-			t.Fatalf("failed to fetch metrics after %d retries: %v", maxRetries, err)
-		}
-
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				t.Logf("error closing response body: %v", err)
-			}
-		}()
-
-		if resp.StatusCode != http.StatusOK {
-			lastErr = fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-			if i < maxRetries-1 {
-				time.Sleep(500 * time.Millisecond)
-				continue
-			}
-			t.Fatalf("unexpected status code after %d retries: %d", maxRetries, resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatalf("failed to read response body: %v", err)
-		}
-
-		return string(body)
-	}
-
-	t.Fatalf("failed to fetch metrics: %v", lastErr)
-	return ""
-}
-
-// ParseMetrics parses Prometheus metrics from the response
-func ParseMetrics(t *testing.T, metricsText string) map[string]float64 {
-	t.Helper()
-
-	parser := expfmt.NewTextParser(model.UTF8Validation)
-	metricFamilies, err := parser.TextToMetricFamilies(strings.NewReader(metricsText))
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		t.Fatalf("failed to parse metrics: %v", err)
+		return 0, err
 	}
+	defer func() { _ = listener.Close() }()
 
-	metrics := make(map[string]float64)
-	for name, mf := range metricFamilies {
-		for _, m := range mf.Metric {
-			// Build metric key with labels
-			key := name
-			if len(m.Label) > 0 {
-				var labels []string
-				for _, l := range m.Label {
-					labels = append(labels, fmt.Sprintf("%s=%q", l.GetName(), l.GetValue()))
-				}
-				key = fmt.Sprintf("%s{%s}", name, strings.Join(labels, ","))
-			}
-
-			// Extract value based on metric type
-			if m.Gauge != nil {
-				metrics[key] = m.Gauge.GetValue()
-			} else if m.Counter != nil {
-				metrics[key] = m.Counter.GetValue()
-			} else if m.Untyped != nil {
-				metrics[key] = m.Untyped.GetValue()
-			}
-		}
-	}
-
-	return metrics
+	return listener.Addr().(*net.TCPAddr).Port, nil
 }
 
-// AssertMetricExists checks if a metric exists in the metrics text
-func AssertMetricExists(t *testing.T, metricsText, metricName string) {
-	t.Helper()
-
-	if !strings.Contains(metricsText, metricName) {
-		t.Errorf("metric %q not found in metrics output", metricName)
-	}
+// syncBuffer is a bytes.Buffer safe for concurrent writes and reads
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
 }
 
-// AssertMetricWithLabel checks if a metric with a specific label exists
-func AssertMetricWithLabel(t *testing.T, metricsText, metricName, labelName, labelValue string) {
-	t.Helper()
-
-	// Look for pattern like: metricName{labelName="labelValue"}
-	expectedPattern := fmt.Sprintf("%s{", metricName)
-	labelPattern := fmt.Sprintf(`%s="%s"`, labelName, labelValue)
-
-	lines := strings.Split(metricsText, "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(line, expectedPattern) && strings.Contains(line, labelPattern) {
-			return // Found it
-		}
-	}
-
-	t.Errorf("metric %q with label %s=%q not found in metrics output", metricName, labelName, labelValue)
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
 }
 
-// httpGet performs an HTTP GET request and returns the response
-func httpGet(url string) (*http.Response, error) {
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-	return client.Get(url)
-}
-
-// readResponseBody reads the entire response body and returns it as a string
-func readResponseBody(resp *http.Response) (string, error) {
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(body), nil
-}
-
-// CountInstancesInMetrics counts unique instances in metrics output
-// Looks for either "instance_name=" or "hostname=" labels
-func CountInstancesInMetrics(metricsText string) int {
-	instancesFound := make(map[string]bool)
-	for _, line := range strings.Split(metricsText, "\n") {
-		// Skip comments and empty lines
-		if strings.HasPrefix(line, "#") || len(strings.TrimSpace(line)) == 0 {
-			continue
-		}
-
-		// Look for instance_name label (primary)
-		if strings.Contains(line, "instance_name=\"") {
-			parts := strings.Split(line, "instance_name=\"")
-			if len(parts) > 1 {
-				instanceValue := strings.Split(parts[1], "\"")[0]
-				instancesFound[instanceValue] = true
-			}
-		} else if strings.Contains(line, "hostname=\"") {
-			// Fallback to hostname label
-			parts := strings.Split(line, "hostname=\"")
-			if len(parts) > 1 {
-				instanceValue := strings.Split(parts[1], "\"")[0]
-				instancesFound[instanceValue] = true
-			}
-		}
-	}
-	return len(instancesFound)
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
 }
