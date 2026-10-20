@@ -132,7 +132,7 @@ func TestCollect(t *testing.T) {
 		}
 
 		desc := metric.Desc()
-		expectedDesc := "Desc{fqName: \"mock_metric\", help: \"mock metric description\", constLabels: {}, variableLabels: {}}"
+		expectedDesc := "Desc{fqName: \"mock_metric\", help: \"mock metric description\", unit: \"\", constLabels: {}, variableLabels: {}}"
 		if desc.String() != expectedDesc {
 			t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc.String())
 		}
@@ -162,7 +162,7 @@ func TestDescribe(t *testing.T) {
 		return
 	}
 	
-	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", constLabels: {}, variableLabels: {collector,result}}"
+	expectedDesc := "Desc{fqName: \"logstash_exporter_scrape_duration_seconds\", help: \"logstash_exporter: Duration of a scrape job.\", unit: \"\", constLabels: {}, variableLabels: {collector,result}}"
 	if desc.String() != expectedDesc {
 		t.Errorf("expected metric description to be %q, got %q", expectedDesc, desc.String())
 	}

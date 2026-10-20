@@ -21,15 +21,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Lint code using golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
 
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
@@ -53,30 +53,30 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Test code
         run: go test $(go list ./... | grep -v '/test/e2e') -covermode=atomic -coverprofile=coverage.out
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
 
   test-e2e:
     name: E2E test code
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Build e2e binary
         run: make e2e-prepare
@@ -89,12 +89,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Install Node 18
-        uses: actions/setup-node@v6
+      - name: Install Node 24
+        uses: actions/setup-node@v7
         with:
-          node-version: 18
+          node-version: 24
 
       - name: Install README generator
         run: make install-helm-readme
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Generate README
         run: make update-readme-descriptions
@@ -123,12 +123,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
-          version: 3.13.3
+          version: v4.3.1
 
       - name: Lint Helm chart
         working-directory: ./chart
@@ -139,12 +139,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
-          version: 3.13.3
+          version: v4.3.1
 
       - name: Template Helm chart
         working-directory: ./chart
@@ -155,15 +155,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
-          version: 3.13.3
+          version: v4.3.1
 
       - name: Install Helm unittest plugin
-        run: helm plugin install https://github.com/quintush/helm-unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.2.1 --verify=false
 
       - name: Run Helm unit tests
         run: make helm-test
@@ -173,12 +173,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Compose
         uses: ndeloof/install-compose-action@v0.0.1
         with:
-          version: v2.15.1
+          version: v5.6.0
           legacy: true
 
       - name: Print compose version
@@ -213,12 +213,12 @@ jobs:
     needs: [lint, test, test-e2e]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Build Linux binary
         run: make build-linux
@@ -226,7 +226,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-linux
           path: out/main-linux
@@ -238,12 +238,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Build Linux ARM binary
         run: make build-linux-arm
@@ -251,7 +251,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Linux ARM binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-linux-arm
           path: out/main-linux-arm
@@ -263,12 +263,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Build Mac binary
         run: make build-darwin
@@ -276,7 +276,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Mac binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-darwin
           path: out/main-darwin
@@ -288,12 +288,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Golang with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: "^1.24"
+          go-version: "^1.27"
 
       - name: Build Windows binary
         run: make build-windows
@@ -301,7 +301,7 @@ jobs:
           VERSION: ${{ github.ref }}
 
       - name: Upload Windows binary
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: logstash-exporter-windows
           path: out/main-windows
@@ -326,7 +326,7 @@ jobs:
             tar_name: logstash-exporter-controller.tar.gz
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build Docker image
         run: docker build -t ${{ matrix.image_name }}:latest --build-arg VERSION=${{ env.TAG_NAME }} --build-arg GIT_COMMIT=${GITHUB_SHA} -f ${{ matrix.dockerfile }} .
@@ -335,7 +335,7 @@ jobs:
         run: docker save ${{ matrix.image_name }}:latest | gzip > ${{ matrix.tar_name }}
 
       - name: Upload Docker image as an artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.tar_name }}
@@ -390,10 +390,10 @@ jobs:
             image_name: logstash-exporter-controller
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to Docker Hub
         if: startsWith(github.ref, 'refs/tags/')
@@ -404,7 +404,7 @@ jobs:
         run: echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
       - name: Build and push multi-arch Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ matrix.dockerfile }}
@@ -428,10 +428,10 @@ jobs:
       - build-linux-docker-image
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download Exporter Docker image
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: logstash-exporter-docker-image
           path: .helm/files
@@ -440,16 +440,16 @@ jobs:
         run: docker load -i .helm/files/logstash-exporter.tar.gz
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
-          version: 3.13.3
+          version: v4.3.1
 
       - name: Include current chart versions
         working-directory: .helm/logstash-integration-test-chart
         run: helm dependency update
 
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.12.0
+        uses: helm/kind-action@v1.15.1
         with:
           cluster_name: kind-chart-testing
 
@@ -492,7 +492,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Output tag information
@@ -536,7 +536,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download binary
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: logstash-exporter-${{ matrix.binary }}
       - name: Generate sha256 checksum

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/prometheus/common/expfmt"
+	"github.com/prometheus/common/model"
 )
 
 // TestConfig creates a temporary config file with the given content
@@ -87,21 +88,21 @@ func (cb *ConfigBuilder) Build() string {
 	sb.WriteString("logstash:\n")
 	sb.WriteString("  instances:\n")
 	for _, instance := range cb.instances {
-		sb.WriteString(fmt.Sprintf("    - url: %s\n", instance))
+		fmt.Fprintf(&sb, "    - url: %s\n", instance)
 	}
-	sb.WriteString(fmt.Sprintf("  httpTimeout: %s\n", cb.httpTimeout))
+	fmt.Fprintf(&sb, "  httpTimeout: %s\n", cb.httpTimeout)
 	sb.WriteString("\n")
 
 	sb.WriteString("server:\n")
 	sb.WriteString("  host: 127.0.0.1\n")
-	sb.WriteString(fmt.Sprintf("  port: %d\n", cb.serverPort))
-	sb.WriteString(fmt.Sprintf("  read_timeout_seconds: %d\n", cb.readTimeout))
-	sb.WriteString(fmt.Sprintf("  write_timeout_seconds: %d\n", cb.writeTimeout))
-	sb.WriteString(fmt.Sprintf("  max_connections: %d\n", cb.maxConnections))
+	fmt.Fprintf(&sb, "  port: %d\n", cb.serverPort)
+	fmt.Fprintf(&sb, "  read_timeout_seconds: %d\n", cb.readTimeout)
+	fmt.Fprintf(&sb, "  write_timeout_seconds: %d\n", cb.writeTimeout)
+	fmt.Fprintf(&sb, "  max_connections: %d\n", cb.maxConnections)
 	sb.WriteString("\n")
 
 	sb.WriteString("logging:\n")
-	sb.WriteString(fmt.Sprintf("  level: %s\n", cb.logLevel))
+	fmt.Fprintf(&sb, "  level: %s\n", cb.logLevel)
 	sb.WriteString("  format: json\n")
 
 	return sb.String()
@@ -214,9 +215,11 @@ func (e *ExporterInstance) Stop() error {
 
 	if e.cmd != nil && e.cmd.Process != nil {
 		// Give it time to shut down gracefully
-		done := make(chan error, 1)
+		done := make(chan struct{})
 		go func() {
-			done <- e.cmd.Wait()
+			// Wait's error is ignored: the process is expected to exit due to cancellation
+			_ = e.cmd.Wait()
+			close(done)
 		}()
 
 		select {
@@ -330,7 +333,7 @@ func FetchMetrics(t *testing.T, url string) string {
 func ParseMetrics(t *testing.T, metricsText string) map[string]float64 {
 	t.Helper()
 
-	parser := expfmt.TextParser{}
+	parser := expfmt.NewTextParser(model.UTF8Validation)
 	metricFamilies, err := parser.TextToMetricFamilies(strings.NewReader(metricsText))
 	if err != nil {
 		t.Fatalf("failed to parse metrics: %v", err)
