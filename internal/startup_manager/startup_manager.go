@@ -88,6 +88,8 @@ func NewStartupManagerWithController(configPath string, flagsCfg *flags.FlagsCon
 
 // Initialize loads the configuration, sets up logging, and starts the server.
 // If hot reload is enabled, it also starts watching the configuration file.
+// It blocks until the server fails, or until ctx is cancelled, in which case
+// it shuts the application down gracefully and returns nil on success.
 func (sm *StartupManager) Initialize(ctx context.Context) error {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
@@ -137,11 +139,18 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 	slog.Info("application initialized")
 	slog.Debug("starting server error handler in a separate goroutine")
 
-	applicationErrorChan := make(chan error)
+	applicationErrorChan := make(chan error, 1)
 	go sm.handleServerErrors(applicationErrorChan)
 
-	err = <-applicationErrorChan
-	return err
+	select {
+	case err = <-applicationErrorChan:
+		return err
+	case <-ctx.Done():
+		slog.Info("shutdown requested")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), ServerShutdownTimeout)
+		defer cancel()
+		return sm.shutdownComponents(shutdownCtx)
+	}
 }
 
 // Shutdown cleanly stops all components of the application.
@@ -155,6 +164,12 @@ func (sm *StartupManager) Shutdown(ctx context.Context) error {
 		return errors.New("startup manager not initialized")
 	}
 
+	return sm.shutdownComponents(ctx)
+}
+
+// shutdownComponents stops the server, the Kubernetes controller and the
+// Prometheus collector. The caller must hold sm.mutex.
+func (sm *StartupManager) shutdownComponents(ctx context.Context) error {
 	err := sm.shutdownServer(ctx)
 	if err != nil {
 		return err

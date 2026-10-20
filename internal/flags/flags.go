@@ -16,26 +16,26 @@ type FlagsConfig struct {
 	Help           bool
 }
 
-// ParseFlags parses the provided command-line arguments for testability
-func ParseFlags(args []string) (*FlagsConfig, error) {
+// newFlagSet defines the command-line flags and binds them to flagsConfig
+func newFlagSet(flagsConfig *FlagsConfig) *flag.FlagSet {
 	flags := flag.NewFlagSet("startup_manager", flag.ContinueOnError)
 
-	versionFlag := flags.Bool("version", false, "prints the version and exits")
-	helpFlag := flags.Bool("help", false, "prints the help message and exits")
-	hotReloadFlag := flags.Bool("watch", false, "enable configuration hot reload")
-	configLocationFlag := flags.String("config", config.ExporterConfigLocation, "location of the exporter config file")
+	flags.BoolVar(&flagsConfig.Version, "version", false, "prints the version and exits")
+	flags.BoolVar(&flagsConfig.Help, "help", false, "prints the help message and exits")
+	flags.BoolVar(&flagsConfig.HotReload, "watch", false, "enable configuration hot reload")
+	flags.StringVar(&flagsConfig.ConfigLocation, "config", config.ExporterConfigLocation, "location of the exporter config file")
 
-	if err := flags.Parse(args); err != nil {
+	return flags
+}
+
+// ParseFlags parses the provided command-line arguments for testability
+func ParseFlags(args []string) (*FlagsConfig, error) {
+	flagsConfig := &FlagsConfig{}
+	if err := newFlagSet(flagsConfig).Parse(args); err != nil {
 		return nil, err
 	}
 
-	// Create a struct with the parsed flags
-	return &FlagsConfig{
-		ConfigLocation: *configLocationFlag,
-		HotReload:      *hotReloadFlag,
-		Version:        *versionFlag,
-		Help:           *helpFlag,
-	}, nil
+	return flagsConfig, nil
 }
 
 // HandleFlags handles the parsed flags and performs actions based on them
@@ -58,7 +58,9 @@ func printHelp() {
 	fmt.Printf("Usage of %s:\n", os.Args[0])
 	fmt.Println()
 	fmt.Println("Flags:")
-	flag.PrintDefaults()
+	flags := newFlagSet(&FlagsConfig{})
+	flags.SetOutput(os.Stdout)
+	flags.PrintDefaults()
 }
 
 // printVersion prints the application version
