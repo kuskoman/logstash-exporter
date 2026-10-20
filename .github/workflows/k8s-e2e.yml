@@ -1,0 +1,65 @@
+name: Kubernetes e2e
+
+# End-to-end test of the Kubernetes controller in a kind cluster with several
+# Logstash mocks and a real Logstash, see test/k8s/README.md. It takes a long
+# time, so it does not run for pull requests. Run it manually before releases.
+
+on:
+  schedule:
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  controller:
+    name: Test the Kubernetes controller
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Golang with cache
+        uses: magnetikonline/action-golang-cache@v5
+        with:
+          go-version: "^1.27"
+
+      - name: Build controller image
+        run: docker build -f Dockerfile.controller -t logstash-exporter-controller:e2e .
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.15.1
+        with:
+          cluster_name: kind-e2e
+
+      - name: Load controller image into the cluster
+        run: kind load docker-image logstash-exporter-controller:e2e --name kind-e2e
+
+      - name: Install Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: v4.3.1
+
+      - name: Install the controller
+        run: |
+          helm install --wait --timeout 5m controller ./chart \
+            --set logstash.kubernetes.enabled=true \
+            --set 'logstash.kubernetes.namespaces={e2e-a,e2e-b}' \
+            --set logstash.kubernetes.resources.services.enabled=true \
+            --set logstash.logging.level=debug \
+            --set serviceAccount.enabled=true \
+            --set serviceAccount.create=true \
+            --set rbac.create=true \
+            --set image.repository=logstash-exporter \
+            --set image.controllerRepository=logstash-exporter-controller \
+            --set image.tag=e2e
+
+      - name: Run Kubernetes e2e tests
+        run: go test -tags k8se2e -v -timeout 30m ./test/k8s
+
+      - name: Print cluster state
+        if: failure()
+        run: kubectl get pods,deployments,services -A -o wide
+
+      - name: Print controller logs
+        if: failure()
+        run: kubectl logs -l app=logstash-exporter --all-containers --tail=500

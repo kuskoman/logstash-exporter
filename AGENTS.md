@@ -32,6 +32,8 @@ Both share the same HTTP server (`/metrics`, `/healthcheck`, `/version`) and sta
 - Pushing a tag runs the release jobs in `.github/workflows/go-application.yml`: binaries, Docker
   images (Docker Hub and ghcr.io), and a GitHub release whose notes come from
   `./scripts/create_release_notes.sh`.
+- Before releasing from `master`, run the Kubernetes e2e workflow (`.github/workflows/k8s-e2e.yml`)
+  manually. It also runs every night, but not for pull requests.
 - Both scripts only consider tags of the same major version (`v1.*` on `v1`, `v2.*` on `master`),
   because `master` still contains the old v1 tags.
 - Scripts in `scripts/` must work with the bash 3.2 and BSD tools shipped with macOS
@@ -63,6 +65,7 @@ Both share the same HTTP server (`/metrics`, `/healthcheck`, `/version`) and sta
 | ---- | ------- |
 | Unit tests | `make test` (uses `-race`, which needs cgo) or `go test ./...` without e2e |
 | E2E tests | `make e2e` (builds `test/e2e/bin/logstash-exporter-e2e` first) |
+| Kubernetes e2e tests | `go test -tags k8se2e ./test/k8s` against a cluster with the controller installed, see `test/k8s/README.md` (CI only) |
 | E2E with race detector, as in CI | `GOFLAGS=-race make e2e-prepare && go test -race -shuffle=on ./test/e2e` |
 | Lint | `golangci-lint run ./...` (v2, CI uses `latest`) |
 | Helm unit tests | `make helm-test` (plugin: `helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false`) |
@@ -140,13 +143,14 @@ are what remains before v2 can be recommended over v1.
 
 ### Blockers for v2.0.0
 
-- [ ] **Kubernetes controller is production-ready.** It is part of v2.0.0, so it needs:
+- [x] **Kubernetes controller is production-ready.** It is part of v2.0.0, so it needs:
   - [x] Unit tests for `internal/k8s_controller` (currently 0% coverage), e.g. with
         `k8s.io/client-go/kubernetes/fake`: pod and service add, update and delete, annotation
         parsing, `$(pod_ip)` substitution, namespace filtering, non-running pods.
   - [x] Investigate and fix #455 (annotated Logstash ignored).
-  - [ ] Keep the kind CI check (`scripts/verify_k8s_controller.sh`) green, and extend it to cover
-        pod removal and service discovery.
+  - [x] Keep the kind CI check (`scripts/verify_k8s_controller.sh`) green, and extend it to cover
+        pod removal and service discovery. Covered by the Kubernetes e2e workflow below; the PR
+        check stays a quick smoke test.
   - [x] Decide what happens to the static `logstash.instances` defaults in controller mode, where
         the default `http://localhost:9600` instance is scraped as well.
 - [x] **Build info is empty (#502).** `logstash_exporter_build_info` reads
@@ -156,14 +160,16 @@ are what remains before v2 can be recommended over v1.
 - [x] **Chart and image versions are out of sync (#493).** The chart is published on every push
       to `master` (`publish-helm-chart.yml`), so chart 2.0.0 was released while no `v2.0.0` image
       exists. Publish the chart from release tags only, with `appVersion` matching the tag.
-- [ ] **End-to-end test of the controller in Kubernetes.** A separate workflow that deploys the
+- [x] **End-to-end test of the controller in Kubernetes.** A separate workflow that deploys the
       controller into a kind cluster with multiple pods exposing Logstash or a Logstash mock, and
       checks discovery, scraping and removal in realistic scenarios (pods starting, restarting and
       being deleted, several namespaces, services). It takes a long time, so it must not run for
       pull requests: run it on a schedule, on manual dispatch and before releases.
 - [ ] **Freeze the public interface.** Breaking changes are still allowed before v2.0.0, so this is
       the last chance to rename metrics, labels, config keys, chart values and chart resource names.
-      Afterwards they are frozen until v3.
+      Afterwards they are frozen until v3. Do the review just before the release. Known so far:
+      unnamed instances get an `instance_name` label derived from the whole URL, including the
+      scheme (`http_localhost_9600`).
 - [ ] **Release v2.0.0 (#519)**, update the README (remove "V2 is in beta") and the migration guide.
 - [x] **Clarify the Grafana dashboard in the README.** The "Grafana Dashboard" section links a
       community dashboard built for v1 metrics. State that it is community-maintained and that v2
@@ -200,9 +206,11 @@ are what remains before v2 can be recommended over v1.
       (`batch.byte_size`, `batch.event_count`), the pipeline settings (`pipeline.workers`,
       `batch_size`, `batch_delay`) and `worker_millis_per_event` of output plugins. They are in
       `fixtures/node_stats.json` but not parsed or exported.
-- [ ] Compatibility matrix of metrics across Logstash versions (#88).
+- [ ] Compatibility matrix of metrics across Logstash versions (#88). Decide later; with a single
+      supported Logstash version it may no longer be needed.
 - Not planned: support for Logstash 7, 8 and 9 at the same time. The design is recorded in
   [docs/design/multiple-logstash-versions.md](./docs/design/multiple-logstash-versions.md).
 - [x] Clean up untagged images in the GitHub package registry (#302).
 - [ ] `/healthcheck` only checks that Logstash answers with HTTP 200; consider also checking that
-      the response is valid.
+      the response is valid. Needs more thought: it changes what users relying on `/healthcheck`
+      see.
