@@ -1,0 +1,72 @@
+{{- if .Values.logstash.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash
+data:
+  logstash.yml: |
+    # Serve the API on the pod IP, so the exporter can reach it
+    api.http.host: 0.0.0.0
+  pipeline.conf: |
+    {{- .Values.logstash.pipeline | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  labels:
+    app: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+      annotations:
+        # Lets the exporter in Kubernetes controller mode discover this pod
+        logstash-exporter.io/url: "http://$(pod_ip):9600"
+    spec:
+      containers:
+        - name: logstash
+          image: {{ .Values.logstash.image | quote }}
+          env:
+            - name: LS_JAVA_OPTS
+              value: {{ .Values.logstash.javaOpts | quote }}
+          ports:
+            - name: api
+              containerPort: 9600
+          readinessProbe:
+            httpGet:
+              path: /
+              port: api
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: config
+              mountPath: /usr/share/logstash/pipeline/pipeline.conf
+              subPath: pipeline.conf
+      volumes:
+        - name: config
+          configMap:
+            name: logstash
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  labels:
+    app: logstash
+spec:
+  selector:
+    app: logstash
+  ports:
+    - name: api
+      port: 9600
+      targetPort: api
+{{- end }}

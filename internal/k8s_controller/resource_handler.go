@@ -5,17 +5,26 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/fields"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/kuskoman/logstash-exporter/pkg/collector_manager"
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
+
+// InstanceManager adds and removes the Logstash instances that are scraped.
+// It is implemented by collector_manager.CollectorManager.
+type InstanceManager interface {
+	AddInstance(id string, instance *config.LogstashInstance)
+	RemoveInstance(id string)
+}
 
 // ResourceHandler defines the interface for handling different Kubernetes resource types
 type ResourceHandler interface {
@@ -30,7 +39,7 @@ type ResourceHandler interface {
 // BaseResourceHandler contains common functionality for all resource handlers
 type BaseResourceHandler struct {
 	client         kubernetes.Interface
-	collectorMgr   *collector_manager.CollectorManager
+	collectorMgr   InstanceManager
 	config         config.KubernetesConfig
 	resourceConfig config.ResourceConfig
 	mu             sync.RWMutex
@@ -42,7 +51,7 @@ type BaseResourceHandler struct {
 // newBaseResourceHandler creates a new base resource handler
 func newBaseResourceHandler(
 	client kubernetes.Interface,
-	collectorMgr *collector_manager.CollectorManager,
+	collectorMgr InstanceManager,
 	kubeConfig config.KubernetesConfig,
 	resourceConfig config.ResourceConfig,
 ) *BaseResourceHandler {
@@ -99,7 +108,7 @@ type PodResourceHandler struct {
 // NewPodResourceHandler creates a new Pod resource handler
 func NewPodResourceHandler(
 	client kubernetes.Interface,
-	collectorMgr *collector_manager.CollectorManager,
+	collectorMgr InstanceManager,
 	kubeConfig config.KubernetesConfig,
 ) ResourceHandler {
 	return &PodResourceHandler{
@@ -133,14 +142,14 @@ func (h *PodResourceHandler) Start(ctx context.Context, namespaces []string) err
 
 	// Create an informer for each namespace
 	for _, namespace := range namespaces {
-		fieldSelector := fields.Everything()
-
-		podListWatcher := cache.NewListWatchFromClient(
-			h.client.CoreV1().RESTClient(),
-			"pods",
-			namespace,
-			fieldSelector,
-		)
+		podListWatcher := &cache.ListWatch{
+			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				return h.client.CoreV1().Pods(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				return h.client.CoreV1().Pods(namespace).Watch(ctx, options)
+			},
+		}
 
 		informer := cache.NewSharedIndexInformer(
 			podListWatcher,
@@ -195,12 +204,21 @@ func (h *PodResourceHandler) onPodUpdate(oldObj, newObj interface{}) {
 		return
 	}
 
-	// Check if annotations have changed
-	if fmt.Sprintf("%v", oldPod.Annotations) == fmt.Sprintf("%v", newPod.Annotations) {
-		return
-	}
+	// Pods are created before they run and get an IP, and can stop running
+	// or lose their annotation later, so compare what each version means for
+	// scraping instead of only the annotations
+	_, oldInstance := h.podInstance(oldPod)
+	resourceName, newInstance := h.podInstance(newPod)
 
-	h.processPod(newPod)
+	switch {
+	case newInstance == nil && oldInstance != nil:
+		h.removePod(newPod)
+	case newInstance != nil && !reflect.DeepEqual(oldInstance, newInstance):
+		slog.Info("discovered logstash instance from pod annotation",
+			"instance", resourceName,
+			"url", newInstance.Host)
+		h.collectorMgr.AddInstance(resourceName, newInstance)
+	}
 }
 
 // onPodDelete is called when a pod is deleted
@@ -224,17 +242,33 @@ func (h *PodResourceHandler) onPodDelete(obj interface{}) {
 	h.removePod(pod)
 }
 
-// processPod processes a pod to see if it has the required annotations
+// processPod adds a pod to monitoring if it should be scraped
 func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
-	if pod.Status.Phase != corev1.PodRunning {
+	resourceName, instance := h.podInstance(pod)
+	if instance == nil {
 		return
+	}
+
+	slog.Info("discovered logstash instance from pod annotation",
+		"instance", resourceName,
+		"url", instance.Host)
+
+	// Add the instance to the collector manager
+	h.collectorMgr.AddInstance(resourceName, instance)
+}
+
+// podInstance returns the Logstash instance to scrape for a pod, or nil if
+// the pod is not running or not annotated
+func (h *PodResourceHandler) podInstance(pod *corev1.Pod) (string, *config.LogstashInstance) {
+	if pod.Status.Phase != corev1.PodRunning {
+		return "", nil
 	}
 
 	instanceName := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	resourceName, instance := h.extractLogstashInfo(pod.Annotations, instanceName)
 
 	if instance == nil {
-		return
+		return "", nil
 	}
 
 	// Replace $(pod_ip) template variable with the actual pod IP
@@ -250,16 +284,11 @@ func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
 				"instance", instanceName,
 				"url", replacedURL,
 				"error", err)
-			return
+			return "", nil
 		}
 	}
 
-	slog.Info("discovered logstash instance from pod annotation",
-		"instance", instanceName,
-		"url", instance.Host)
-
-	// Add the instance to the collector manager
-	h.collectorMgr.AddInstance(resourceName, instance)
+	return resourceName, instance
 }
 
 // removePod removes a pod from monitoring
@@ -279,7 +308,7 @@ type ServiceResourceHandler struct {
 // NewServiceResourceHandler creates a new Service resource handler
 func NewServiceResourceHandler(
 	client kubernetes.Interface,
-	collectorMgr *collector_manager.CollectorManager,
+	collectorMgr InstanceManager,
 	kubeConfig config.KubernetesConfig,
 ) ResourceHandler {
 	return &ServiceResourceHandler{
@@ -313,14 +342,14 @@ func (h *ServiceResourceHandler) Start(ctx context.Context, namespaces []string)
 
 	// Create an informer for each namespace
 	for _, namespace := range namespaces {
-		fieldSelector := fields.Everything()
-
-		serviceListWatcher := cache.NewListWatchFromClient(
-			h.client.CoreV1().RESTClient(),
-			"services",
-			namespace,
-			fieldSelector,
-		)
+		serviceListWatcher := &cache.ListWatch{
+			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				return h.client.CoreV1().Services(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				return h.client.CoreV1().Services(namespace).Watch(ctx, options)
+			},
+		}
 
 		informer := cache.NewSharedIndexInformer(
 			serviceListWatcher,
@@ -375,12 +404,18 @@ func (h *ServiceResourceHandler) onServiceUpdate(oldObj, newObj interface{}) {
 		return
 	}
 
-	// Check if annotations have changed
-	if fmt.Sprintf("%v", oldService.Annotations) == fmt.Sprintf("%v", newService.Annotations) {
-		return
-	}
+	_, oldInstance := h.serviceInstance(oldService)
+	resourceName, newInstance := h.serviceInstance(newService)
 
-	h.processService(newService)
+	switch {
+	case newInstance == nil && oldInstance != nil:
+		h.removeService(newService)
+	case newInstance != nil && !reflect.DeepEqual(oldInstance, newInstance):
+		slog.Info("discovered logstash instance from service annotation",
+			"instance", resourceName,
+			"url", newInstance.Host)
+		h.collectorMgr.AddInstance(resourceName, newInstance)
+	}
 }
 
 // onServiceDelete is called when a service is deleted
@@ -404,17 +439,22 @@ func (h *ServiceResourceHandler) onServiceDelete(obj interface{}) {
 	h.removeService(service)
 }
 
-// processService processes a service to see if it has the required annotations
-func (h *ServiceResourceHandler) processService(service *corev1.Service) {
+// serviceInstance returns the Logstash instance to scrape for a service, or
+// nil if the service is not annotated
+func (h *ServiceResourceHandler) serviceInstance(service *corev1.Service) (string, *config.LogstashInstance) {
 	instanceName := fmt.Sprintf("%s/%s", service.Namespace, service.Name)
-	resourceName, instance := h.extractLogstashInfo(service.Annotations, instanceName)
+	return h.extractLogstashInfo(service.Annotations, instanceName)
+}
 
+// processService adds a service to monitoring if it should be scraped
+func (h *ServiceResourceHandler) processService(service *corev1.Service) {
+	resourceName, instance := h.serviceInstance(service)
 	if instance == nil {
 		return
 	}
 
 	slog.Info("discovered logstash instance from service annotation",
-		"instance", instanceName,
+		"instance", resourceName,
 		"url", instance.Host)
 
 	// Add the instance to the collector manager
