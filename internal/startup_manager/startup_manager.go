@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/kuskoman/logstash-exporter/internal/file_watcher"
@@ -42,6 +43,7 @@ type StartupManager struct {
 	kubernetesController *k8s_controller.Controller
 	serverErrorChan      chan error
 	withController       bool
+	shuttingDown         atomic.Bool
 }
 
 // NewStartupManager creates a new StartupManager with the given configuration.
@@ -170,6 +172,8 @@ func (sm *StartupManager) Shutdown(ctx context.Context) error {
 // shutdownComponents stops the server, the Kubernetes controller and the
 // Prometheus collector. The caller must hold sm.mutex.
 func (sm *StartupManager) shutdownComponents(ctx context.Context) error {
+	sm.shuttingDown.Store(true)
+
 	err := sm.shutdownServer(ctx)
 	if err != nil {
 		return err

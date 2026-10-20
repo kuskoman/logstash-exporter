@@ -805,6 +805,40 @@ func TestStartupManager_handleServerErrors(t *testing.T) {
 		}
 	})
 
+	t.Run("should_not_propagate_server_closed_error_during_shutdown", func(t *testing.T) {
+		// Do not run in parallel
+
+		// Setup
+		mockCfgManager := newMockConfigManager(nil, false, nil)
+
+		sm := newTestableStartupManager(
+			mockCfgManager,
+			false, // watchEnabled - hot reload disabled
+			true,  // initialized
+			nil,   // No server
+			nil,   // No collector
+			nil,   // No watcher
+		)
+		sm.serverErrorChan = make(chan error, 1)
+		sm.shuttingDown.Store(true)
+
+		applicationErrorChan := make(chan error, 1)
+
+		// Start the error handler
+		go sm.handleServerErrors(applicationErrorChan)
+
+		// The server reports ErrServerClosed because it was shut down on purpose
+		sm.serverErrorChan <- http.ErrServerClosed
+
+		// Verify - negative test, should not receive error
+		select {
+		case err := <-applicationErrorChan:
+			t.Errorf("expected no error to be propagated, got %v", err)
+		case <-time.After(100 * time.Millisecond): // Short timeout for negative test
+			// Success - no error propagated
+		}
+	})
+
 	t.Run("should_not_propagate_server_closed_error_when_hot_reload_enabled", func(t *testing.T) {
 		// Do not run in parallel
 

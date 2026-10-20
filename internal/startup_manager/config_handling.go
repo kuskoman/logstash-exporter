@@ -60,6 +60,10 @@ func (sm *StartupManager) handleServerErrors(applicationErrorChan chan error) {
 		slog.Debug("server error occurred", "error", err)
 
 		if errors.Is(err, ErrServerClosed) {
+			if sm.shuttingDown.Load() {
+				slog.Debug("server closed for shutdown")
+				continue
+			}
 			if sm.watchEnabled {
 				slog.Info("server closed for hot reload")
 				continue

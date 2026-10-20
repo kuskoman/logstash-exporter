@@ -190,6 +190,9 @@ func TestGracefulShutdown(t *testing.T) {
 			if !strings.Contains(exporter.Logs(), "shutting down") {
 				t.Errorf("expected the exporter to log its shutdown")
 			}
+			if strings.Contains(exporter.Logs(), `"level":"ERROR"`) {
+				t.Errorf("expected a graceful shutdown to log no errors")
+			}
 			if _, err := exporter.Get("/version"); err == nil {
 				t.Error("expected the server to stop after shutdown")
 			}
