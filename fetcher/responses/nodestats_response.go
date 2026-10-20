@@ -185,7 +185,7 @@ type SinglePipelineResponse struct {
 			} `json:"bulk_requests"`
 			Flow struct {
 				WorkerUtilization struct {
-					Current  float64       `json:"current"`
+					Current  InfinityFloat `json:"current"`
 					Lifetime InfinityFloat `json:"lifetime"`
 				} `json:"worker_utilization"`
 			} `json:"flow"`
