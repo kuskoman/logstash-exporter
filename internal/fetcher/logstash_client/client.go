@@ -3,8 +3,6 @@ package logstash_client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"regexp"
@@ -44,7 +42,7 @@ func (client *DefaultClient) Name() string {
 }
 
 // convertHostnameToName converts a hostname to a name, that contains only alphanumeric characters and underscores
-// Example: http://localhost:9600 -> localhost_9600
+// Example: http://localhost:9600 -> http_localhost_9600
 func (client *DefaultClient) convertHostnameToName() string {
 	re := regexp.MustCompile(`[^a-zA-Z0-9]+`)
 	return strings.Trim(re.ReplaceAllString(client.endpoint, "_"), "_")
@@ -125,34 +123,6 @@ func NewClientWithBasicAuth(baseUrl string, timeout time.Duration, username, pas
 	client.httpClient = customtls.ConfigureBasicAuth(client.httpClient, username, password)
 
 	return client, nil
-}
-
-// Get performs an HTTP GET request to the given path and returns the response body
-func (c *DefaultClient) Get(path string) ([]byte, error) {
-	url := c.endpoint + path
-	slog.Debug("fetching data from logstash", "url", url)
-
-	resp, err := c.httpClient.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			slog.Error("failed to close response body", "error", err)
-		}
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
 }
 
 // NewClientWithHTTPClient returns a new instance of the DefaultClient configured with a provided HTTP client

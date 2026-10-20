@@ -39,6 +39,35 @@ func TestNewClient(t *testing.T) {
 		}
 	})
 
+	t.Run("should derive the name from the endpoint when no name is set", func(t *testing.T) {
+		t.Parallel()
+
+		tests := map[string]string{
+			"http://localhost:9600":             "http_localhost_9600",
+			"https://logstash.example.com:9600": "https_logstash_example_com_9600",
+			"http://10.0.0.5:9600/":             "http_10_0_0_5_9600",
+		}
+		for endpoint, expected := range tests {
+			if name := NewClient(endpoint, "").Name(); name != expected {
+				t.Errorf("expected name %q for %s, got %q", expected, endpoint, name)
+			}
+		}
+	})
+
+	t.Run("should use the given http client", func(t *testing.T) {
+		t.Parallel()
+
+		httpClient := &http.Client{}
+		client := NewClientWithHTTPClient("http://logstash:9600", httpClient, "custom")
+
+		if client.(*DefaultClient).httpClient != httpClient {
+			t.Error("expected the given http client to be used")
+		}
+		if client.GetEndpoint() != "http://logstash:9600" || client.Name() != "custom" {
+			t.Errorf("unexpected endpoint %q or name %q", client.GetEndpoint(), client.Name())
+		}
+	})
+
 	t.Run("should set the client name correctly", func(t *testing.T) {
 		t.Parallel()
 

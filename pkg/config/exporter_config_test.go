@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -352,6 +353,22 @@ func TestGetConfig(t *testing.T) {
 		}
 		if config.Server.Port != 9300 {
 			t.Errorf("expected port 9300, got %d", config.Server.Port)
+		}
+	})
+
+	t.Run("returns error for a config that fails validation", func(t *testing.T) {
+		location := filepath.Join(t.TempDir(), "config.yml")
+		content := "logstash:\n  instances:\n    - url: http://logstash:9600\n      basic_auth:\n        username: monitoring\n"
+		if err := os.WriteFile(location, []byte(content), 0644); err != nil {
+			t.Fatalf("failed to write config: %v", err)
+		}
+
+		config, err := GetConfig(location)
+		if err == nil || !strings.Contains(err.Error(), "invalid Logstash instance 0") {
+			t.Errorf("expected a validation error for instance 0, got %v", err)
+		}
+		if config != nil {
+			t.Error("expected config to be nil")
 		}
 	})
 

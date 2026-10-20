@@ -251,6 +251,10 @@ func GetConfig(location string) (*Config, error) {
 	}
 
 	mergedConfig := mergeWithDefault(config)
+	if err := mergedConfig.Validate(); err != nil {
+		return nil, err
+	}
+
 	return mergedConfig, nil
 }
 
@@ -382,7 +386,8 @@ func (c *ClientAuthConfig) GetPassword() (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to read password file: %w", err)
 		}
-		return string(content), nil
+		// Files usually end with a newline, which is not part of the password
+		return strings.TrimRight(string(content), "\r\n"), nil
 	}
 
 	return "", fmt.Errorf("neither password nor password_file specified")
