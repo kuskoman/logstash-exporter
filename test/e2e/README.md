@@ -99,4 +99,4 @@ func TestExample(t *testing.T) {
 }
 ```
 
-See `/TESTING-STANDARDS.md` for project conventions.
+See [docs/TESTING-STANDARDS.md](../../docs/TESTING-STANDARDS.md) for project conventions.

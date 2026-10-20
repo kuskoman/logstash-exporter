@@ -196,4 +196,4 @@ curl http://localhost:9198/metrics
 
 ## Reference
 
-For the complete list of configuration parameters, see the [Helm Chart README](./chart/README.md), which contains the auto-generated documentation for all available values.
+For the complete list of configuration parameters, see the [Helm Chart README](../chart/README.md), which contains the auto-generated documentation for all available values.

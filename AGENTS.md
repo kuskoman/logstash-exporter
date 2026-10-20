@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Guidance for AI coding agents and human contributors working on logstash-exporter.
-It complements [CONTRIBUTING.md](./CONTRIBUTING.md) and [TESTING-STANDARDS.md](./TESTING-STANDARDS.md).
+It complements [CONTRIBUTING.md](./CONTRIBUTING.md) and [docs/TESTING-STANDARDS.md](./docs/TESTING-STANDARDS.md).
 
 > The roadmap below reflects the state of `master` in October 2026. Update it as items are done.
 
@@ -52,6 +52,7 @@ Both share the same HTTP server (`/metrics`, `/healthcheck`, `/version`) and sta
 | `chart/` | Helm chart, with unit tests in `chart/tests` |
 | `.helm/logstash-integration-test-chart` | Chart used by the kind integration test in CI |
 | `test/e2e` | End-to-end tests that run the real binary against a mock Logstash |
+| `docs/` | Deployment, TLS and testing guides |
 | `fixtures/` | Logstash API responses and TLS certificates used by tests |
 | `scripts/` | Release, README and verification scripts |
 | `docs/design/` | Design notes for changes that are not implemented yet |
@@ -170,18 +171,11 @@ are what remains before v2 can be recommended over v1.
 
 ### Should do before or shortly after v2.0.0
 
-- [ ] **Organize the loose files in the repository root.** The root has 22 tracked files next to
-      the source directories. Proposal:
-  - Keep at the root what GitHub and tools expect there: `README.md`, `LICENSE`,
-    `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `Makefile`, `go.mod`, `go.sum`,
-    `docker-compose.yml`, `codecov.yml`, `.air.toml`, `config.example.yml`.
-  - Move the guides to `docs/`: `HELM-DEPLOY.md`, `STANDALONE.md`, `TLS-CONFIGURATION.md`,
-    `TESTING-STANDARDS.md`.
-  - Decide whether `Dockerfile`, `Dockerfile.controller` and `Dockerfile.dev` move to a
-    directory such as `build/`. This touches the Makefile, `docker-compose.yml` and the CI
-    workflows.
-  - Update every reference: README links, `AGENTS.md`, `CONTRIBUTING.md`, the chart README,
-    the Makefile and the workflows.
+- [x] **Organize the loose files in the repository root.** The guides moved to `docs/`
+      (`HELM-DEPLOY.md`, `STANDALONE.md`, `TLS-CONFIGURATION.md`, `TESTING-STANDARDS.md`).
+      `README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`,
+      `config.example.yml`, the build and tool configuration and the Dockerfiles stay in the root,
+      where GitHub, Docker and the tools expect them.
 
 - [x] Verify that #447 (`Infinity` in node stats) is fixed on `master` and close it. All flow
       fields use `InfinityFloat` now.
@@ -191,7 +185,6 @@ are what remains before v2 can be recommended over v1.
       the deprecated `::set-output` in the prerelease step with `$GITHUB_OUTPUT`.
 - [x] Replace the deprecated Elastic Logstash Helm chart (last version 8.5.1) in
       `.helm/logstash-integration-test-chart` with a plain Deployment.
-- [ ] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
 - [x] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
 - [x] Replace the 8.15.2 fixtures in `fixtures/` with responses captured from Logstash 9.5.5.
 - [x] Format the files `gofmt -l` reports and add a format check to the lint job.
