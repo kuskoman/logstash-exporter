@@ -71,12 +71,25 @@ func WithHTTPS() ExporterOption {
 func StartExporter(t *testing.T, cb *ConfigBuilder, opts ...ExporterOption) *Exporter {
 	t.Helper()
 
+	configPath := filepath.Join(t.TempDir(), "config.yml")
+	return StartExporterWithConfigFile(t, configPath, func(port int) {
+		cb.WithServerPort(port)
+		if err := os.WriteFile(configPath, []byte(cb.Build()), 0644); err != nil {
+			t.Fatalf("failed to write config file: %v", err)
+		}
+	}, opts...)
+}
+
+// StartExporterWithConfigFile starts the exporter with the config file at
+// configPath. writeConfig is called with the chosen port before every start
+// attempt and must write a configuration that listens on it.
+func StartExporterWithConfigFile(t *testing.T, configPath string, writeConfig func(port int), opts ...ExporterOption) *Exporter {
+	t.Helper()
+
 	settings := &exporterSettings{scheme: "http"}
 	for _, opt := range opts {
 		opt(settings)
 	}
-
-	configPath := filepath.Join(t.TempDir(), "config.yml")
 
 	var lastErr error
 	for attempt := 1; attempt <= maxStartRetries; attempt++ {
@@ -84,11 +97,7 @@ func StartExporter(t *testing.T, cb *ConfigBuilder, opts ...ExporterOption) *Exp
 		if err != nil {
 			t.Fatalf("failed to get free port: %v", err)
 		}
-
-		cb.WithServerPort(port)
-		if err := os.WriteFile(configPath, []byte(cb.Build()), 0644); err != nil {
-			t.Fatalf("failed to write config file: %v", err)
-		}
+		writeConfig(port)
 
 		exporter := startProcess(t, configPath, port, settings)
 		err = exporter.waitUntilServing(startupTimeout)
