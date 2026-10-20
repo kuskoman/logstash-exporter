@@ -126,6 +126,8 @@ CI fails if `go mod tidy`, `make helm-readme` or `make update-readme-description
 ## Supported versions
 
 - **Logstash:** only the latest 9.x is officially supported and tested (see `docker-compose.yml`).
+  `fixtures/` holds the API responses of that single version, captured from the docker-compose
+  setup without edits. Replace them when the supported version changes instead of adding more.
 - **Go:** the version in `go.mod`.
 - **Kubernetes and Helm:** whatever the kind job in CI uses (Helm 4).
 
@@ -185,7 +187,7 @@ are what remains before v2 can be recommended over v1.
 - [ ] Replace the deprecated Elastic Logstash Helm chart (last version 8.5.1) in
       `.helm/logstash-integration-test-chart` with a plain Deployment.
 - [ ] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
-- [ ] Add a Logstash 9.x fixture captured from a real instance (`fixtures/` is from 8.15.2).
+- [x] Replace the 8.15.2 fixtures in `fixtures/` with responses captured from Logstash 9.5.5.
 - [x] Format the files `gofmt -l` reports and add a format check to the lint job.
 - [ ] Raise coverage in `pkg/config` (56%), `internal/file_utils` (61%),
       `pkg/collector_manager` (65%) and `internal/fetcher/logstash_client` (67%).
