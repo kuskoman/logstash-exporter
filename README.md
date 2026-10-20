@@ -327,6 +327,15 @@ This [script](./scripts/install_helm_readme_generator.sh) is used to install
 The tool is used to generate Helm chart [README.md](./chart/README.md) file.
 The script installs the tool under [helm-generator](./helm-generator) directory.
 
+### verify_k8s_controller.sh
+
+This [script](./scripts/verify_k8s_controller.sh) is used to verify that the exporter running in
+Kubernetes controller mode discovers an annotated Logstash pod and exports its metrics.
+Used by the Helm integration test in the [CI workflow](./.github/workflows/go-application.yml),
+but it works against any cluster in the current `kubectl` context.
+
+    ./scripts/verify_k8s_controller.sh <controller service name> [timeout seconds]
+
 ### verify_metrics.sh
 
 This [script](./scripts/verify_metrics.sh) is used to verify the metrics from the Go Exporter application.

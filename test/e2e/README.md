@@ -16,8 +16,16 @@ The e2e tests:
 
 - `single_instance_test.go` - Single Logstash instance scenarios
 - `multi_instance_test.go` - Multiple Logstash instances
-- `config_reload_test.go` - Configuration hot reload
+- `config_reload_test.go` - Configuration hot reload, including saves by rename and Kubernetes ConfigMap updates
 - `endpoints_test.go` - HTTP endpoints (`/metrics`, `/healthcheck`, `/version`, `/`)
+- `logstash_failures_test.go` - Unreachable, failing, slow and invalid Logstash instances
+- `security_test.go` - Basic auth and TLS for the exporter and for Logstash
+- `cli_test.go` - Command-line flags, invalid configuration and graceful shutdown
+- `server_options_test.go` - Server read and write timeouts
+- `metrics_output_test.go` - Snapshot and values of the exported metrics
+
+The snapshot of the metrics output is stored in `__snapshots__`. Update it with
+`UPDATE_SNAPS=true go test ./test/e2e -run TestMetricsOutput` after an intended change.
 
 Test utilities:
 
@@ -52,7 +60,8 @@ make e2e-prepare
 # Then run tests
 go test -v github.com/kuskoman/logstash-exporter/test/e2e -parallel 4
 
-# Run with race detection (requires cgo)
+# Run with race detection (requires cgo); CI does this
+GOFLAGS=-race make e2e-prepare
 go test -v -race github.com/kuskoman/logstash-exporter/test/e2e
 
 # Run specific test
