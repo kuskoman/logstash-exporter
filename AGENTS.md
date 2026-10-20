@@ -196,10 +196,15 @@ are what remains before v2 can be recommended over v1.
 
 - [x] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
       see the TODO in `internal/collectors/nodestats/pipeline_subcollector.go`.
-- [ ] Export the metrics that are new in Logstash 9: per-pipeline batch statistics
-      (`batch.byte_size`, `batch.event_count`), the pipeline settings (`pipeline.workers`,
-      `batch_size`, `batch_delay`) and `worker_millis_per_event` of output plugins. They are in
-      `fixtures/node_stats.json` but not parsed or exported.
+- [x] Export the per-pipeline settings that Logstash 9 reports in the node stats
+      (`logstash_stats_pipeline_workers`, `logstash_stats_pipeline_batch_size`,
+      `logstash_stats_pipeline_batch_delay`). The output plugins' `worker_millis_per_event` is
+      covered by the plugin flow metrics.
+- [ ] Export the per-pipeline batch statistics of Logstash 9 (`batch.byte_size`,
+      `batch.event_count`). In `fixtures/node_stats.json` their `current` value is the string
+      `"undefined"` and the averages are 0, which looks like batch metrics are not collected by
+      default. Find out how Logstash enables them and treat `"undefined"` as missing before
+      exporting them.
 - [ ] Compatibility matrix of metrics across Logstash versions (#88).
 - Not planned: support for Logstash 7, 8 and 9 at the same time. The design is recorded in
   [docs/design/multiple-logstash-versions.md](./docs/design/multiple-logstash-versions.md).

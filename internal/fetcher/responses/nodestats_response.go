@@ -110,6 +110,7 @@ type SinglePipelineResponse struct {
 	Monitoring PipelineLogstashMonitoringResponse `json:".monitoring-logstash"`
 	Events     EventsResponse                     `json:"events"`
 	Flow       FlowResponse                       `json:"flow"`
+	Settings   PipelineSettingsResponse           `json:"pipeline"`
 	Plugins    struct {
 		Inputs []struct {
 			ID     string `json:"id"`
@@ -274,6 +275,15 @@ type PluginFlowResponse struct {
 type FlowValues struct {
 	Current  *InfinityFloat `json:"current"`
 	Lifetime *InfinityFloat `json:"lifetime"`
+}
+
+// PipelineSettingsResponse contains the settings of a single pipeline. Logstash
+// reports them in the node stats since version 9, so they are nil for older
+// versions.
+type PipelineSettingsResponse struct {
+	Workers    *int `json:"workers"`
+	BatchSize  *int `json:"batch_size"`
+	BatchDelay *int `json:"batch_delay"`
 }
 
 // InfinityFloat is a float type that also accepts the string Infinity

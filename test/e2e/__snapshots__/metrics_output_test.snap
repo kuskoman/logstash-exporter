@@ -123,6 +123,12 @@ logstash_stats_jvm_threads_peak_count{hostname="LOGSTASH_URL",instance_name="INS
 # HELP logstash_stats_jvm_uptime_millis Uptime of the JVM in milliseconds.
 # TYPE logstash_stats_jvm_uptime_millis gauge
 logstash_stats_jvm_uptime_millis{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 32119
+# HELP logstash_stats_pipeline_batch_delay Time in milliseconds this pipeline waits for events to fill a batch.
+# TYPE logstash_stats_pipeline_batch_delay gauge
+logstash_stats_pipeline_batch_delay{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 50
+# HELP logstash_stats_pipeline_batch_size Number of events a worker of this pipeline retrieves from the input queue at once.
+# TYPE logstash_stats_pipeline_batch_size gauge
+logstash_stats_pipeline_batch_size{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 125
 # HELP logstash_stats_pipeline_dead_letter_queue_dropped_events Number of events dropped by the dead letter queue.
 # TYPE logstash_stats_pipeline_dead_letter_queue_dropped_events counter
 logstash_stats_pipeline_dead_letter_queue_dropped_events{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 0
@@ -296,6 +302,9 @@ logstash_stats_pipeline_reloads_successes{hostname="LOGSTASH_URL",instance_name=
 # HELP logstash_stats_pipeline_up Whether the pipeline is up or not.
 # TYPE logstash_stats_pipeline_up gauge
 logstash_stats_pipeline_up{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 1
+# HELP logstash_stats_pipeline_workers Number of worker threads that process the events of this pipeline.
+# TYPE logstash_stats_pipeline_workers gauge
+logstash_stats_pipeline_workers{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME",pipeline="main"} 8
 # HELP logstash_stats_process_cpu_load_average_15m Total 15m system load average.
 # TYPE logstash_stats_process_cpu_load_average_15m gauge
 logstash_stats_process_cpu_load_average_15m{hostname="LOGSTASH_URL",instance_name="INSTANCE_NAME"} 1

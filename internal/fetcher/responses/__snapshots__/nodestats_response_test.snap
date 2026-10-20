@@ -79,6 +79,11 @@ responses.NodeStatsResponse{
                 WorkerConcurrency: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:8, Lifetime:7.797},
                 WorkerUtilization: struct { Current responses.InfinityFloat "json:\"current\""; Lifetime responses.InfinityFloat "json:\"lifetime\"" }{Current:100, Lifetime:97.46},
             },
+            Settings: responses.PipelineSettingsResponse{
+                Workers:    &int(8),
+                BatchSize:  &int(125),
+                BatchDelay: &int(50),
+            },
             Plugins: struct { Inputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; QueuePushDurationInMillis int "json:\"queue_push_duration_in_millis\"" } "json:\"events\"" } "json:\"inputs\""; Codecs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Decode struct { Out int "json:\"out\""; WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"decode\""; Encode struct { WritesIn int "json:\"writes_in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"encode\"" } "json:\"codecs\""; Filters []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Flow responses.PluginFlowResponse "json:\"flow\"" } "json:\"filters\""; Outputs []struct { ID string "json:\"id\""; Name string "json:\"name\""; Events struct { Out int "json:\"out\""; In int "json:\"in\""; DurationInMillis int "json:\"duration_in_millis\"" } "json:\"events\""; Documents struct { Successes int "json:\"successes\""; NonRetryableFailures int "json:\"non_retryable_failures\"" } "json:\"documents\""; BulkRequests struct { WithErrors int "json:\"with_errors\""; Responses map[string]int "json:\"responses\"" } "json:\"bulk_requests\""; Flow responses.PluginFlowResponse "json:\"flow\"" } "json:\"outputs\"" }{
                 Inputs: {
                     {
