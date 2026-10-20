@@ -159,6 +159,102 @@ func TestFileWatcher(t *testing.T) {
 	})
 }
 
+func TestFileWatcherDebounce(t *testing.T) {
+	t.Run("should_read_final_content_when_file_is_truncated_before_write", func(t *testing.T) {
+		tempFile := file_utils.CreateTempFileInDir(t, "initial content", t.TempDir())
+
+		contents := make(chan string, 10)
+		fw, err := NewFileWatcher(tempFile, func() error {
+			data, err := os.ReadFile(tempFile)
+			if err != nil {
+				return err
+			}
+			contents <- string(data)
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("failed to create file watcher: %v", err)
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		readyCh, err := fw.Watch(ctx)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		<-readyCh
+
+		// Simulate a non-atomic save: the file is empty for a moment
+		// before the new content is written.
+		file, err := os.OpenFile(tempFile, os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			t.Fatalf("failed to truncate file: %v", err)
+		}
+		time.Sleep(fw.debounceTime / 5)
+		if _, err := file.WriteString("final content"); err != nil {
+			t.Fatalf("failed to write file: %v", err)
+		}
+		if err := file.Close(); err != nil {
+			t.Fatalf("failed to close file: %v", err)
+		}
+
+		select {
+		case content := <-contents:
+			if content != "final content" {
+				t.Errorf("expected listener to see %q, got %q", "final content", content)
+			}
+		case <-time.After(testTimeout):
+			t.Fatal("expected listener to be called, but it wasn't")
+		}
+
+		select {
+		case content := <-contents:
+			t.Errorf("expected listener to be called once, but it was called again with %q", content)
+		case <-time.After(3 * fw.debounceTime):
+		}
+	})
+
+	t.Run("should_call_listener_once_for_a_burst_of_writes", func(t *testing.T) {
+		tempFile := file_utils.CreateTempFileInDir(t, "initial content", t.TempDir())
+
+		calls := make(chan struct{}, 10)
+		fw, err := NewFileWatcher(tempFile, func() error {
+			calls <- struct{}{}
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("failed to create file watcher: %v", err)
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		readyCh, err := fw.Watch(ctx)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		<-readyCh
+
+		for i := 0; i < 5; i++ {
+			file_utils.AppendToFilex3(t, tempFile, "more content")
+			time.Sleep(fw.debounceTime / 5)
+		}
+
+		select {
+		case <-calls:
+		case <-time.After(testTimeout):
+			t.Fatal("expected listener to be called, but it wasn't")
+		}
+
+		select {
+		case <-calls:
+			t.Error("expected listener to be called once for the burst, but it was called again")
+		case <-time.After(3 * fw.debounceTime):
+		}
+	})
+}
+
 func mockListenerWithChannel(called chan struct{}) func() error {
 	return func() error {
 		called <- struct{}{}
