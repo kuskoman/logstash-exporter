@@ -121,7 +121,11 @@ func StartExporterWithConfigFile(t *testing.T, configPath string, writeConfig fu
 func startProcess(t *testing.T, configPath string, port int, settings *exporterSettings) *Exporter {
 	t.Helper()
 
-	args := append([]string{"-config", configPath}, settings.args...)
+	var args []string
+	if configPath != "" {
+		args = append(args, "-config", configPath)
+	}
+	args = append(args, settings.args...)
 	cmd := exec.Command(GetBinaryPath(t), args...)
 	cmd.Env = append(os.Environ(), settings.env...)
 
