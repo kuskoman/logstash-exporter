@@ -2,8 +2,11 @@ package startup_manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/kuskoman/logstash-exporter/pkg/config"
@@ -44,6 +47,26 @@ func (cc *ConfigManager) LoadAndCompareConfig(ctx context.Context) (bool, error)
 	}
 
 	return false, nil
+}
+
+// ErrEmptyConfigFile is returned when a reload finds an empty config file
+var ErrEmptyConfigFile = errors.New("config file is empty, keeping the current configuration")
+
+// ReloadAndCompareConfig works like LoadAndCompareConfig, but rejects an
+// empty config file. An empty file is a valid configuration that uses every
+// default, but during a reload it is almost always a file that is being
+// written or was cleared by mistake, and applying it would move the server to
+// the default port.
+func (cc *ConfigManager) ReloadAndCompareConfig(ctx context.Context) (bool, error) {
+	content, err := os.ReadFile(cc.configPath)
+	if err != nil {
+		return false, err
+	}
+	if strings.TrimSpace(string(content)) == "" {
+		return false, ErrEmptyConfigFile
+	}
+
+	return cc.LoadAndCompareConfig(ctx)
 }
 
 // GetCurrentConfig returns the current loaded configuration

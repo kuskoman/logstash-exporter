@@ -22,7 +22,7 @@ func (sm *StartupManager) handleConfigChange() error {
 
 // Reload reloads the configuration and restarts the server if the configuration has changed.
 func (sm *StartupManager) Reload(ctx context.Context) error {
-	changed, err := sm.configManager.LoadAndCompareConfig(ctx)
+	changed, err := sm.configManager.ReloadAndCompareConfig(ctx)
 	if err != nil {
 		return err
 	}
