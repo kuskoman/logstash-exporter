@@ -184,7 +184,7 @@ are what remains before v2 can be recommended over v1.
       the deprecated `::set-output` in the prerelease step with `$GITHUB_OUTPUT`.
 - [ ] Replace the deprecated Elastic Logstash Helm chart (last version 8.5.1) in
       `.helm/logstash-integration-test-chart` with a plain Deployment.
-- [ ] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
+- [x] Remove the `ndeloof/install-compose-action` legacy wrapper and use `docker compose`.
 - [ ] Add a Logstash 9.x fixture captured from a real instance (`fixtures/` is from 8.15.2).
 - [x] Format the files `gofmt -l` reports and add a format check to the lint job.
 - [ ] Raise coverage in `pkg/config` (56%), `internal/file_utils` (61%),
