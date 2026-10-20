@@ -30,7 +30,6 @@ type ConfigBuilder struct {
 	tlsKeyFile     string
 	readTimeout    int
 	writeTimeout   int
-	maxConnections int
 }
 
 // NewConfigBuilder creates a ConfigBuilder with test-friendly defaults
@@ -96,12 +95,6 @@ func (cb *ConfigBuilder) WithServerTimeouts(readTimeout, writeTimeout int) *Conf
 	return cb
 }
 
-// WithMaxConnections limits the number of simultaneous connections
-func (cb *ConfigBuilder) WithMaxConnections(maxConnections int) *ConfigBuilder {
-	cb.maxConnections = maxConnections
-	return cb
-}
-
 // Build generates the YAML configuration
 func (cb *ConfigBuilder) Build() string {
 	instances := make([]yaml.MapSlice, 0, len(cb.instances))
@@ -143,9 +136,6 @@ func (cb *ConfigBuilder) Build() string {
 	}
 	if cb.writeTimeout > 0 {
 		server = append(server, yaml.MapItem{Key: "write_timeout_seconds", Value: cb.writeTimeout})
-	}
-	if cb.maxConnections > 0 {
-		server = append(server, yaml.MapItem{Key: "max_connections", Value: cb.maxConnections})
 	}
 	if len(cb.basicAuthUsers) > 0 {
 		server = append(server, yaml.MapItem{Key: "basic_auth", Value: yaml.MapSlice{
