@@ -48,6 +48,7 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "logstash-exporter.serviceAccountName" . }}
       {{- end }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
 
       {{- if .Values.deployment.priorityClassName }}
       priorityClassName: {{ .Values.deployment.priorityClassName }}
