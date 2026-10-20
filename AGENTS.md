@@ -166,10 +166,9 @@ are what remains before v2 can be recommended over v1.
       the source directories. Proposal:
   - Keep at the root what GitHub and tools expect there: `README.md`, `LICENSE`,
     `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `Makefile`, `go.mod`, `go.sum`,
-    `docker-compose.yml`, `codecov.yml`, `.air.toml`.
+    `docker-compose.yml`, `codecov.yml`, `.air.toml`, `config.example.yml`.
   - Move the guides to `docs/`: `HELM-DEPLOY.md`, `STANDALONE.md`, `TLS-CONFIGURATION.md`,
     `TESTING-STANDARDS.md`.
-  - Move `config.example.yml` next to the other examples, for example `examples/`.
   - Decide whether `Dockerfile`, `Dockerfile.controller` and `Dockerfile.dev` move to a
     directory such as `build/`. This touches the Makefile, `docker-compose.yml` and the CI
     workflows.
