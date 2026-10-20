@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -227,6 +228,24 @@ func (h *PodResourceHandler) processPod(pod *corev1.Pod) {
 	if instance == nil {
 		return
 	}
+
+	// Replace $(pod_ip) template variable with the actual pod IP
+	if pod.Status.PodIP != "" && instance.Host != "" {
+		// Replace $(pod_ip) in the URL string
+		replacedURL := strings.ReplaceAll(instance.Host, "$(pod_ip)", pod.Status.PodIP)
+		
+		// Validate the URL after replacement
+		if _, err := url.Parse(replacedURL); err == nil {
+			instance.Host = replacedURL
+		} else {
+			slog.Warn("failed to parse URL after pod_ip replacement",
+				"instance", instanceName,
+				"url", replacedURL,
+				"error", err)
+			return
+		}
+	}
+
 
 	slog.Info("discovered logstash instance from pod annotation",
 		"instance", instanceName,
