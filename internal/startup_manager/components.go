@@ -19,7 +19,7 @@ import (
 func (sm *StartupManager) shutdownPrometheus() {
 	if sm.prometheusCollector != nil {
 		slog.Info("unregistering prometheus collector")
-		prometheus.Unregister(sm.prometheusCollector)
+		sm.registerer.Unregister(sm.prometheusCollector)
 	} else {
 		slog.Debug("prometheus collector is nil")
 	}
@@ -53,7 +53,7 @@ func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 	// First, unregister any existing collector to prevent duplicate registration errors
 	// This is especially important in tests where multiple StartupManager instances might be created
 	if sm.prometheusCollector != nil {
-		prometheus.Unregister(sm.prometheusCollector)
+		sm.registerer.Unregister(sm.prometheusCollector)
 	}
 
 	collectorManager := collector_manager.NewCollectorManager(
@@ -64,7 +64,7 @@ func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 	sm.prometheusCollector = collectorManager
 
 	// Try to register, but handle errors gracefully
-	if err := prometheus.Register(sm.prometheusCollector); err != nil {
+	if err := sm.registerer.Register(sm.prometheusCollector); err != nil {
 		// In production, we want to panic, but in tests, we should handle this more gracefully
 		alreadyRegistered := false
 		if reg, ok := err.(prometheus.AlreadyRegisteredError); ok {
@@ -79,36 +79,46 @@ func (sm *StartupManager) startPrometheus(cfg *config.Config) {
 	}
 }
 
-// startServer initializes and starts the HTTP server
-func (sm *StartupManager) startServer(cfg *config.Config) {
+// newAppServer creates the HTTP server for the given configuration and
+// applies its TLS settings
+func newAppServer(cfg *config.Config) (AppServer, error) {
 	slog.Debug("creating new app server instance", "config", fmt.Sprintf("%+v", cfg.Server))
 	appServer := server.NewAppServer(cfg)
+
+	if err := cfg.Server.ValidateServerTLS(); err != nil {
+		return nil, fmt.Errorf("invalid TLS configuration: %w", err)
+	}
+
+	if cfg.Server.TLSConfig != nil {
+		tlsConfig, err := tls.ConfigureServerTLS(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to configure TLS: %w", err)
+		}
+		appServer.TLSConfig = tlsConfig
+	}
+
+	return appServer, nil
+}
+
+// startServer creates the server and starts listening in a separate
+// goroutine. Errors, including the server being closed, are sent to
+// serverErrorChan.
+func (sm *StartupManager) startServer(cfg *config.Config) {
+	appServer, err := sm.newServer(cfg)
+	if err != nil {
+		go func() { sm.serverErrorChan <- err }()
+		return
+	}
 	sm.server = appServer
 
 	go func() {
 		slog.Info("starting server", "host", cfg.Server.Host, "port", cfg.Server.Port)
 
-		// First validate the server TLS configuration
-		if err := cfg.Server.ValidateServerTLS(); err != nil {
-			sm.serverErrorChan <- fmt.Errorf("invalid TLS configuration: %w", err)
-			return
-		}
-
-		// Configure TLS if TLS configuration is present
 		if cfg.Server.TLSConfig != nil {
-			tlsConfig, err := tls.ConfigureServerTLS(cfg)
-			if err != nil {
-				sm.serverErrorChan <- fmt.Errorf("failed to configure TLS: %w", err)
-				return
-			}
-
-			// Apply the TLS configuration to the server
-			appServer.TLSConfig = tlsConfig
-
 			slog.Info("starting HTTPS server")
 
-			// Start TLS listener without specifying cert and key files since they're
-			// already provided in the TLS configuration
+			// The certificate and key are already part of the server's TLS
+			// configuration, so they are not passed here
 			sm.serverErrorChan <- appServer.ListenAndServeTLS("", "")
 		} else {
 			sm.serverErrorChan <- appServer.ListenAndServe()

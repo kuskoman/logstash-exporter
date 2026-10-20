@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/kuskoman/logstash-exporter/pkg/config"
 )
@@ -64,10 +65,10 @@ func createTestConfig() *config.Config {
 					Name: "logstash-test",
 				},
 			},
-			HttpTimeout: 2,
+			HttpTimeout: 2 * time.Second,
 		},
 		Server: config.ServerConfig{
-			Host: "0.0.0.0",
+			Host: "127.0.0.1",
 			Port: 9198,
 		},
 		Logging: config.LoggingConfig{

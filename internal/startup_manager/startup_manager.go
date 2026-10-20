@@ -30,15 +30,29 @@ type AppServer interface {
 	Shutdown(ctx context.Context) error
 }
 
+// serverFactory creates a server for the given configuration, ready to listen
+type serverFactory func(cfg *config.Config) (AppServer, error)
+
+// configSource loads the configuration and reports whether it changed.
+// It is implemented by ConfigManager.
+type configSource interface {
+	LoadAndCompareConfig(ctx context.Context) (bool, error)
+	ReloadAndCompareConfig(ctx context.Context) (bool, error)
+	GetCurrentConfig() *config.Config
+}
+
 // StartupManager is responsible for managing the application lifecycle,
 // including initialization, configuration loading, and hot reloading.
 type StartupManager struct {
 	mutex                sync.Mutex
 	watchEnabled         bool
 	isInitialized        bool
+	configPath           string
 	server               AppServer
-	configManager        *ConfigManager
+	newServer            serverFactory
+	configManager        configSource
 	watcher              *file_watcher.FileWatcher
+	registerer           prometheus.Registerer
 	prometheusCollector  prometheus.Collector
 	kubernetesController *k8s_controller.Controller
 	serverErrorChan      chan error
@@ -48,34 +62,23 @@ type StartupManager struct {
 
 // NewStartupManager creates a new StartupManager with the given configuration.
 func NewStartupManager(configPath string, flagsCfg *flags.FlagsConfig) (*StartupManager, error) {
-	sm := &StartupManager{
-		configManager:   NewConfigManager(configPath),
-		isInitialized:   false,
-		mutex:           sync.Mutex{},
-		watchEnabled:    flagsCfg.HotReload,
-		serverErrorChan: make(chan error),
-		withController:  false,
-	}
-
-	watcher, err := file_watcher.NewFileWatcher(configPath, sm.handleConfigChange)
-	if err != nil {
-		return nil, err
-	}
-
-	sm.watcher = watcher
-
-	return sm, nil
+	return newStartupManager(configPath, flagsCfg, false)
 }
 
 // NewStartupManagerWithController creates a new StartupManager with the Kubernetes controller enabled
 func NewStartupManagerWithController(configPath string, flagsCfg *flags.FlagsConfig) (*StartupManager, error) {
+	return newStartupManager(configPath, flagsCfg, true)
+}
+
+func newStartupManager(configPath string, flagsCfg *flags.FlagsConfig, withController bool) (*StartupManager, error) {
 	sm := &StartupManager{
+		configPath:      configPath,
 		configManager:   NewConfigManager(configPath),
-		isInitialized:   false,
-		mutex:           sync.Mutex{},
+		newServer:       newAppServer,
+		registerer:      prometheus.DefaultRegisterer,
 		watchEnabled:    flagsCfg.HotReload,
 		serverErrorChan: make(chan error),
-		withController:  true,
+		withController:  withController,
 	}
 
 	watcher, err := file_watcher.NewFileWatcher(configPath, sm.handleConfigChange)
@@ -118,7 +121,7 @@ func (sm *StartupManager) Initialize(ctx context.Context) error {
 	}
 
 	if sm.watchEnabled {
-		slog.Info("watching for config changes", "configPath", sm.configManager.configPath)
+		slog.Info("watching for config changes", "configPath", sm.configPath)
 		readyCh, err := sm.watcher.Watch(ctx)
 		if err != nil {
 			return err

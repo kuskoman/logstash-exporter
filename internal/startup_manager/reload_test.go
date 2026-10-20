@@ -8,305 +8,278 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kuskoman/logstash-exporter/internal/file_watcher"
 	"github.com/kuskoman/logstash-exporter/internal/flags"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Additional tests for the Reload method with a mock interface
-func TestReloadWithMock(t *testing.T) {
-	// Do not use t.Parallel() at the top level to avoid Prometheus registration issues
-	
-	t.Run("should_handle_config_load_error", func(t *testing.T) {
-		// Do not use t.Parallel() in subtests to avoid Prometheus registration issues
-		// Setup
-		mockCfgManager := newMockConfigManager(nil, false, errors.New("config load error"))
-		mockSrv := newMockAppServer(nil, nil)
+// startTestManager runs Initialize with a mock config source and server
+// factory and waits until the first server is listening
+func startTestManager(t *testing.T) (*StartupManager, *mockConfigSource, *mockServerFactory, *prometheus.Registry, *mockServer) {
+	t.Helper()
 
-		sm := newTestableStartupManager(
-			mockCfgManager,
-			true,  // watchEnabled
-			true,  // initialized
-			mockSrv,
-			nil,   // No collector
-			nil,   // No watcher
-		)
+	source := newMockConfigSource(createTestConfig())
+	factory := newMockServerFactory()
+	sm, registry := newTestStartupManager(source, factory)
 
-		// Execute
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		defer cancel()
+	// Reloads restart the server, which Initialize only tolerates with hot
+	// reload enabled. The watched file is never changed by these tests.
+	watcher, err := file_watcher.NewFileWatcher(createValidConfigFile(t), sm.handleConfigChange)
+	if err != nil {
+		t.Fatalf("failed to create file watcher: %v", err)
+	}
+	sm.watcher = watcher
+	sm.watchEnabled = true
 
-		err := sm.Reload(ctx)
-		
-		// Verify error was propagated
-		if err == nil || err.Error() != "config load error" {
-			t.Errorf("expected config load error, got %v", err)
+	runInitialize(t, sm)
+	server := factory.waitForServer(t)
+
+	return sm, source, factory, registry, server
+}
+
+func TestStartupManager_Reload(t *testing.T) {
+	t.Parallel()
+
+	t.Run("restarts_the_server_and_collector_when_the_config_changed", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, factory, registry, oldServer := startTestManager(t)
+		oldCollector := sm.prometheusCollector
+
+		newConfig := createTestConfig()
+		newConfig.Server.Port = 9300
+		source.set(newConfig, true, nil)
+
+		if err := sm.Reload(context.Background()); err != nil {
+			t.Fatalf("expected no error, got %v", err)
 		}
+		newServer := factory.waitForServer(t)
 
-		// Verify LoadAndCompareConfig was called
-		select {
-		case <-mockCfgManager.loadAndCompareConfigCalled:
-			// Success
-		default:
-			t.Errorf("expected LoadAndCompareConfig to be called")
+		if oldServer.ShutdownCalls() != 1 {
+			t.Errorf("expected the old server to be shut down, got %d calls", oldServer.ShutdownCalls())
 		}
-	})
-
-	t.Run("should_handle_nil_config", func(t *testing.T) {
-		// Setup
-		mockCfgManager := newMockConfigManager(nil, true, nil)
-		mockSrv := newMockAppServer(nil, nil)
-
-		sm := newTestableStartupManager(
-			mockCfgManager,
-			true,  // watchEnabled
-			true,  // initialized
-			mockSrv,
-			nil,   // No collector
-			nil,   // No watcher
-		)
-
-		// Execute
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		defer cancel()
-
-		err := sm.Reload(ctx)
-		
-		// Verify
-		if err == nil {
-			t.Errorf("expected error for nil config, got nil")
+		if configs := factory.Configs(); configs[len(configs)-1] != newConfig {
+			t.Error("expected the new server to use the new config")
 		}
-		
-		expectedErrMsg := "config is nil"
-		if err.Error() != expectedErrMsg {
-			t.Errorf("expected error message '%s', got '%s'", expectedErrMsg, err.Error())
+		if newServer.ShutdownCalls() != 0 {
+			t.Error("expected the new server to keep running")
+		}
+		if isRegistered(registry, oldCollector) {
+			t.Error("expected the old collector to be unregistered")
+		}
+		if !isRegistered(registry, sm.prometheusCollector) {
+			t.Error("expected the new collector to be registered")
+		}
+		if sm.prometheusCollector == oldCollector {
+			t.Error("expected a new collector for the new config")
 		}
 	})
 
-	t.Run("should_handle_server_shutdown_error", func(t *testing.T) {
-		// Setup
-		cfg := createTestConfig()
-		mockCfgManager := newMockConfigManager(cfg, true, nil)
-		
-		// Create a mock server that returns an error on shutdown
-		shutdownError := errors.New("server shutdown error")
-		mockSrv := newMockAppServer(nil, shutdownError)
+	t.Run("uses_the_reload_path_of_the_config_source", func(t *testing.T) {
+		t.Parallel()
 
-		sm := newTestableStartupManager(
-			mockCfgManager,
-			true,  // watchEnabled
-			true,  // initialized
-			mockSrv,
-			nil,   // No collector
-			nil,   // No watcher
-		)
+		sm, source, _, _, _ := startTestManager(t)
+		source.set(createTestConfig(), false, nil)
 
-		// Execute
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		defer cancel()
+		if err := sm.Reload(context.Background()); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if source.ReloadCalls() != 1 {
+			t.Errorf("expected ReloadAndCompareConfig to be called once, got %d", source.ReloadCalls())
+		}
+	})
 
-		err := sm.Reload(ctx)
-		
-		// Verify
-		if !errors.Is(err, shutdownError) {
-			t.Errorf("expected shutdown error, got %v", err)
+	t.Run("keeps_the_server_when_the_config_is_unchanged", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, factory, registry, server := startTestManager(t)
+		collector := sm.prometheusCollector
+		source.set(createTestConfig(), false, nil)
+
+		if err := sm.Reload(context.Background()); err != nil {
+			t.Fatalf("expected no error, got %v", err)
 		}
 
-		// Verify that Shutdown was called on the server
-		select {
-		case <-mockSrv.shutdownCalled:
-			// Success
-		default:
-			t.Errorf("expected server.Shutdown to be called")
+		if server.ShutdownCalls() != 0 {
+			t.Error("expected the server not to be restarted")
+		}
+		if len(factory.Servers()) != 1 {
+			t.Errorf("expected no new server, got %d servers", len(factory.Servers()))
+		}
+		if !isRegistered(registry, collector) {
+			t.Error("expected the collector to stay registered")
+		}
+	})
+
+	t.Run("keeps_the_server_when_the_config_cannot_be_loaded", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, factory, _, server := startTestManager(t)
+		source.set(nil, false, ErrEmptyConfigFile)
+
+		if err := sm.Reload(context.Background()); !errors.Is(err, ErrEmptyConfigFile) {
+			t.Errorf("expected %v, got %v", ErrEmptyConfigFile, err)
+		}
+		if server.ShutdownCalls() != 0 || len(factory.Servers()) != 1 {
+			t.Error("expected the running server to be kept")
+		}
+	})
+
+	t.Run("returns_an_error_when_the_changed_config_is_nil", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, factory, _, server := startTestManager(t)
+		source.set(nil, true, nil)
+
+		if err := sm.Reload(context.Background()); err == nil {
+			t.Error("expected an error for a nil config")
+		}
+		if server.ShutdownCalls() != 0 || len(factory.Servers()) != 1 {
+			t.Error("expected the running server to be kept")
+		}
+	})
+
+	t.Run("returns_the_shutdown_error_and_does_not_start_a_new_server", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, factory, _, server := startTestManager(t)
+		shutdownErr := errors.New("server shutdown error")
+		server.mu.Lock()
+		server.shutdownErr = shutdownErr
+		server.mu.Unlock()
+		source.set(createTestConfig(), true, nil)
+
+		if err := sm.Reload(context.Background()); !errors.Is(err, shutdownErr) {
+			t.Errorf("expected %v, got %v", shutdownErr, err)
+		}
+		if len(factory.Servers()) != 1 {
+			t.Errorf("expected no new server, got %d servers", len(factory.Servers()))
 		}
 	})
 }
 
-// A more realistic test for Reload that actually modifies the config file
-func TestReloadWithFileChange(t *testing.T) {
-	// Skip test in short mode
-	if testing.Short() {
-		t.Skip("Skipping test with real components in short mode")
+func TestStartupManager_handleConfigChange(t *testing.T) {
+	t.Parallel()
+
+	t.Run("reloads_with_the_shutdown_timeout", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, _, _, _ := startTestManager(t)
+		source.set(createTestConfig(), false, nil)
+
+		before := time.Now()
+		if err := sm.handleConfigChange(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		source.mu.Lock()
+		ctx := source.reloadCtx
+		source.mu.Unlock()
+		if ctx == nil {
+			t.Fatal("expected the config to be reloaded")
+		}
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			t.Fatal("expected the reload context to have a deadline")
+		}
+		if deadline.Before(before.Add(ServerShutdownTimeout)) || deadline.After(time.Now().Add(ServerShutdownTimeout)) {
+			t.Errorf("expected a deadline %s from now, got %s", ServerShutdownTimeout, time.Until(deadline))
+		}
+	})
+
+	t.Run("returns_the_reload_error", func(t *testing.T) {
+		t.Parallel()
+
+		sm, source, _, _, _ := startTestManager(t)
+		reloadErr := errors.New("reload error")
+		source.set(nil, false, reloadErr)
+
+		if err := sm.handleConfigChange(); !errors.Is(err, reloadErr) {
+			t.Errorf("expected %v, got %v", reloadErr, err)
+		}
+	})
+}
+
+// TestReloadWithConfigFile reloads using the real config manager and a config
+// file on disk
+func TestReloadWithConfigFile(t *testing.T) {
+	t.Parallel()
+
+	configPath := filepath.Join(t.TempDir(), "config.yml")
+	writeConfig := func(content string) {
+		if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+			t.Fatalf("failed to write config: %v", err)
+		}
 	}
-	
-	// Do not use t.Parallel() at the top level to avoid Prometheus registration issues
-	
-	t.Run("should_detect_config_changes", func(t *testing.T) {
-		// Setup - create a temporary dir for configs
-		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.yml")
-
-		// Create initial config
-		initialConfig := `
+	writeConfig(`
 logstash:
   instances:
-    - host: http://localhost:9600
+    - url: http://localhost:9600
       name: initial
-  httpTimeout: 2s
 server:
-  host: 0.0.0.0
-  port: 9198
-logging:
-  level: info
-  format: text
-`
-		err := os.WriteFile(configPath, []byte(initialConfig), 0644)
-		if err != nil {
-			t.Fatalf("failed to write initial config: %v", err)
-		}
+  host: 127.0.0.1
+  port: 10001
+`)
 
-		// Create startup manager with the initial config
-		flagsCfg := &flags.FlagsConfig{
-			HotReload: true,
-		}
+	sm, err := NewStartupManager(configPath, &flags.FlagsConfig{})
+	if err != nil {
+		t.Fatalf("failed to create startup manager: %v", err)
+	}
+	factory := newMockServerFactory()
+	sm.newServer = factory.create
+	sm.registerer = prometheus.NewRegistry()
+	sm.serverErrorChan = make(chan error, 10)
 
-		// Create a real startup manager
-		sm, err := NewStartupManager(configPath, flagsCfg)
-		if err != nil {
-			t.Fatalf("failed to create startup manager: %v", err)
-		}
+	// Start the components like Initialize does, without blocking and without
+	// the file watcher, so that only the explicit Reload calls below reload
+	if _, err := sm.configManager.LoadAndCompareConfig(context.Background()); err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+	sm.startPrometheus(sm.configManager.GetCurrentConfig())
+	sm.startServer(sm.configManager.GetCurrentConfig())
+	factory.waitForServer(t)
 
-		// Set isInitialized to true for testing Reload
-		sm.isInitialized = true
-
-		// Prepare updated config
-		updatedConfig := `
+	t.Run("applies_the_changed_file", func(t *testing.T) {
+		writeConfig(`
 logstash:
   instances:
-    - host: http://localhost:9600
+    - url: http://localhost:9600
       name: updated
-    - host: http://localhost:9601
+    - url: http://localhost:9601
       name: second
-  httpTimeout: 3s
 server:
-  host: 0.0.0.0
-  port: 9198
+  host: 127.0.0.1
+  port: 10002
 logging:
   level: debug
-  format: text
-`
-		// Write the updated config to the file
-		err = os.WriteFile(configPath, []byte(updatedConfig), 0644)
-		if err != nil {
-			t.Fatalf("failed to write updated config: %v", err)
-		}
+`)
 
-		// Execute
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		defer cancel()
-
-		err = sm.Reload(ctx)
-		if err != nil {
+		if err := sm.Reload(context.Background()); err != nil {
 			t.Fatalf("reload failed: %v", err)
 		}
+		factory.waitForServer(t)
 
-		// Verify the config was updated
-		currentConfig := sm.configManager.GetCurrentConfig()
-		if currentConfig == nil {
-			t.Fatalf("expected config to be non-nil")
+		configs := factory.Configs()
+		cfg := configs[len(configs)-1]
+		if len(cfg.Logstash.Instances) != 2 || cfg.Logstash.Instances[0].Name != "updated" {
+			t.Errorf("expected the two updated instances, got %+v", cfg.Logstash.Instances)
 		}
-
-		// Check specific config changes
-		if len(currentConfig.Logstash.Instances) != 2 {
-			t.Errorf("expected 2 instances, got %d", len(currentConfig.Logstash.Instances))
+		if cfg.Server.Port != 10002 {
+			t.Errorf("expected port 10002, got %d", cfg.Server.Port)
 		}
-
-		if currentConfig.Logstash.Instances[0].Name != "updated" {
-			t.Errorf("expected instance name to be 'updated', got '%s'", 
-				currentConfig.Logstash.Instances[0].Name)
-		}
-
-		if currentConfig.Logging.Level != "debug" {
-			t.Errorf("expected log level to be 'debug', got '%s'", 
-				currentConfig.Logging.Level)
-		}
-	})
-}
-
-func TestHandleConfigChange(t *testing.T) {
-	// Do not use t.Parallel() at the top level to avoid Prometheus registration issues
-	
-	t.Run("should_create_context_with_timeout", func(t *testing.T) {
-		// Verify that WithTimeout is called with ServerShutdownTimeout
-		// by checking if they're both 10 seconds
-		if ServerShutdownTimeout != 10*time.Second {
-			t.Errorf("expected shutdown timeout to be 10s, got %v", ServerShutdownTimeout)
-		}
-		
-		// Setup - create testable manager
-		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
-		sm := newTestableStartupManager(
-			mockCfgManager,
-			true,  // watchEnabled
-			true,  // initialized
-			nil,   // No server
-			nil,   // No collector
-			nil,   // No watcher
-		)
-		
-		// Replace reload with custom function that checks context
-		reloadCalled := make(chan context.Context, 1)
-		sm.mockReload = func(ctx context.Context) error {
-			reloadCalled <- ctx
-			return nil
-		}
-		
-		// Execute
-		err := sm.handleConfigChange()
-		
-		// Verify
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
-		}
-		
-		select {
-		case ctx := <-reloadCalled:
-			// Check that the context has a deadline
-			deadline, hasDeadline := ctx.Deadline()
-			if !hasDeadline {
-				t.Errorf("expected context to have a deadline")
-			}
-			
-			// Verify the deadline is reasonable (within a few seconds from now)
-			maxExpectedDeadline := time.Now().Add(ServerShutdownTimeout + 100*time.Millisecond)
-			if deadline.After(maxExpectedDeadline) {
-				t.Errorf("deadline is too far in the future: %v", deadline)
-			}
-		case <-time.After(100 * time.Millisecond):
-			t.Errorf("Reload was not called")
+		if cfg.Logging.Level != "debug" {
+			t.Errorf("expected log level debug, got %s", cfg.Logging.Level)
 		}
 	})
 
-	t.Run("should_call_reload_and_propagate_error", func(t *testing.T) {
-		// Setup - create testable manager
-		mockCfgManager := newMockConfigManager(nil, false, nil)
-		
-		sm := newTestableStartupManager(
-			mockCfgManager,
-			true,  // watchEnabled
-			true,  // initialized
-			nil,   // No server
-			nil,   // No collector
-			nil,   // No watcher
-		)
-		
-		// Create a custom reload method that fails with a specific error
-		reloadError := errors.New("reload error")
-		sm.mockReload = func(ctx context.Context) error {
-			// Verify context has deadline
-			if _, hasDeadline := ctx.Deadline(); !hasDeadline {
-				t.Errorf("context passed to Reload has no deadline")
-			}
-			
-			// Return our custom error to test propagation
-			return reloadError
+	t.Run("keeps_the_running_config_when_the_file_is_emptied", func(t *testing.T) {
+		writeConfig("")
+
+		if err := sm.Reload(context.Background()); !errors.Is(err, ErrEmptyConfigFile) {
+			t.Errorf("expected %v, got %v", ErrEmptyConfigFile, err)
 		}
-		
-		// Execute
-		err := sm.handleConfigChange()
-		
-		// Verify
-		if !errors.Is(err, reloadError) {
-			t.Errorf("expected reload error %v to be propagated, got %v", reloadError, err)
+		if len(factory.Servers()) != 2 {
+			t.Errorf("expected no new server, got %d servers", len(factory.Servers()))
 		}
 	})
 }
