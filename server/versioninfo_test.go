@@ -41,7 +41,7 @@ func TestHandleVersionInfo(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to make a request to the test server: %v", err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {

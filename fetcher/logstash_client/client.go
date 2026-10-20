@@ -50,7 +50,7 @@ func getMetrics[T any](ctx context.Context, client *http.Client, endpoint string
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	return deserializeHttpResponse[T](resp)
 }

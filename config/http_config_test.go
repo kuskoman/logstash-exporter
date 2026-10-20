@@ -1,14 +1,13 @@
 package config
 
 import (
-	"os"
 	"testing"
 	"time"
 )
 
 func TestGetHttpTimeout(t *testing.T) {
 	t.Run("DefaultTimeout", func(t *testing.T) {
-		os.Unsetenv(httpTimeoutEnvVar)
+		t.Setenv(httpTimeoutEnvVar, "")
 		timeout, err := GetHttpTimeout()
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
@@ -20,8 +19,7 @@ func TestGetHttpTimeout(t *testing.T) {
 
 	t.Run("CustomTimeout", func(t *testing.T) {
 		expectedTimeout := "5s"
-		os.Setenv(httpTimeoutEnvVar, expectedTimeout)
-		defer os.Unsetenv(httpTimeoutEnvVar)
+		t.Setenv(httpTimeoutEnvVar, expectedTimeout)
 		timeout, err := GetHttpTimeout()
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
@@ -33,8 +31,7 @@ func TestGetHttpTimeout(t *testing.T) {
 	})
 
 	t.Run("InvalidTimeout", func(t *testing.T) {
-		os.Setenv(httpTimeoutEnvVar, "invalid")
-		defer os.Unsetenv(httpTimeoutEnvVar)
+		t.Setenv(httpTimeoutEnvVar, "invalid")
 		_, err := GetHttpTimeout()
 		if err == nil {
 			t.Error("Expected an error for invalid timeout, but got nil")
@@ -44,7 +41,7 @@ func TestGetHttpTimeout(t *testing.T) {
 
 func TestGetHttpInsecure(t *testing.T) {
 	t.Run("DefaultInsecure", func(t *testing.T) {
-		os.Unsetenv(httpInsecureEnvVar)
+		t.Setenv(httpInsecureEnvVar, "")
 		insecure := GetHttpInsecure()
 		if insecure != false {
 			t.Errorf("Expected default insecure of %v, got %v", false, insecure)
@@ -53,8 +50,7 @@ func TestGetHttpInsecure(t *testing.T) {
 
 	t.Run("CustomInsecure", func(t *testing.T) {
 		expectedInsecure := true
-		os.Setenv(httpInsecureEnvVar, "true")
-		defer os.Unsetenv(httpInsecureEnvVar)
+		t.Setenv(httpInsecureEnvVar, "true")
 		insecure := GetHttpInsecure()
 		if insecure != expectedInsecure {
 			t.Errorf("Expected insecure of %v, got %v", expectedInsecure, insecure)
@@ -63,8 +59,7 @@ func TestGetHttpInsecure(t *testing.T) {
 
 	t.Run("InvalidInsecure", func(t *testing.T) {
 		expectedInsecure := false
-		os.Setenv(httpInsecureEnvVar, "invalid")
-		defer os.Unsetenv(httpInsecureEnvVar)
+		t.Setenv(httpInsecureEnvVar, "invalid")
 		insecure := GetHttpInsecure()
 		if insecure != expectedInsecure {
 			t.Errorf("Expected insecure of %v, got %v", expectedInsecure, insecure)

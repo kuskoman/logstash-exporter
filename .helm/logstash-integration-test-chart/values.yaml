@@ -1,5 +1,6 @@
 logstash:
   enabled: true
+  imageTag: "9.5.5"
   config: |
     input {
         generator {
@@ -40,6 +41,12 @@ prometheus:
 
 apache:
   enabled: true
+  # Bitnami no longer publishes free images under docker.io/bitnami
+  image:
+    repository: bitnamilegacy/apache
+  global:
+    security:
+      allowInsecureImages: true
   service:
     type: ClusterIP
 

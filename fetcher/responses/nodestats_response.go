@@ -299,10 +299,11 @@ func (i *InfinityFloat) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)
 	if err == nil {
-		if s == "Infinity" {
+		switch s {
+		case "Infinity":
 			*i = InfinityFloat(math.Inf(1))
 			return nil
-		} else if s == "-Infinity" {
+		case "-Infinity":
 			*i = InfinityFloat(math.Inf(-1))
 			return nil
 		}
