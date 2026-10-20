@@ -279,7 +279,7 @@ rbac:
       ##
       verbs: ["get", "list", "watch"]
 
-## @section serviceMonitor settings for Kubernetes controller
+## @section ServiceMonitor configuration (requires Prometheus Operator)
 ##
 serviceMonitor:
   ## @param serviceMonitor.enabled Create ServiceMonitor resources
@@ -291,5 +291,3 @@ serviceMonitor:
   ## @param serviceMonitor.annotations Additional serviceMonitor annotations
   ##
   annotations: {}
-
-

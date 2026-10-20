@@ -9,13 +9,15 @@ data:
   config.yml: |-
   {{- if .Values.customConfig.enabled }}
     {{- .Values.customConfig.config | nindent 4 }}
-  {{- else if .Values.logstash.kubernetes.enabled }}
+  {{- else }}
+  {{- if .Values.logstash.kubernetes.enabled }}
     kubernetes:
       {{- .Values.logstash.kubernetes | toYaml | nindent 6 }}
   {{- else }}
     logstash:
       instances:
         {{- toYaml .Values.logstash.instances | nindent 8 }}
+  {{- end }}
     server:
       host: {{ .Values.logstash.server.host | quote }}
       port: {{ .Values.logstash.server.port }}

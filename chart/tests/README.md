@@ -1,6 +1,6 @@
 # Helm Unit Tests
 
-This directory contains unit tests for the Logstash Exporter Helm chart. The tests use the [helm-unittest](https://github.com/quintush/helm-unittest) plugin to verify that the chart templates render correctly and produce the expected Kubernetes resources.
+This directory contains unit tests for the Logstash Exporter Helm chart. The tests use the [helm-unittest](https://github.com/helm-unittest/helm-unittest) plugin to verify that the chart templates render correctly and produce the expected Kubernetes resources.
 
 ## Test Files
 
@@ -9,13 +9,14 @@ This directory contains unit tests for the Logstash Exporter Helm chart. The tes
 - `rbac_test.yaml`: Tests for the RBAC resources (ClusterRole and ClusterRoleBinding), ensuring proper permissions for Kubernetes API access.
 - `service_account_test.yaml`: Tests for the ServiceAccount resource, checking name customization and annotation support.
 - `service_test.yaml`: Tests for the Service resource, validating port configuration and metadata customization.
+- `service_monitor_test.yaml`: Tests for the optional Prometheus Operator ServiceMonitor, checking labels, annotations, selector and scrape endpoint.
 
 ## Running Tests
 
 To run the tests locally, you'll need to have the helm-unittest plugin installed:
 
 ```bash
-helm plugin install https://github.com/quintush/helm-unittest
+helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false
 ```
 
 Then you can run the tests with:
@@ -51,4 +52,4 @@ tests:
           [assertion-parameters]
 ```
 
-For more details on available assertions and test structure, see the [helm-unittest documentation](https://github.com/quintush/helm-unittest/blob/master/DOCUMENT.md).
+For more details on available assertions and test structure, see the [helm-unittest documentation](https://github.com/helm-unittest/helm-unittest/blob/main/DOCUMENT.md).

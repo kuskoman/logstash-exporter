@@ -161,3 +161,11 @@
 | `rbac.rules[0].apiGroups` | API groups the rule applies to            | `[""]`                   |
 | `rbac.rules[0].resources` | Kubernetes resources the rule applies to  | `["pods","services"]`    |
 | `rbac.rules[0].verbs`     | Allowed verbs for the specified resources | `["get","list","watch"]` |
+
+### ServiceMonitor configuration (requires Prometheus Operator)
+
+| Name                         | Description                           | Value   |
+| ---------------------------- | ------------------------------------- | ------- |
+| `serviceMonitor.enabled`     | Create ServiceMonitor resources       | `false` |
+| `serviceMonitor.labels`      | Additional serviceMonitor labels      | `{}`    |
+| `serviceMonitor.annotations` | Additional serviceMonitor annotations | `{}`    |

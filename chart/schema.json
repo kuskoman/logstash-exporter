@@ -418,6 +418,26 @@
                     }
                 }
             }
+        },
+        "serviceMonitor": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Create ServiceMonitor resources",
+                    "default": false
+                },
+                "labels": {
+                    "type": "object",
+                    "description": "Additional serviceMonitor labels",
+                    "default": {}
+                },
+                "annotations": {
+                    "type": "object",
+                    "description": "Additional serviceMonitor annotations",
+                    "default": {}
+                }
+            }
         }
     }
 }
