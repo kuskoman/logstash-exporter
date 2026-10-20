@@ -5,6 +5,9 @@ metadata:
   labels:
     app: {{ template "logstash-exporter.name" . }}
     release: {{ .Release.Name }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     {{- if .Values.service.annotations }}
   annotations:
     {{ toYaml .Values.service.annotations | nindent 4 }}

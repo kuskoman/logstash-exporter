@@ -4,12 +4,9 @@ kind: ServiceMonitor
 metadata:
   name: {{ include "logstash-exporter.fullname" . }}
   labels:
-    app: {{ include "logstash-exporter.name" . }}
-    release: {{ .Release.Name }}
-  labels: 
-    app.name: {{ .Values.app }}  
+    {{- include "logstash-exporter.labels" . | nindent 4 }}
     {{- with .Values.serviceMonitor.labels }}
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- with .Values.serviceMonitor.annotations }}
   annotations:

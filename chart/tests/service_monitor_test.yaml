@@ -1,0 +1,89 @@
+suite: ServiceMonitor Tests
+templates:
+  - service-monitor.yaml
+release:
+  name: logstash-exporter-test
+  namespace: default
+
+tests:
+  - it: should not create a service monitor by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create a service monitor when enabled
+    set:
+      serviceMonitor.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ServiceMonitor
+      - isAPIVersion:
+          of: monitoring.coreos.com/v1
+      - equal:
+          path: metadata.name
+          value: logstash-exporter-test
+
+  - it: should set default labels
+    set:
+      serviceMonitor.enabled: true
+    asserts:
+      - isSubset:
+          path: metadata.labels
+          content:
+            app: logstash-exporter
+            release: logstash-exporter-test
+
+  - it: should merge additional labels with default labels
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.labels:
+        prometheus: kube-prometheus
+        team: observability
+    asserts:
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+            prometheus: kube-prometheus
+            team: observability
+
+  - it: should not set annotations by default
+    set:
+      serviceMonitor.enabled: true
+    asserts:
+      - notExists:
+          path: metadata.annotations
+
+  - it: should add annotations when specified
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.annotations:
+        example.com/owner: observability
+    asserts:
+      - equal:
+          path: metadata.annotations
+          value:
+            example.com/owner: observability
+
+  - it: should select the exporter service
+    set:
+      serviceMonitor.enabled: true
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+
+  - it: should scrape the metrics endpoint on the http port
+    set:
+      serviceMonitor.enabled: true
+    asserts:
+      - equal:
+          path: spec.endpoints
+          value:
+            - port: http
+              path: /metrics

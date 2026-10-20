@@ -36,19 +36,15 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-      {{- if .Values.deployment.imagePullSecrets }}
+      {{- with .Values.deployment.pullSecret }}
       imagePullSecrets:
-      {{- range $pullSecret := .Values.deployment.pullSecret }}
+      {{- range $pullSecret := . }}
       - name: {{ $pullSecret }}
       {{- end }}
       {{- end }}
 
       {{- if .Values.serviceAccount.enabled }}
-      {{- if .Values.serviceAccount.create }}
       serviceAccountName: {{ include "logstash-exporter.serviceAccountName" . }}
-      {{- else }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
-      {{- end }}
       {{- end }}
 
       {{- if .Values.deployment.priorityClassName }}
@@ -142,4 +138,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: {{ include "logstash-exporter.name" . }}
+          name: {{ include "logstash-exporter.fullname" . }}

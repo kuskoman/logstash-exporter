@@ -11,11 +11,32 @@ tests:
       - isKind:
           of: Service
       - equal:
+          path: metadata.name
+          value: logstash-exporter-test
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+      - notExists:
+          path: metadata.annotations
+      - equal:
           path: spec.type
           value: ClusterIP
       - equal:
-          path: spec.ports[0].port
-          value: 9198
+          path: spec.ports
+          value:
+            - name: http
+              port: 9198
+              protocol: TCP
+
+  - it: should select the exporter pods
+    asserts:
+      - equal:
+          path: spec.selector
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
 
   - it: should set service type when specified
     set:
@@ -39,8 +60,11 @@ tests:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9198"
     asserts:
-      - isKind:
-          of: Service
+      - equal:
+          path: metadata.annotations
+          value:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9198"
 
   - it: should add labels when specified
     set:
@@ -48,5 +72,10 @@ tests:
         environment: production
         tier: monitoring
     asserts:
-      - isKind:
-          of: Service
+      - equal:
+          path: metadata.labels
+          value:
+            app: logstash-exporter
+            release: logstash-exporter-test
+            environment: production
+            tier: monitoring

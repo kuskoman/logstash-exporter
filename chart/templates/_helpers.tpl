@@ -20,12 +20,15 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
-By default we want service account name to be the same as fullname
-but this may change in the future, so for easier usage this is extracted
-to a separate template.
+Service account name. Uses serviceAccount.name when set, otherwise the fullname
+when the chart creates the service account, or "default" when it does not.
 */}}
 {{- define "logstash-exporter.serviceAccountName" -}}
-{{- include "logstash-exporter.fullname" . }}
+{{- if .Values.serviceAccount.create -}}
+{{- default (include "logstash-exporter.fullname" .) .Values.serviceAccount.name -}}
+{{- else -}}
+{{- default "default" .Values.serviceAccount.name -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
