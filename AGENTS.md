@@ -152,6 +152,11 @@ are what remains before v2 can be recommended over v1.
 - [x] **Chart and image versions are out of sync (#493).** The chart is published on every push
       to `master` (`publish-helm-chart.yml`), so chart 2.0.0 was released while no `v2.0.0` image
       exists. Publish the chart from release tags only, with `appVersion` matching the tag.
+- [ ] **End-to-end test of the controller in Kubernetes.** A separate workflow that deploys the
+      controller into a kind cluster with multiple pods exposing Logstash or a Logstash mock, and
+      checks discovery, scraping and removal in realistic scenarios (pods starting, restarting and
+      being deleted, several namespaces, services). It takes a long time, so it must not run for
+      pull requests: run it on a schedule, on manual dispatch and before releases.
 - [ ] **Freeze the public interface.** Breaking changes are still allowed before v2.0.0, so this is
       the last chance to rename metrics, labels, config keys, chart values and chart resource names.
       Afterwards they are frozen until v3.
