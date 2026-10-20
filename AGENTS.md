@@ -137,7 +137,7 @@ are what remains before v2 can be recommended over v1.
 ### Blockers for v2.0.0
 
 - [ ] **Kubernetes controller is production-ready.** It is part of v2.0.0, so it needs:
-  - [ ] Unit tests for `internal/k8s_controller` (currently 0% coverage), e.g. with
+  - [x] Unit tests for `internal/k8s_controller` (currently 0% coverage), e.g. with
         `k8s.io/client-go/kubernetes/fake`: pod and service add, update and delete, annotation
         parsing, `$(pod_ip)` substitution, namespace filtering, non-running pods.
   - [x] Investigate and fix #455 (annotated Logstash ignored).
