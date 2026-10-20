@@ -1,20 +1,31 @@
-#!/bin/bash
-set -eo pipefail
+#!/usr/bin/env bash
 
-# Print usage information
+# Generates release notes from the commits since the previous release.
+#
+# Branching model:
+#   v1     -> v1.x.y releases
+#   master -> v2.x.y releases, including pre-releases such as v2.0.0-pre12
+#
+# The previous release is the highest tag of the same major version that is
+# reachable from the release, so v1 and v2 releases never mix even though
+# both lines are tagged in the same repository.
+
+set -euo pipefail
+
+version_pattern='^v([0-9]+)\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+
 function usage() {
   echo "Usage: $0 [OPTIONS]"
-  echo "Generate release notes based on git commits since the previous tag on the current branch."
+  echo "Generate release notes from the commits since the previous release of the same major version."
   echo
   echo "Options:"
   echo "  -o, --output FILE  Write release notes to FILE (default: release_notes.txt)"
   echo "  -h, --help         Display this help message and exit"
   echo
-  echo "The script will find the most recent tag on the current branch and list"
-  echo "all non-merge commits made since that tag."
+  echo "If HEAD is tagged, the notes describe that release. Otherwise they describe"
+  echo "the commits since the latest release on the current branch."
 }
 
-# Parse command line arguments
 notes_file="release_notes.txt"
 
 while [[ $# -gt 0 ]]; do
@@ -35,73 +46,77 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Ensure we're in a git repository
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "Error: Not in a git repository" >&2
   exit 1
 fi
 
-# Check if HEAD is tagged
-function is_head_tagged() {
-  git describe --exact-match --tags HEAD 2>/dev/null 1>&2
+# Prints the highest vMAJOR.* tag reachable from the given ref. Pre-releases
+# sort before the release they precede, e.g. v2.0.0-pre11 < v2.0.0.
+function latest_release_tag() {
+  local major="$1" ref="$2"
+  local tags
+
+  tags=$(git -c versionsort.suffix=- tag --merged "$ref" --list "v${major}.*" --sort=-v:refname)
+  echo "${tags%%$'\n'*}"
 }
 
-# Determine current tag if we're on a tag
-if is_head_tagged; then
-  current_tag=$(git describe --exact-match --tags HEAD)
+current_tag=$(git describe --exact-match --tags --match 'v[0-9]*' HEAD 2>/dev/null || true)
+
+if [ -n "$current_tag" ]; then
   echo "Current HEAD is at tag: $current_tag"
+  release_name="$current_tag"
+  version="$current_tag"
+  # The previous release is the latest one before this commit
+  search_ref="HEAD^"
 else
-  current_tag="upcoming release"
   echo "Current HEAD is not tagged (preparing notes for upcoming release)"
+  release_name="upcoming release"
+  version=$(git describe --tags --abbrev=0 --match 'v[0-9]*' HEAD 2>/dev/null || true)
+  search_ref="HEAD"
 fi
 
-# Find the most recent tag on the current branch
-# This gets all tags reachable from the current HEAD
-previous_tag=$(git describe --abbrev=0 --tags --first-parent 2>/dev/null)
+if [[ ! $version =~ $version_pattern ]]; then
+  echo "Error: cannot determine the major version from '${version}'" >&2
+  exit 1
+fi
+major="${BASH_REMATCH[1]}"
 
-# If we're on a tag now, we need to find the previous tag
-if is_head_tagged; then
-  # Get all tags on the current branch, sorted by commit date
-  all_tags_on_branch=$(git tag --sort=-committerdate --merged HEAD)
-
-  # The first tag is the current one, so we need to get the second tag
-  previous_tag=$(echo "$all_tags_on_branch" | grep -v "$current_tag" | head -n 1)
-
-  # If no previous tag found, get the earliest commit as reference
-  if [ -z "$previous_tag" ]; then
-    echo "No previous tag found, using the first commit as reference"
-    previous_tag=$(git rev-list --max-parents=0 HEAD)
-  fi
+previous_tag=""
+if git rev-parse --quiet --verify "$search_ref" >/dev/null; then
+  previous_tag=$(latest_release_tag "$major" "$search_ref")
 fi
 
-echo "Previous tag found: $previous_tag"
-
-# Set the range for commit log
-range="$previous_tag..HEAD"
-
-# Get commits between previous tag and HEAD
-commits_since_previous_tag=$(git log --no-merges --pretty=format:"* %s" "$range")
-
-# Generate release notes
-if [ -z "$commits_since_previous_tag" ]; then
-  echo "No changes since previous tag ($previous_tag)" > "$notes_file"
-  echo "Warning: No changes detected since previous tag" >&2
+if [ -n "$previous_tag" ]; then
+  echo "Previous v${major} release: $previous_tag"
+  range="$previous_tag..HEAD"
+  since="$previous_tag"
 else
-  # Count the commits for a summary
-  commit_count=$(echo "$commits_since_previous_tag" | wc -l | tr -d ' ')
+  echo "No previous v${major} release found, using the whole history"
+  range="HEAD"
+  since="the first commit"
+fi
+
+commits=$(git log --no-merges --pretty=format:"* %s" "$range")
+
+if [ -z "$commits" ]; then
+  echo "No changes since $since" > "$notes_file"
+  echo "Warning: No changes detected since $since" >&2
+else
+  commit_count=$(echo "$commits" | wc -l | tr -d ' ')
 
   {
+    echo "Release Notes ($release_name):"
     echo ""
-    echo "Changes since $previous_tag ($commit_count commits)"
+    echo "Changes since $since ($commit_count commits):"
     echo ""
-    echo "$commits_since_previous_tag"
-    echo ""
-    echo "---"
-    echo "Generated on $(date '+%Y-%m-%d %H:%M:%S')"
-  } >> "$notes_file"
+    echo "$commits"
+  } > "$notes_file"
 
-  echo "Successfully created release notes for $commit_count commits since $previous_tag"
+  echo "Created release notes for $commit_count commits since $since"
 fi
 
-# Output the path to the release notes file for potential use in a CI pipeline
-echo "RELEASE_NOTES_PATH=$notes_file" >> "${GITHUB_ENV:-/dev/null}"
+# Expose the path to the release notes file to later steps in GitHub Actions
+if [ -n "${GITHUB_ENV:-}" ]; then
+  echo "RELEASE_NOTES_PATH=$notes_file" >> "$GITHUB_ENV"
+fi
