@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -67,15 +66,7 @@ func TestInitializeMethod(t *testing.T) {
 func TestInitializeShutsDownWhenContextIsCancelled(t *testing.T) {
 	// Do not use t.Parallel() to avoid Prometheus registration issues
 
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatalf("failed to find a free port: %v", err)
-	}
-	port := listener.Addr().(*net.TCPAddr).Port
-	if err := listener.Close(); err != nil {
-		t.Fatalf("failed to close listener: %v", err)
-	}
-
+	port := getFreePort(t)
 	configPath := filepath.Join(t.TempDir(), "config.yml")
 	configContent := fmt.Sprintf("server:\n  host: 127.0.0.1\n  port: %d\n", port)
 	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
