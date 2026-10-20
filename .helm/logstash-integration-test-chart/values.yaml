@@ -1,6 +1,13 @@
 logstash:
   enabled: true
   imageTag: "9.5.5"
+  # Serve the Logstash API on the pod IP, so the exporter can reach it
+  logstashConfig:
+    logstash.yml: |
+      api.http.host: 0.0.0.0
+  # Lets the exporter in Kubernetes controller mode discover this pod
+  podAnnotations:
+    logstash-exporter.io/url: "http://$(pod_ip):9600"
   config: |
     input {
         generator {
