@@ -196,6 +196,10 @@ are what remains before v2 can be recommended over v1.
 
 - [ ] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
       see the TODO in `internal/collectors/nodestats/pipeline_subcollector.go`.
+- [ ] Export the metrics that are new in Logstash 9: per-pipeline batch statistics
+      (`batch.byte_size`, `batch.event_count`), the pipeline settings (`pipeline.workers`,
+      `batch_size`, `batch_delay`) and `worker_millis_per_event` of output plugins. They are in
+      `fixtures/node_stats.json` but not parsed or exported.
 - [ ] Compatibility matrix of metrics across Logstash versions (#88).
 - [x] Clean up untagged images in the GitHub package registry (#302).
 - [ ] `/healthcheck` only checks that Logstash answers with HTTP 200; consider also checking that
