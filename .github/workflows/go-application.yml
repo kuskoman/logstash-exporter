@@ -78,11 +78,13 @@ jobs:
         with:
           go-version: "^1.27"
 
-      - name: Build e2e binary
+      - name: Build e2e binary with the race detector
         run: make e2e-prepare
+        env:
+          GOFLAGS: -race
 
-      - name: Run e2e tests
-        run: make e2e-run
+      - name: Run e2e tests with the race detector
+        run: go test -race -v -timeout 10m -parallel 4 -shuffle=on ./test/e2e
 
   verify-helm-readme:
     name: Verify that Helm README is up to date
