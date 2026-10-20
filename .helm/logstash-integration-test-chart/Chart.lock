@@ -1,12 +1,9 @@
 dependencies:
-- name: logstash
-  repository: https://helm.elastic.co
-  version: 8.5.1
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
   version: 29.37.0
 - name: logstash-exporter
   repository: file://../../chart/
   version: 2.0.0
-digest: sha256:6eae0cbdd37cfd24f849d168db8cf9c388042cfc6b4aa3a69a17c48a92ad6d53
-generated: "2026-10-20T14:44:38.683058867Z"
+digest: sha256:e79e166944298e5ac6ae9220ee7942620879647327efddd36479037b44644cd7
+generated: "2026-10-20T17:43:00.328165625Z"

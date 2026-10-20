@@ -1,18 +1,10 @@
 logstash:
   enabled: true
-  imageTag: "9.5.5"
-  # Serve the Logstash API on the pod IP, so the exporter can reach it
-  logstashConfig:
-    logstash.yml: |
-      api.http.host: 0.0.0.0
-  # Lets the exporter in Kubernetes controller mode discover this pod
-  podAnnotations:
-    logstash-exporter.io/url: "http://$(pod_ip):9600"
-  config: |
+  image: docker.elastic.co/logstash/logstash:9.5.5
+  javaOpts: "-Xms256m -Xmx256m"
+  pipeline: |
     input {
         generator {
-            type => "dummy"
-            count => -1
             message => '{"message": "dummy log"}'
         }
     }
@@ -24,9 +16,7 @@ logstash:
     }
 
     output {
-        elasticsearch {
-            hosts => ["http://logstash-integration-test-chart:9200"]
-        }
+        null {}
     }
 
 prometheus:
@@ -50,11 +40,14 @@ prometheus:
         metrics_path: "/metrics"
         scheme: "http"
         static_configs:
-          - targets: ["exporter:9198"]
+          - targets: ["logstash-exporter:9198"]
 
 logstash-exporter:
   enabled: true
   fullnameOverride: logstash-exporter
+  logstash:
+    instances:
+      - url: http://logstash:9600
   image:
     repository: logstash-exporter
     tag: latest
