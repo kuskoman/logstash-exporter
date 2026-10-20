@@ -54,6 +54,7 @@ Both share the same HTTP server (`/metrics`, `/healthcheck`, `/version`) and sta
 | `test/e2e` | End-to-end tests that run the real binary against a mock Logstash |
 | `fixtures/` | Logstash API responses and TLS certificates used by tests |
 | `scripts/` | Release, README and verification scripts |
+| `docs/design/` | Design notes for changes that are not implemented yet |
 
 ## Commands
 
@@ -195,6 +196,8 @@ are what remains before v2 can be recommended over v1.
 - [ ] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
       see the TODO in `internal/collectors/nodestats/pipeline_subcollector.go`.
 - [ ] Compatibility matrix of metrics across Logstash versions (#88).
+- Not planned: support for Logstash 7, 8 and 9 at the same time. The design is recorded in
+  [docs/design/multiple-logstash-versions.md](./docs/design/multiple-logstash-versions.md).
 - [x] Clean up untagged images in the GitHub package registry (#302).
 - [ ] `/healthcheck` only checks that Logstash answers with HTTP 200; consider also checking that
       the response is valid.
