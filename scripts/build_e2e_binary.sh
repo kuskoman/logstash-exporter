@@ -21,7 +21,11 @@ echo -e "${YELLOW}Building e2e test binary...${NC}"
 mkdir -p "${BINARY_DIR}"
 
 # Build the binary
-if go build -o "${BINARY_PATH}" ./cmd/exporter; then
+# Set the version information like release builds do, so tests can check it
+VERSION_PKG="github.com/kuskoman/logstash-exporter/pkg/config"
+LDFLAGS="-X ${VERSION_PKG}.Version=e2e-test -X ${VERSION_PKG}.GitCommit=$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+
+if go build -ldflags="${LDFLAGS}" -o "${BINARY_PATH}" ./cmd/exporter; then
     echo -e "${GREEN}✓ Binary built successfully: ${BINARY_PATH}${NC}"
 
     # Make it executable

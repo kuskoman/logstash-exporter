@@ -46,6 +46,30 @@ func TestEndpoints(t *testing.T) {
 		}
 	})
 
+	t.Run("build_info_matches_the_version_endpoint", func(t *testing.T) {
+		resp, err := exporter.Get("/version")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var versionInfo struct{ Version, GitCommit string }
+		if err := json.Unmarshal([]byte(resp.Body), &versionInfo); err != nil {
+			t.Fatalf("version response is not valid JSON: %v", err)
+		}
+		if versionInfo.Version != "e2e-test" {
+			t.Fatalf("expected the e2e binary to be built with version e2e-test, got %q (run make e2e-prepare)", versionInfo.Version)
+		}
+
+		metrics, err := exporter.Metrics()
+		if err != nil {
+			t.Fatal(err)
+		}
+		labels := map[string]string{"version": versionInfo.Version, "revision": versionInfo.GitCommit}
+		if _, err := metrics.Value("logstash_exporter_build_info", labels); err != nil {
+			t.Errorf("expected build info labelled with version %q and revision %q: %v",
+				versionInfo.Version, versionInfo.GitCommit, err)
+		}
+	})
+
 	t.Run("metrics_returns_prometheus_text_format", func(t *testing.T) {
 		resp, err := exporter.Get("/metrics")
 		if err != nil {
