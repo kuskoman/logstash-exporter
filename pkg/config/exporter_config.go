@@ -251,6 +251,10 @@ func GetConfig(location string) (*Config, error) {
 	}
 
 	mergedConfig := mergeWithDefault(config)
+	if err := mergedConfig.Validate(); err != nil {
+		return nil, err
+	}
+
 	return mergedConfig, nil
 }
 
