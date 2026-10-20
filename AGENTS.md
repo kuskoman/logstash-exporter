@@ -137,7 +137,7 @@ are what remains before v2 can be recommended over v1.
 ### Blockers for v2.0.0
 
 - [ ] **Kubernetes controller is production-ready.** It is part of v2.0.0, so it needs:
-  - [ ] Unit tests for `internal/k8s_controller` (currently 0% coverage), e.g. with
+  - [x] Unit tests for `internal/k8s_controller` (currently 0% coverage), e.g. with
         `k8s.io/client-go/kubernetes/fake`: pod and service add, update and delete, annotation
         parsing, `$(pod_ip)` substitution, namespace filtering, non-running pods.
   - [x] Investigate and fix #455 (annotated Logstash ignored).
@@ -152,6 +152,11 @@ are what remains before v2 can be recommended over v1.
 - [x] **Chart and image versions are out of sync (#493).** The chart is published on every push
       to `master` (`publish-helm-chart.yml`), so chart 2.0.0 was released while no `v2.0.0` image
       exists. Publish the chart from release tags only, with `appVersion` matching the tag.
+- [ ] **End-to-end test of the controller in Kubernetes.** A separate workflow that deploys the
+      controller into a kind cluster with multiple pods exposing Logstash or a Logstash mock, and
+      checks discovery, scraping and removal in realistic scenarios (pods starting, restarting and
+      being deleted, several namespaces, services). It takes a long time, so it must not run for
+      pull requests: run it on a schedule, on manual dispatch and before releases.
 - [ ] **Freeze the public interface.** Breaking changes are still allowed before v2.0.0, so this is
       the last chance to rename metrics, labels, config keys, chart values and chart resource names.
       Afterwards they are frozen until v3.
@@ -166,10 +171,9 @@ are what remains before v2 can be recommended over v1.
       the source directories. Proposal:
   - Keep at the root what GitHub and tools expect there: `README.md`, `LICENSE`,
     `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `Makefile`, `go.mod`, `go.sum`,
-    `docker-compose.yml`, `codecov.yml`, `.air.toml`.
+    `docker-compose.yml`, `codecov.yml`, `.air.toml`, `config.example.yml`.
   - Move the guides to `docs/`: `HELM-DEPLOY.md`, `STANDALONE.md`, `TLS-CONFIGURATION.md`,
     `TESTING-STANDARDS.md`.
-  - Move `config.example.yml` next to the other examples, for example `examples/`.
   - Decide whether `Dockerfile`, `Dockerfile.controller` and `Dockerfile.dev` move to a
     directory such as `build/`. This touches the Makefile, `docker-compose.yml` and the CI
     workflows.
