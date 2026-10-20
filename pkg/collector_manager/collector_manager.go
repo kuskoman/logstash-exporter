@@ -71,6 +71,18 @@ func getClientsForEndpoints(instances []*config.LogstashInstance, timeout time.D
 	return clients
 }
 
+var buildInfoOnce sync.Once
+
+// registerBuildInfoCollector registers the logstash_exporter_build_info
+// metric. Build information does not change while the process runs, so it is
+// registered once instead of every time a collector manager is created, which
+// also makes creating collector managers concurrently safe.
+func registerBuildInfoCollector() {
+	buildInfoOnce.Do(func() {
+		prometheus.MustRegister(version.NewCollector("logstash_exporter"))
+	})
+}
+
 // NewCollectorManager creates a new CollectorManager with the provided logstash instances and http timeout
 func NewCollectorManager(instances []*config.LogstashInstance, timeout time.Duration) *CollectorManager {
 	// Build the instance map
@@ -88,8 +100,7 @@ func NewCollectorManager(instances []*config.LogstashInstance, timeout time.Dura
 	collectors := getCollectors(clients)
 
 	scrapeDurations := getScrapeDurationsCollector()
-	prometheus.Unregister(version.NewCollector("logstash_exporter"))
-	prometheus.MustRegister(version.NewCollector("logstash_exporter"))
+	registerBuildInfoCollector()
 
 	return &CollectorManager{
 		collectors:      collectors,

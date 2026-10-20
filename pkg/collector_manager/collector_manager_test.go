@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -64,8 +65,40 @@ func TestNewCollectorManager(t *testing.T) {
 		}
 	})
 
-	// Note: prometheus has a global state, so we cannot register the same collector twice, 
-	// therefore there is no single endpoint test
+	t.Run("can_be_created_concurrently", func(t *testing.T) {
+		t.Parallel()
+
+		instances := []*config.LogstashInstance{{Host: "http://localhost:9600"}}
+
+		var wg sync.WaitGroup
+		for i := 0; i < 20; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				if cm := NewCollectorManager(instances, httpTimeout); cm == nil {
+					t.Error("expected collector manager to be initialized, got nil")
+				}
+			}()
+		}
+		wg.Wait()
+	})
+
+	t.Run("registers_build_info_in_the_default_registry", func(t *testing.T) {
+		t.Parallel()
+
+		NewCollectorManager([]*config.LogstashInstance{{Host: "http://localhost:9600"}}, httpTimeout)
+
+		families, err := prometheus.DefaultGatherer.Gather()
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, family := range families {
+			if family.GetName() == "logstash_exporter_build_info" {
+				return
+			}
+		}
+		t.Error("expected logstash_exporter_build_info to be registered")
+	})
 }
 
 func TestCollect(t *testing.T) {
