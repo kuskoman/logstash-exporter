@@ -119,6 +119,9 @@ CI fails if `go mod tidy`, `make helm-readme` or `make update-readme-description
 - Small, focused commits with a message that explains the problem and the reason for the change.
 - One logical change per commit: production fixes, their tests, and refactors in separate commits
   where practical.
+- Work on one issue or roadmap item per branch. When the branch completes a roadmap item, mark it
+  done (`- [x]`) in the roadmap below in the same branch, so the roadmap is always up to date.
+  If the branch is already frozen for review, mark it in a separate docs branch instead.
 
 ## Supported versions
 
@@ -137,16 +140,16 @@ are what remains before v2 can be recommended over v1.
   - [ ] Unit tests for `internal/k8s_controller` (currently 0% coverage), e.g. with
         `k8s.io/client-go/kubernetes/fake`: pod and service add, update and delete, annotation
         parsing, `$(pod_ip)` substitution, namespace filtering, non-running pods.
-  - [ ] Investigate and fix #455 (annotated Logstash ignored).
+  - [x] Investigate and fix #455 (annotated Logstash ignored).
   - [ ] Keep the kind CI check (`scripts/verify_k8s_controller.sh`) green, and extend it to cover
         pod removal and service discovery.
-  - [ ] Decide what happens to the static `logstash.instances` defaults in controller mode, where
+  - [x] Decide what happens to the static `logstash.instances` defaults in controller mode, where
         the default `http://localhost:9600` instance is scraped as well.
-- [ ] **Build info is empty (#502).** `logstash_exporter_build_info` reads
+- [x] **Build info is empty (#502).** `logstash_exporter_build_info` reads
       `github.com/prometheus/common/version`, but the build only sets `pkg/config.Version` and
       `GitCommit`. Set the `prometheus/common/version` variables in the `Makefile` and
       `Dockerfile` ldflags, and add an e2e test that checks the labels.
-- [ ] **Chart and image versions are out of sync (#493).** The chart is published on every push
+- [x] **Chart and image versions are out of sync (#493).** The chart is published on every push
       to `master` (`publish-helm-chart.yml`), so chart 2.0.0 was released while no `v2.0.0` image
       exists. Publish the chart from release tags only, with `appVersion` matching the tag.
 - [ ] **Freeze the public interface.** Breaking changes are still allowed before v2.0.0, so this is
@@ -159,9 +162,23 @@ are what remains before v2 can be recommended over v1.
 
 ### Should do before or shortly after v2.0.0
 
-- [ ] Verify that #447 (`Infinity` in node stats) is fixed on `master` and close it. All flow
+- [ ] **Organize the loose files in the repository root.** The root has 22 tracked files next to
+      the source directories. Proposal:
+  - Keep at the root what GitHub and tools expect there: `README.md`, `LICENSE`,
+    `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `Makefile`, `go.mod`, `go.sum`,
+    `docker-compose.yml`, `codecov.yml`, `.air.toml`.
+  - Move the guides to `docs/`: `HELM-DEPLOY.md`, `STANDALONE.md`, `TLS-CONFIGURATION.md`,
+    `TESTING-STANDARDS.md`.
+  - Move `config.example.yml` next to the other examples, for example `examples/`.
+  - Decide whether `Dockerfile`, `Dockerfile.controller` and `Dockerfile.dev` move to a
+    directory such as `build/`. This touches the Makefile, `docker-compose.yml` and the CI
+    workflows.
+  - Update every reference: README links, `AGENTS.md`, `CONTRIBUTING.md`, the chart README,
+    the Makefile and the workflows.
+
+- [x] Verify that #447 (`Infinity` in node stats) is fixed on `master` and close it. All flow
       fields use `InfinityFloat` now.
-- [ ] `automountServiceAccountToken` option in the chart (#499).
+- [x] `automountServiceAccountToken` option in the chart (#499).
 - [ ] Replace archived actions in the release jobs: `actions/create-release` and
       `actions/upload-release-asset` (for example with `softprops/action-gh-release`), and replace
       the deprecated `::set-output` in the prerelease step with `$GITHUB_OUTPUT`.
@@ -178,6 +195,6 @@ are what remains before v2 can be recommended over v1.
 - [ ] Export the plugin-level flow metrics (`worker_utilization`, `worker_millis_per_event`),
       see the TODO in `internal/collectors/nodestats/pipeline_subcollector.go`.
 - [ ] Compatibility matrix of metrics across Logstash versions (#88).
-- [ ] Clean up untagged images in the GitHub package registry (#302).
+- [x] Clean up untagged images in the GitHub package registry (#302).
 - [ ] `/healthcheck` only checks that Logstash answers with HTTP 200; consider also checking that
       the response is valid.
