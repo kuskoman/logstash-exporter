@@ -3,6 +3,9 @@ templates:
   - deployment.yaml
   # deployment.yaml includes configmap.yaml for the config checksum
   - configmap.yaml
+# Fixed appVersion, so that the tests do not depend on the released version
+chart:
+  appVersion: "1.2.3"
 release:
   name: logstash-exporter-test
   namespace: default
@@ -61,7 +64,7 @@ tests:
           value: exporter
       - equal:
           path: spec.template.spec.containers[0].image
-          value: kuskoman/logstash-exporter:v2.0.0
+          value: kuskoman/logstash-exporter:v1.2.3
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: IfNotPresent
@@ -133,7 +136,7 @@ tests:
           value: controller
       - equal:
           path: spec.template.spec.containers[0].image
-          value: kuskoman/logstash-exporter-controller:v2.0.0
+          value: kuskoman/logstash-exporter-controller:v1.2.3
 
   - it: should use custom controller repository when specified
     template: deployment.yaml
