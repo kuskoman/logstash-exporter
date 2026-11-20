@@ -9,9 +9,9 @@ require (
 	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.72.1
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.37.1
-	k8s.io/apimachinery v0.37.1
-	k8s.io/client-go v0.37.1
+	k8s.io/api v0.37.2
+	k8s.io/apimachinery v0.37.2
+	k8s.io/client-go v0.37.2
 )
 
 require (
