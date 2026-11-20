@@ -9,6 +9,8 @@ dependencies:
     repository: https://prometheus-community.github.io/helm-charts
     condition: prometheus.enabled
   - name: logstash-exporter
-    version: "*"
+    # The chart version follows the release tag, so it can be a prerelease (2.0.0-preN).
+    # "*" never matches prereleases; a constraint with a prerelease suffix does.
+    version: ">=0.0.0-0"
     repository: file://../../chart/
     condition: logstash-exporter.enabled
