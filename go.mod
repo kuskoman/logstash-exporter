@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/fsnotify/fsnotify v1.10.1
-	github.com/gkampitakis/go-snaps v0.5.25
+	github.com/gkampitakis/go-snaps v0.5.26
 	github.com/prometheus/client_golang v1.25.0
 	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.74.0
